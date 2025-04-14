@@ -15,7 +15,7 @@ import {
   getIssuesByAssignee, 
   getIssuesBySeverity 
 } from '@/lib/mockData';
-import { Issue } from '@/types';
+import { Issue, UserRole } from '@/types';
 
 const Issues = () => {
   const { user } = useAuth();
@@ -110,7 +110,7 @@ const Issues = () => {
                   </CardHeader>
                   <CardContent>
                     <IssuesList 
-                      issues={userIssues as Issue[]} 
+                      issues={userIssues} 
                       onEdit={handleEditIssue}
                       viewOnly={user?.role !== 'depot_incharge'} 
                     />
@@ -127,7 +127,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={openIssues as Issue[]} 
+                    issues={openIssues} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />
@@ -143,7 +143,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={inProgressIssues as Issue[]} 
+                    issues={inProgressIssues} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />
@@ -159,7 +159,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={resolvedIssues as Issue[]} 
+                    issues={resolvedIssues} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />
