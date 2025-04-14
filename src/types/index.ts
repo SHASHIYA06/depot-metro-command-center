@@ -1,7 +1,7 @@
 export enum UserRole {
-  DEPOT_INCHARGE = 'depot_incharge',
-  ENGINEER = 'engineer',
-  TECHNICIAN = 'technician'
+  DEPOT_INCHARGE = 'DEPOT_INCHARGE',
+  ENGINEER = 'ENGINEER',
+  TECHNICIAN = 'TECHNICIAN'
 }
 
 export interface User {
@@ -44,6 +44,7 @@ export interface Issue {
   carId?: string; // Car ID
   workDetails?: string; // Details of work performed by employees
   lastUpdated?: string; // Last update timestamp
+  workCategory?: string; // Category of work
 }
 
 export interface Task {

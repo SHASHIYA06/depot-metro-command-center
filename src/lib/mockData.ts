@@ -1,4 +1,5 @@
-import { User, Train, Task, ActivityLog, DashboardStats, MaintenanceSchedule, Issue, Car } from '@/types';
+
+import { User, Train, Task, ActivityLog, DashboardStats, MaintenanceSchedule, Issue, Car, UserRole } from '@/types';
 import { addDays, subDays, format, addHours } from 'date-fns';
 
 // Mock Users
@@ -7,14 +8,14 @@ export const users: User[] = [
     id: 'u1',
     name: 'Rajesh Kumar',
     email: 'rajesh.kumar@metrodepot.com',
-    role: 'depot_incharge',
+    role: UserRole.DEPOT_INCHARGE,
     avatar: '/placeholder.svg'
   },
   {
     id: 'u2',
     name: 'Priya Sharma',
     email: 'priya.sharma@metrodepot.com',
-    role: 'engineer',
+    role: UserRole.ENGINEER,
     department: 'Electrical',
     avatar: '/placeholder.svg'
   },
@@ -22,7 +23,7 @@ export const users: User[] = [
     id: 'u3',
     name: 'Vikram Singh',
     email: 'vikram.singh@metrodepot.com',
-    role: 'engineer',
+    role: UserRole.ENGINEER,
     department: 'Mechanical',
     avatar: '/placeholder.svg'
   },
@@ -30,7 +31,7 @@ export const users: User[] = [
     id: 'u4',
     name: 'Ananya Patel',
     email: 'ananya.patel@metrodepot.com',
-    role: 'technician',
+    role: UserRole.TECHNICIAN,
     department: 'Electrical',
     avatar: '/placeholder.svg'
   },
@@ -38,7 +39,7 @@ export const users: User[] = [
     id: 'u5',
     name: 'Suresh Gupta',
     email: 'suresh.gupta@metrodepot.com',
-    role: 'technician',
+    role: UserRole.TECHNICIAN,
     department: 'Mechanical',
     avatar: '/placeholder.svg'
   }
