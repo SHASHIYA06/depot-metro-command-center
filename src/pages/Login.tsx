@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Loader2, Train } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -101,11 +100,13 @@ const Login = () => {
                   )}
                 />
                 <div className="text-sm text-muted-foreground">
-                  <p>For demo purposes, you can use any email from the mock data:</p>
+                  <p>For demo purposes, you can use any of these emails:</p>
                   <div className="text-xs mt-1">
-                    <p>Depot Incharge: rajesh.kumar@metrodepot.com</p>
-                    <p>Engineer: priya.sharma@metrodepot.com</p>
-                    <p>Technician: ananya.patel@metrodepot.com</p>
+                    <p>rajiv.kumar@metro.com</p>
+                    <p>priya.sharma@metro.com</p>
+                    <p>sunil.verma@metro.com</p>
+                    <p>arun.singh@metro.com</p>
+                    <p>meera.patel@metro.com</p>
                     <p>(Use any password)</p>
                   </div>
                 </div>

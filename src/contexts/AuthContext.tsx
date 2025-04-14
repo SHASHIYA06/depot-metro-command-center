@@ -35,7 +35,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // In a real app, you would validate credentials against a backend
       // For this demo, we'll just check if the email exists in our mock users
-      const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const normalizedEmail = email.toLowerCase().trim();
+      const foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
       
       if (!foundUser) {
         throw new Error('Invalid credentials. User not found.');
