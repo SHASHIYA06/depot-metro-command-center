@@ -1,3 +1,4 @@
+
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -116,4 +117,15 @@ export interface DailyWorkLog {
   workDescription: string;
   hoursSpent: number;
   status: 'completed' | 'in_progress' | 'pending';
+}
+
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  date: string; // ISO date string
+  loginTime: string; // ISO date string
+  logoutTime?: string; // ISO date string
+  status: 'present' | 'absent' | 'late' | 'half-day';
+  workHours?: number;
+  notes?: string;
 }

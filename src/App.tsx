@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 import Issues from "./pages/Issues";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +35,7 @@ const App = () => (
               <Route path="/activities" element={<Dashboard />} /> {/* Placeholder */}
               <Route path="/issues" element={<Issues />} />
               <Route path="/analytics" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/profile" element={<Dashboard />} /> {/* Placeholder */}
+              <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Dashboard />} /> {/* Placeholder */}
             </Route>
             

@@ -7,6 +7,7 @@ import { RecentActivities } from '@/components/dashboard/RecentActivities';
 import { TrainStatusCard } from '@/components/dashboard/TrainStatusCard';
 import { TaskList } from '@/components/dashboard/TaskList';
 import { PriorityChart } from '@/components/dashboard/PriorityChart';
+import { Dashboard3DChart } from '@/components/dashboard/Dashboard3DChart';
 import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -75,7 +76,7 @@ const Dashboard = () => {
 
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div onClick={() => handleStatCardClick('total-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer' : ''}>
+        <div onClick={() => handleStatCardClick('total-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Total Tasks"
             value={dashboardStats.totalTasks}
@@ -84,7 +85,7 @@ const Dashboard = () => {
           />
         </div>
         
-        <div onClick={() => handleStatCardClick('pending-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer' : ''}>
+        <div onClick={() => handleStatCardClick('pending-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Pending Tasks"
             value={dashboardStats.pendingTasks}
@@ -93,7 +94,7 @@ const Dashboard = () => {
           />
         </div>
         
-        <div onClick={() => handleStatCardClick('active-trains')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer' : ''}>
+        <div onClick={() => handleStatCardClick('active-trains')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Active Trains"
             value={`${dashboardStats.activeTrains}/${trains.length}`}
@@ -101,7 +102,7 @@ const Dashboard = () => {
           />
         </div>
         
-        <div onClick={() => handleStatCardClick('open-issues')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer' : ''}>
+        <div onClick={() => handleStatCardClick('open-issues')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Open Issues"
             value={dashboardStats.issuesByPriority.high + dashboardStats.issuesByPriority.critical}
@@ -113,7 +114,7 @@ const Dashboard = () => {
 
       {/* Detail View for Selected Metric (only visible for depot incharge) */}
       {selectedMetric && user?.role === UserRole.DEPOT_INCHARGE && (
-        <Card>
+        <Card className="animate-fade-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>
@@ -165,6 +166,9 @@ const Dashboard = () => {
       {/* Rest of dashboard components */}
       {!selectedMetric && (
         <>
+          {/* 3D Chart */}
+          <Dashboard3DChart />
+          
           {/* Charts Row */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <TasksChart />
