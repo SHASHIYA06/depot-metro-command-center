@@ -110,7 +110,7 @@ const Issues = () => {
                   </CardHeader>
                   <CardContent>
                     <IssuesList 
-                      issues={userIssues} 
+                      issues={userIssues as Issue[]} 
                       onEdit={handleEditIssue}
                       viewOnly={user?.role !== 'depot_incharge'} 
                     />
@@ -127,7 +127,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={openIssues} 
+                    issues={openIssues as Issue[]} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />
@@ -143,7 +143,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={inProgressIssues} 
+                    issues={inProgressIssues as Issue[]} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />
@@ -159,7 +159,7 @@ const Issues = () => {
                 </CardHeader>
                 <CardContent>
                   <IssuesList 
-                    issues={resolvedIssues} 
+                    issues={resolvedIssues as Issue[]} 
                     onEdit={handleEditIssue}
                     viewOnly={user?.role !== 'depot_incharge'} 
                   />

@@ -37,6 +37,8 @@ export interface Issue {
   reportedAt: string; // ISO date string
   assignedTo?: string; // User ID
   resolvedAt?: string; // ISO date string
+  trainId?: string; // Train ID
+  carId?: string; // Car ID
 }
 
 export interface Task {

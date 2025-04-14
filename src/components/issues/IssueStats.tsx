@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { 
   getIssuesByStatus, 
   getIssuesBySeverity, 
@@ -82,7 +82,7 @@ export const IssueStats: React.FC = () => {
         <StatCard
           title="Total Activities"
           value={totalIssues}
-          icon={<Alert className="h-5 w-5 text-primary" />}
+          icon={<AlertCircle className="h-5 w-5 text-primary" />}
           description={`${completionRate}% completion rate`}
         />
         <StatCard
