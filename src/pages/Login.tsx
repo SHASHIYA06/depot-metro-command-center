@@ -131,6 +131,12 @@ const Login = () => {
           </Form>
         </Card>
       </div>
+      
+      {/* Creator Information */}
+      <div className="fixed bottom-4 right-4 text-xs text-white/50 text-right">
+        <p>Created by Shashi Shekhar Mishra</p>
+        <p>Email: shashiaaidu@gmail.com</p>
+      </div>
     </div>
   );
 };
