@@ -22,7 +22,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Issue } from '@/types';
+import { Issue, UserRole } from '@/types';
 import { X } from 'lucide-react';
 import { users, trains } from '@/lib/mockData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +31,22 @@ interface IssueFormProps {
   issue?: Issue | null;
   onClose: (refreshData?: boolean) => void;
 }
+
+// Work categories for the dropdown
+const workCategories = [
+  { id: 'maintenance', name: 'Maintenance' },
+  { id: 'inspection', name: 'Inspection' },
+  { id: 'repair', name: 'Repair' },
+  { id: 'cleaning', name: 'Cleaning' },
+  { id: 'safety', name: 'Safety Check' },
+  { id: 'electrical', name: 'Electrical' },
+  { id: 'mechanical', name: 'Mechanical' },
+  { id: 'structural', name: 'Structural' },
+  { id: 'signal', name: 'Signal System' },
+  { id: 'interior', name: 'Interior' },
+  { id: 'exterior', name: 'Exterior' },
+  { id: 'other', name: 'Other' }
+];
 
 const issueSchema = z.object({
   title: z.string().min(3, {
@@ -44,6 +60,8 @@ const issueSchema = z.object({
   assignedTo: z.string().optional(),
   trainId: z.string().optional(),
   carId: z.string().optional(),
+  workCategory: z.string().optional(),
+  workDetails: z.string().optional(),
 });
 
 export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
@@ -54,7 +72,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
 
   // Filter users based on roles (engineers and technicians can be assigned tasks)
   const assignableUsers = users.filter(u => 
-    u.role === 'engineer' || u.role === 'technician'
+    u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN
   );
 
   const form = useForm<z.infer<typeof issueSchema>>({
@@ -67,6 +85,8 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
       assignedTo: issue?.assignedTo || '',
       trainId: issue?.trainId || '',
       carId: issue?.carId || '',
+      workCategory: issue?.workCategory || '',
+      workDetails: issue?.workDetails || '',
     },
   });
 
@@ -91,6 +111,9 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
     form.setValue('carId', ''); // Reset car selection when train changes
   };
 
+  const canAssignWork = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
+  const isEmployeeView = user?.role === UserRole.TECHNICIAN;
+
   return (
     <Card className="border-primary/20">
       <CardHeader className="bg-primary/5">
@@ -113,7 +136,11 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                 <FormItem>
                   <FormLabel>Activity Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter activity title" {...field} />
+                    <Input 
+                      placeholder="Enter activity title" 
+                      {...field} 
+                      disabled={isEmployeeView && issue?.status !== 'in_progress'} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,8 +158,38 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                       placeholder="Provide detailed instructions for this activity" 
                       className="min-h-32" 
                       {...field} 
+                      disabled={isEmployeeView && issue?.status !== 'in_progress'} 
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="workCategory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Work Category</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={isEmployeeView && issue?.status !== 'in_progress'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select work category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {workCategories.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -148,6 +205,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
+                      disabled={isEmployeeView}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -193,34 +251,36 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="assignedTo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assign To</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select staff member" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {assignableUsers.map(staff => (
-                        <SelectItem key={staff.id} value={staff.id}>
-                          {staff.name} ({staff.role.replace('_', ' ')})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {canAssignWork && (
+              <FormField
+                control={form.control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assign To</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select staff member" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {assignableUsers.map(staff => (
+                          <SelectItem key={staff.id} value={staff.id}>
+                            {staff.name} ({staff.role === UserRole.ENGINEER ? 'Engineer' : 'Technician'})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -232,6 +292,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                     <Select 
                       onValueChange={(value) => handleTrainChange(value)} 
                       defaultValue={field.value}
+                      disabled={isEmployeeView}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -261,7 +322,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
-                      disabled={!selectedTrain}
+                      disabled={!selectedTrain || isEmployeeView}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -282,6 +343,25 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                 )}
               />
             </div>
+            
+            {/* Work details section - visible to employees updating activities */}
+            <FormField
+              control={form.control}
+              name="workDetails"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Work Details/Daily Log</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter details of work performed or daily progress update" 
+                      className="min-h-28"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
           
           <CardFooter className="flex justify-between border-t px-6 py-4">

@@ -24,16 +24,16 @@ const Issues = () => {
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
   const [activeTab, setActiveTab] = useState('list');
 
-  // Different users see different issues based on their role
+  // Get open issues for all users
   const openIssues = getIssuesByStatus('open');
   const inProgressIssues = getIssuesByStatus('in_progress');
   const resolvedIssues = getIssuesByStatus('resolved');
   
-  // For employees/engineers, show only their assigned issues
+  // Get issues specific to the current user
   const userIssues = user?.role !== UserRole.DEPOT_INCHARGE 
     ? getIssuesByAssignee(user?.id || '')
     : [];
-  
+
   const handleAddNewIssue = () => {
     setEditingIssue(null);
     setShowForm(true);
@@ -56,19 +56,25 @@ const Issues = () => {
     }
   };
 
+  // Determine if the current user is an officer (engineer)
+  const isOfficer = user?.role === UserRole.ENGINEER;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Issues & Work Activity</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Work Activities</h1>
           <p className="text-muted-foreground">
             {user?.role === UserRole.DEPOT_INCHARGE 
               ? 'Manage and assign work activities for all staff' 
-              : 'View and update your assigned work activities'}
+              : isOfficer
+                ? 'Assign and monitor work activities for technicians'
+                : 'View and update your assigned work activities'}
           </p>
         </div>
         
-        {user?.role === UserRole.DEPOT_INCHARGE && (
+        {/* Only depot incharge and engineers can create new activities */}
+        {(user?.role === UserRole.DEPOT_INCHARGE || isOfficer) && (
           <Button onClick={handleAddNewIssue}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Activity
@@ -82,14 +88,19 @@ const Issues = () => {
             <FileSearch className="mr-2 h-4 w-4" />
             Activities
           </TabsTrigger>
-          <TabsTrigger value="stats">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Statistics
-          </TabsTrigger>
-          <TabsTrigger value="reports">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Reports
-          </TabsTrigger>
+          {/* Only show stats and reports tabs to depot incharge */}
+          {user?.role === UserRole.DEPOT_INCHARGE && (
+            <>
+              <TabsTrigger value="stats">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Statistics
+              </TabsTrigger>
+              <TabsTrigger value="reports">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Reports
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="list" className="space-y-4">
@@ -112,70 +123,116 @@ const Issues = () => {
                     <IssuesList 
                       issues={userIssues} 
                       onEdit={handleEditIssue}
-                      viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
+                      viewOnly={user?.role === UserRole.TECHNICIAN} 
                     />
                   </CardContent>
                 </Card>
               )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Open Activities</CardTitle>
-                  <CardDescription>
-                    Newly created work activities that need to be assigned
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <IssuesList 
-                    issues={openIssues} 
-                    onEdit={handleEditIssue}
-                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
-                  />
-                </CardContent>
-              </Card>
+              {/* Show all sections for depot incharge */}
+              {user?.role === UserRole.DEPOT_INCHARGE && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Open Activities</CardTitle>
+                      <CardDescription>
+                        Newly created work activities that need to be assigned
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <IssuesList 
+                        issues={openIssues} 
+                        onEdit={handleEditIssue}
+                        viewOnly={false} 
+                      />
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>In Progress Activities</CardTitle>
-                  <CardDescription>
-                    Work activities currently being attended to
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <IssuesList 
-                    issues={inProgressIssues} 
-                    onEdit={handleEditIssue}
-                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
-                  />
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>In Progress Activities</CardTitle>
+                      <CardDescription>
+                        Work activities currently being attended to
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <IssuesList 
+                        issues={inProgressIssues} 
+                        onEdit={handleEditIssue}
+                        viewOnly={false} 
+                      />
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resolved Activities</CardTitle>
-                  <CardDescription>
-                    Work activities that have been completed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <IssuesList 
-                    issues={resolvedIssues} 
-                    onEdit={handleEditIssue}
-                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
-                  />
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Resolved Activities</CardTitle>
+                      <CardDescription>
+                        Work activities that have been completed
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <IssuesList 
+                        issues={resolvedIssues} 
+                        onEdit={handleEditIssue}
+                        viewOnly={false} 
+                      />
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+              
+              {/* Show relevant sections for engineers (officers) */}
+              {isOfficer && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Open Activities</CardTitle>
+                      <CardDescription>
+                        Activities that need to be assigned to technicians
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <IssuesList 
+                        issues={openIssues} 
+                        onEdit={handleEditIssue}
+                        viewOnly={false} 
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>In Progress Activities</CardTitle>
+                      <CardDescription>
+                        Activities currently being worked on by technicians
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <IssuesList 
+                        issues={inProgressIssues} 
+                        onEdit={handleEditIssue}
+                        viewOnly={false} 
+                      />
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="stats">
-          <IssueStats />
-        </TabsContent>
+        {user?.role === UserRole.DEPOT_INCHARGE && (
+          <>
+            <TabsContent value="stats">
+              <IssueStats />
+            </TabsContent>
 
-        <TabsContent value="reports">
-          <IssueReports />
-        </TabsContent>
+            <TabsContent value="reports">
+              <IssueReports />
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );

@@ -15,9 +15,11 @@ import {
   Trash2, 
   CheckCircle, 
   AlertTriangle,
-  Search
+  Search,
+  Eye,
+  MessageSquare
 } from 'lucide-react';
-import { Issue } from '@/types';
+import { Issue, UserRole } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserById } from '@/lib/mockData';
 import { format } from 'date-fns';
@@ -33,6 +35,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface IssuesListProps {
@@ -52,6 +63,8 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>(issues);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [issueToDelete, setIssueToDelete] = useState<Issue | null>(null);
+  const [detailIssue, setDetailIssue] = useState<Issue | null>(null);
+  const [showWorkDetails, setShowWorkDetails] = useState(false);
 
   React.useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -114,6 +127,32 @@ export const IssuesList: React.FC<IssuesListProps> = ({
     return assignee ? assignee.name : 'Unknown';
   };
 
+  const handleViewDetails = (issue: Issue) => {
+    setDetailIssue(issue);
+  };
+
+  const handleViewWorkLog = (issue: Issue) => {
+    setDetailIssue(issue);
+    setShowWorkDetails(true);
+  };
+
+  const canUpdateIssueStatus = (issue: Issue) => {
+    // Depot incharge can update any issue
+    if (user?.role === UserRole.DEPOT_INCHARGE) return true;
+    
+    // Engineers can update issues they created or are assigned to them
+    if (user?.role === UserRole.ENGINEER && issue.assignedTo === user.id) return true;
+    
+    // Technicians can only update issues assigned to them
+    if (user?.role === UserRole.TECHNICIAN && issue.assignedTo === user.id) return true;
+    
+    return false;
+  };
+
+  const canManageIssue = (issue: Issue) => {
+    return user?.role === UserRole.DEPOT_INCHARGE || (user?.role === UserRole.ENGINEER && !viewOnly);
+  };
+
   if (filteredIssues.length === 0) {
     return (
       <div>
@@ -157,8 +196,8 @@ export const IssuesList: React.FC<IssuesListProps> = ({
               <TableHead className="hidden md:table-cell">Severity</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden lg:table-cell">Assigned To</TableHead>
-              <TableHead className="hidden lg:table-cell">Reported</TableHead>
-              {!viewOnly && <TableHead className="text-right">Actions</TableHead>}
+              <TableHead className="hidden lg:table-cell">Last Updated</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,11 +230,32 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                   {getAssigneeName(issue.assignedTo)}
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
-                  {format(new Date(issue.reportedAt), 'MMM dd, yyyy')}
+                  {format(new Date(issue.lastUpdated || issue.reportedAt), 'MMM dd, yyyy')}
                 </TableCell>
-                {!viewOnly && (
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-2">
+                    {/* View details button - available to all */}
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => handleViewDetails(issue)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    
+                    {/* View work log - mainly for supervisors */}
+                    {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && issue.workDetails && (
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => handleViewWorkLog(issue)}
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Edit button - based on user role */}
+                    {!viewOnly && (
                       <Button 
                         variant="outline" 
                         size="icon" 
@@ -203,34 +263,39 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      {user?.role === 'depot_incharge' && (
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => handleDeleteClick(issue)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {user?.id === issue.assignedTo && issue.status !== 'resolved' && (
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="text-metro-success"
-                          onClick={() => onEdit({...issue, status: 'resolved'})}
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
+                    )}
+                    
+                    {/* Delete button - only for depot incharge */}
+                    {user?.role === UserRole.DEPOT_INCHARGE && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => handleDeleteClick(issue)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
+                    {/* Mark as complete - for assigned users */}
+                    {canUpdateIssueStatus(issue) && issue.status !== 'resolved' && (
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="text-metro-success"
+                        onClick={() => onEdit({...issue, status: 'resolved'})}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
+      {/* Delete confirmation dialog */}
       <AlertDialog 
         open={isDeleteDialogOpen} 
         onOpenChange={setIsDeleteDialogOpen}
@@ -249,6 +314,139 @@ export const IssuesList: React.FC<IssuesListProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Issue details dialog */}
+      <Dialog open={!!detailIssue && !showWorkDetails} onOpenChange={(open) => !open && setDetailIssue(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{detailIssue?.title}</DialogTitle>
+            <DialogDescription>
+              Work activity details and information
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detailIssue && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-between">
+                <Badge className={getSeverityBadgeClass(detailIssue.severity)}>
+                  {detailIssue.severity} priority
+                </Badge>
+                <Badge className={getStatusBadgeClass(detailIssue.status)}>
+                  {detailIssue.status.replace('_', ' ')}
+                </Badge>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-semibold mb-1">Description</h4>
+                <p className="text-sm text-muted-foreground">{detailIssue.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Assigned To</h4>
+                  <p className="text-sm">{getAssigneeName(detailIssue.assignedTo)}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Reported On</h4>
+                  <p className="text-sm">{format(new Date(detailIssue.reportedAt), 'MMM dd, yyyy')}</p>
+                </div>
+                
+                {detailIssue.trainId && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">Train</h4>
+                    <p className="text-sm">{detailIssue.trainId}</p>
+                  </div>
+                )}
+                
+                {detailIssue.carId && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">Car</h4>
+                    <p className="text-sm">{detailIssue.carId}</p>
+                  </div>
+                )}
+              </div>
+              
+              {detailIssue.workDetails && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Work Details</h4>
+                  <p className="text-sm text-muted-foreground">{detailIssue.workDetails}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+            {canManageIssue(detailIssue!) && (
+              <Button onClick={() => {
+                setDetailIssue(null);
+                onEdit(detailIssue!);
+              }}>
+                Edit Activity
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Work details dialog */}
+      <Dialog open={!!detailIssue && showWorkDetails} onOpenChange={(open) => {
+        if (!open) {
+          setDetailIssue(null);
+          setShowWorkDetails(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Work Log</DialogTitle>
+            <DialogDescription>
+              {detailIssue?.title} - Work progress and updates
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detailIssue && (
+            <div className="space-y-4 py-4">
+              <div className="bg-muted p-4 rounded-md">
+                <h4 className="text-sm font-semibold mb-2">Latest Update</h4>
+                <p className="text-sm">{detailIssue.workDetails || "No work details available"}</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Last updated: {format(new Date(detailIssue.lastUpdated || detailIssue.reportedAt), 'MMM dd, yyyy')}
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Assigned To</h4>
+                <p className="text-sm">{getAssigneeName(detailIssue.assignedTo)}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Status</h4>
+                <Badge className={getStatusBadgeClass(detailIssue.status)}>
+                  {detailIssue.status.replace('_', ' ')}
+                </Badge>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+            {canManageIssue(detailIssue!) && (
+              <Button onClick={() => {
+                setDetailIssue(null);
+                setShowWorkDetails(false);
+                onEdit(detailIssue!);
+              }}>
+                Edit Activity
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

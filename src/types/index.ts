@@ -1,4 +1,3 @@
-
 export enum UserRole {
   DEPOT_INCHARGE = 'depot_incharge',
   ENGINEER = 'engineer',
@@ -43,6 +42,8 @@ export interface Issue {
   resolvedAt?: string; // ISO date string
   trainId?: string; // Train ID
   carId?: string; // Car ID
+  workDetails?: string; // Details of work performed by employees
+  lastUpdated?: string; // Last update timestamp
 }
 
 export interface Task {
@@ -98,4 +99,20 @@ export interface DashboardStats {
   };
   upcomingMaintenance: MaintenanceSchedule[];
   recentActivities: ActivityLog[];
+}
+
+export interface WorkCategory {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface DailyWorkLog {
+  id: string;
+  userId: string;
+  issueId: string;
+  date: string; // ISO date string
+  workDescription: string;
+  hoursSpent: number;
+  status: 'completed' | 'in_progress' | 'pending';
 }
