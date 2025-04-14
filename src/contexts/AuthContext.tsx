@@ -38,8 +38,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       
       if (!foundUser) {
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid credentials. User not found.');
       }
+      
+      // For demo purposes, any password is accepted
+      // In a real app, you'd verify the password here
       
       // Simulate successful login
       setUser(foundUser);
@@ -49,6 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Login successful',
         description: `Welcome back, ${foundUser.name}!`,
       });
+      
+      return; // Successfully logged in
     } catch (error) {
       toast({
         title: 'Login failed',

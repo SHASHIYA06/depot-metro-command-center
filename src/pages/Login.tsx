@@ -7,23 +7,35 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2, Train } from 'lucide-react';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      await login(data.email, data.password);
       navigate('/');
     } catch (error) {
       // Error is handled in the AuthContext
+      console.log('Login error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -47,57 +59,75 @@ const Login = () => {
             <CardTitle>Login</CardTitle>
             <CardDescription>Enter your credentials to continue</CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="your.email@metrodepot.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)}>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="your.email@metrodepot.com" 
+                          type="email"
+                          autoComplete="email"
+                          required
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          autoComplete="current-password"
+                          required
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <p className="text-sm text-muted-foreground">
-                  For demo purposes, you can use any email from the mock data:
-                </p>
-                <div className="text-xs text-muted-foreground">
-                  <p>Depot Incharge: rajesh.kumar@metrodepot.com</p>
-                  <p>Engineer: priya.sharma@metrodepot.com</p>
-                  <p>Technician: ananya.patel@metrodepot.com</p>
-                  <p>(Use any password)</p>
+                <div className="text-sm text-muted-foreground">
+                  <p>For demo purposes, you can use any email from the mock data:</p>
+                  <div className="text-xs mt-1">
+                    <p>Depot Incharge: rajesh.kumar@metrodepot.com</p>
+                    <p>Engineer: priya.sharma@metrodepot.com</p>
+                    <p>Technician: ananya.patel@metrodepot.com</p>
+                    <p>(Use any password)</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                type="submit" 
-                className="w-full bg-metro-primary hover:bg-metro-primary/90"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  'Login'
-                )}
-              </Button>
-            </CardFooter>
-          </form>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-metro-primary hover:bg-metro-primary/90"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    'Login'
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
         </Card>
       </div>
     </div>
