@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -30,8 +29,8 @@ const Dashboard = () => {
   
   // Filter tasks based on user role
   const relevantTasks = user?.role === UserRole.DEPOT_INCHARGE 
-    ? tasks.filter(t => t.status !== 'completed').slice(0, 5)
-    : tasks.filter(t => t.assignedTo === user?.id && t.status !== 'completed');
+    ? tasks.filter(t => t.status !== 'completed').slice(0, 5) as Task[]
+    : tasks.filter(t => t.assignedTo === user?.id && t.status !== 'completed') as Task[];
 
   const handleStatCardClick = (metricType: string) => {
     if (user?.role === UserRole.DEPOT_INCHARGE) {
@@ -111,7 +110,7 @@ const Dashboard = () => {
           />
         </div>
       </div>
-
+      
       {/* Detail View for Selected Metric (only visible for depot incharge) */}
       {selectedMetric && user?.role === UserRole.DEPOT_INCHARGE && (
         <Card className="animate-fade-in">
