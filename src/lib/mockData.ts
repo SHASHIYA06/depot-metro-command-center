@@ -731,4 +731,47 @@ export const getRecentActivities = (limit: number = 5): ActivityLog[] => {
 };
 
 // Function to add a new issue
-export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt
+export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'>): Issue => {
+  const newIssue: Issue = {
+    ...issue,
+    id: `i${issues.length + 1}`, // Generate a new unique ID
+    reportedAt: new Date().toISOString(), // Set current timestamp
+    lastUpdated: new Date().toISOString(), // Set current timestamp
+    status: issue.status || 'open', // Default to 'open' if not provided
+  };
+
+  issues.push(newIssue);
+  return newIssue;
+};
+
+// Add a delete issue function as well
+export const deleteIssue = (issueId: string): boolean => {
+  const initialLength = issues.length;
+  const filteredIssues = issues.filter(issue => issue.id !== issueId);
+  
+  if (filteredIssues.length < initialLength) {
+    // Clear the original array and repopulate
+    issues.length = 0;
+    issues.push(...filteredIssues);
+    return true;
+  }
+  
+  return false;
+};
+
+// Add an update issue function
+export const updateIssue = (issueId: string, updatedFields: Partial<Omit<Issue, 'id'>>): Issue | null => {
+  const issueIndex = issues.findIndex(issue => issue.id === issueId);
+  
+  if (issueIndex !== -1) {
+    issues[issueIndex] = {
+      ...issues[issueIndex],
+      ...updatedFields,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    return issues[issueIndex];
+  }
+  
+  return null;
+};
