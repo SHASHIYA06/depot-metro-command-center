@@ -575,6 +575,10 @@ export const getIssuesBySeverity = (severity: Issue['severity']): Issue[] => {
   return issues.filter(issue => issue.severity === severity);
 };
 
+export const getIssuesByAssigner = (userId: string): Issue[] => {
+  return issues.filter(issue => issue.assignedBy === userId);
+};
+
 export const getUserById = (id: string): User | undefined => {
   return users.find(user => user.id === id);
 };
@@ -900,4 +904,67 @@ export const generateEfficiencyData = () => {
           0
       };
     });
+};
+
+// Function to add a new task
+export const addNewTask = (taskData: Partial<Task>): Task => {
+  const newTask: Task = {
+    id: `task${tasks.length + 1}`,
+    title: taskData.title || 'New Task',
+    description: taskData.description || '',
+    priority: taskData.priority || 'medium',
+    status: taskData.status || 'pending',
+    assignedTo: taskData.assignedTo || '',
+    assignedBy: taskData.assignedBy || '',
+    createdAt: taskData.createdAt || new Date().toISOString(),
+    dueDate: taskData.dueDate || addDays(new Date(), 1).toISOString(),
+    completedAt: taskData.completedAt,
+    trainId: taskData.trainId,
+    carId: taskData.carId,
+    category: taskData.category || 'maintenance',
+    workDetails: taskData.workDetails || ''
+  };
+  
+  tasks.push(newTask);
+  
+  // Log for Google Sheets integration
+  console.log('Task added, would sync to Google Sheets:', newTask);
+  
+  return newTask;
+};
+
+// Function to update an existing task
+export const updateTask = (taskId: string, taskData: Partial<Task>): Task | null => {
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return null;
+  
+  // Update the task
+  tasks[taskIndex] = {
+    ...tasks[taskIndex],
+    ...taskData,
+    // Add timestamp for when status changes to completed
+    ...(taskData.status === 'completed' && !tasks[taskIndex].completedAt ? 
+      { completedAt: new Date().toISOString() } : {})
+  };
+  
+  // Log for Google Sheets integration
+  console.log('Task updated, would sync to Google Sheets:', tasks[taskIndex]);
+  
+  return tasks[taskIndex];
+};
+
+// Function to delete a task
+export const deleteTask = (taskId: string): boolean => {
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex === -1) return false;
+  
+  // Log for Google Sheets integration
+  console.log('Task deleted, would sync to Google Sheets:', tasks[taskIndex]);
+  
+  // Delete the task
+  tasks.splice(taskIndex, 1);
+  
+  return true;
 };

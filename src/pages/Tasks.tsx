@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,68 +15,18 @@ import {
   AlertTriangle,
   Edit,
   Trash2,
-  Filter
+  Filter,
+  User,
+  Users
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { Task, UserRole } from '@/types';
-import { users } from '@/lib/mockData';
+import { users, addNewTask, updateTask, deleteTask } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock tasks
-const mockTasks: Task[] = [
-  {
-    id: 'task1',
-    title: 'Inspect brake systems on Train A',
-    description: 'Complete a full inspection of the brake systems on Train A, including testing and documentation.',
-    priority: 'high',
-    status: 'pending',
-    assignedTo: 'u4',
-    assignedBy: 'u2',
-    createdAt: new Date().toISOString(),
-    dueDate: addDays(new Date(), 2).toISOString(),
-    trainId: 't1',
-    category: 'inspection'
-  },
-  {
-    id: 'task2',
-    title: 'Clean passenger cars on Train B',
-    description: 'Clean all passenger cars on Train B, including floors, seats, and windows.',
-    priority: 'medium',
-    status: 'in_progress',
-    assignedTo: 'u5',
-    assignedBy: 'u2',
-    createdAt: addDays(new Date(), -2).toISOString(),
-    dueDate: addDays(new Date(), 1).toISOString(),
-    trainId: 't2',
-    category: 'cleaning'
-  },
-  {
-    id: 'task3',
-    title: 'Replace worn components on Train C',
-    description: 'Replace identified worn components on Train C engine system.',
-    priority: 'urgent',
-    status: 'in_progress',
-    assignedTo: 'u3',
-    assignedBy: 'u1',
-    createdAt: addDays(new Date(), -3).toISOString(),
-    dueDate: new Date().toISOString(),
-    trainId: 't3',
-    category: 'repair'
-  },
-  {
-    id: 'task4',
-    title: 'Update maintenance records',
-    description: 'Update all maintenance records in the system for the past week.',
-    priority: 'low',
-    status: 'completed',
-    assignedTo: 'u2',
-    assignedBy: 'u1',
-    createdAt: addDays(new Date(), -7).toISOString(),
-    dueDate: addDays(new Date(), -1).toISOString(),
-    completedAt: addDays(new Date(), -1).toISOString(),
-    category: 'administrative'
-  }
-];
+// Import TaskForm component
+import { TaskForm } from '@/components/tasks/TaskForm';
+import { TaskDetail } from '@/components/tasks/TaskDetail';
 
 const Tasks = () => {
   const { user } = useAuth();
@@ -84,18 +34,45 @@ const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   
   const canCreateTasks = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
 
-  // Filter tasks based on active tab and search term
-  const filteredTasks = mockTasks.filter(task => {
+  useEffect(() => {
+    // Fetch tasks - in a real app this would be an API call
+    // For now we'll use mock data
+    import('@/lib/mockData').then(({ mockTasks }) => {
+      setTasks(mockTasks);
+    });
+  }, []);
+
+  // Filter tasks based on active tab, search term, and user role
+  const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // For normal users, only show their assigned tasks
-    if (user?.role === UserRole.TECHNICIAN && task.assignedTo !== user.id) {
-      return false;
+    // For each role, show appropriate tasks
+    if (user?.role === UserRole.TECHNICIAN) {
+      // Technicians can only see their assigned tasks
+      if (task.assignedTo !== user.id) {
+        return false;
+      }
+    } else if (user?.role === UserRole.ENGINEER) {
+      // Engineers can see tasks they created, tasks assigned to them,
+      // and tasks assigned to technicians under them
+      const isCreator = task.assignedBy === user.id;
+      const isAssignee = task.assignedTo === user.id;
+      const assignedToTechnician = task.assignedTo && users.find(u => 
+        u.id === task.assignedTo && u.role === UserRole.TECHNICIAN
+      );
+      
+      if (!isCreator && !isAssignee && !assignedToTechnician) {
+        return false;
+      }
     }
+    // Depot Incharge can see all tasks
     
     if (activeTab === 'pending') {
       return matchesSearch && (task.status === 'pending');
@@ -163,88 +140,110 @@ const Tasks = () => {
   };
 
   const handleCreateTask = () => {
-    toast({
-      title: 'Task Created',
-      description: 'The new task has been created successfully.',
-    });
-    setShowForm(false);
+    setEditingTask(null);
+    setShowForm(true);
   };
 
-  const TaskForm = () => (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>Create New Task</CardTitle>
-        <CardDescription>Assign tasks to staff members</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleCreateTask(); }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2 md:col-span-2">
-              <label htmlFor="title" className="text-sm font-medium">Task Title</label>
-              <Input id="title" placeholder="Enter task title" required />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="priority" className="text-sm font-medium">Priority</label>
-              <select id="priority" className="w-full px-3 py-2 border rounded-md">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="category" className="text-sm font-medium">Category</label>
-              <select id="category" className="w-full px-3 py-2 border rounded-md">
-                <option value="maintenance">Maintenance</option>
-                <option value="inspection">Inspection</option>
-                <option value="repair">Repair</option>
-                <option value="cleaning">Cleaning</option>
-                <option value="administrative">Administrative</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="assignTo" className="text-sm font-medium">Assign To</label>
-              <select id="assignTo" className="w-full px-3 py-2 border rounded-md">
-                {users.filter(u => u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN).map(staff => (
-                  <option key={staff.id} value={staff.id}>{staff.name} ({staff.role === UserRole.ENGINEER ? 'Engineer' : 'Technician'})</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="dueDate" className="text-sm font-medium">Due Date</label>
-              <Input id="dueDate" type="date" required />
-            </div>
-            
-            <div className="space-y-2 md:col-span-2">
-              <label htmlFor="description" className="text-sm font-medium">Description</label>
-              <textarea 
-                id="description" 
-                className="w-full px-3 py-2 border rounded-md min-h-32" 
-                placeholder="Provide detailed instructions for this task"
-                required
-              ></textarea>
-            </div>
-          </div>
-          
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-            <Button type="submit">Create Task</Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
+  const handleEditTask = (task: Task) => {
+    // Check if user has permission to edit this task
+    if (canEditTask(task)) {
+      setEditingTask(task);
+      setShowForm(true);
+    } else {
+      toast({
+        title: 'Permission Denied',
+        description: 'You do not have permission to edit this task.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleViewTask = (task: Task) => {
+    setViewingTask(task);
+  };
+
+  const handleTaskFormClose = (refreshData: boolean = false) => {
+    setShowForm(false);
+    setEditingTask(null);
+    
+    if (refreshData) {
+      // In a real app, this would re-fetch the data
+      // For now, just show a toast
+      toast({
+        title: "Success",
+        description: editingTask ? "Task updated successfully" : "Task created successfully",
+      });
+      
+      // Refresh tasks - in a real app, this would be an API call
+      import('@/lib/mockData').then(({ mockTasks }) => {
+        setTasks(mockTasks);
+      });
+    }
+  };
+
+  const handleTaskViewClose = () => {
+    setViewingTask(null);
+  };
 
   const markTaskComplete = (taskId: string) => {
+    // In a real app, this would update the task in the database
+    // For now, just show a toast
     toast({
       title: 'Task Completed',
       description: 'The task has been marked as completed.',
     });
+    
+    // Update task status in mock data
+    const updatedTask = updateTask(taskId, { status: 'completed', completedAt: new Date().toISOString() });
+    
+    // Refresh tasks
+    import('@/lib/mockData').then(({ mockTasks }) => {
+      setTasks(mockTasks);
+    });
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    // In a real app, this would delete the task from the database
+    // For now, just show a toast
+    toast({
+      title: 'Task Deleted',
+      description: 'The task has been deleted.',
+    });
+    
+    // Delete task from mock data
+    deleteTask(taskId);
+    
+    // Refresh tasks
+    import('@/lib/mockData').then(({ mockTasks }) => {
+      setTasks(mockTasks);
+    });
+  };
+
+  // Function to determine if user can edit a task
+  const canEditTask = (task: Task): boolean => {
+    if (user?.role === UserRole.DEPOT_INCHARGE) {
+      // Depot Incharge can edit all tasks
+      return true;
+    } else if (user?.role === UserRole.ENGINEER) {
+      // Engineers can edit tasks they created and tasks assigned to technicians
+      const isCreator = task.assignedBy === user.id;
+      const assignedToTechnician = task.assignedTo && users.find(u => 
+        u.id === task.assignedTo && u.role === UserRole.TECHNICIAN
+      );
+      
+      return isCreator || !!assignedToTechnician;
+    } else if (user?.role === UserRole.TECHNICIAN) {
+      // Technicians can only update tasks assigned to them (but not edit all details)
+      return task.assignedTo === user.id;
+    }
+    
+    return false;
+  };
+
+  // Function to determine if user can delete a task
+  const canDeleteTask = (task: Task): boolean => {
+    // Only Depot Incharge can delete tasks
+    return user?.role === UserRole.DEPOT_INCHARGE;
   };
 
   return (
@@ -253,19 +252,42 @@ const Tasks = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground">
-            Manage and track daily tasks for the depot staff
+            {user?.role === UserRole.DEPOT_INCHARGE 
+              ? 'Manage and track daily tasks for the depot staff'
+              : user?.role === UserRole.ENGINEER
+                ? 'Manage tasks and assign work to technicians'
+                : 'View and update your assigned tasks'}
           </p>
         </div>
         
         {canCreateTasks && (
-          <Button onClick={() => setShowForm(!showForm)}>
+          <Button onClick={handleCreateTask}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Create Task
           </Button>
         )}
       </div>
 
-      {showForm && <TaskForm />}
+      {showForm && (
+        <TaskForm 
+          task={editingTask} 
+          onClose={handleTaskFormClose} 
+        />
+      )}
+
+      {viewingTask && (
+        <TaskDetail 
+          task={viewingTask} 
+          onClose={handleTaskViewClose}
+          onEdit={canEditTask(viewingTask) ? handleEditTask : undefined}
+          onComplete={
+            (viewingTask.status !== 'completed' && 
+             (viewingTask.assignedTo === user?.id || canEditTask(viewingTask)))
+              ? () => markTaskComplete(viewingTask.id)
+              : undefined
+          }
+        />
+      )}
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
@@ -341,7 +363,7 @@ const Tasks = () => {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <User className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <div className="text-sm font-medium">Assigned To</div>
                         <div className="text-sm text-muted-foreground">
@@ -352,26 +374,28 @@ const Tasks = () => {
                   </div>
                   
                   <div className="flex justify-end gap-2 mt-6">
-                    <Button variant="outline" size="sm">View Details</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleViewTask(task)}>
+                      View Details
+                    </Button>
                     
                     {task.status !== 'completed' && (
                       <>
-                        {canCreateTasks && (
-                          <Button variant="outline" size="sm">
+                        {canEditTask(task) && (
+                          <Button variant="outline" size="sm" onClick={() => handleEditTask(task)}>
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
                           </Button>
                         )}
                         
-                        {(task.assignedTo === user?.id || canCreateTasks) && (
+                        {(task.assignedTo === user?.id || canEditTask(task)) && (
                           <Button variant="outline" size="sm" onClick={() => markTaskComplete(task.id)}>
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Mark Complete
                           </Button>
                         )}
                         
-                        {user?.role === UserRole.DEPOT_INCHARGE && (
-                          <Button variant="outline" size="sm" className="text-destructive">
+                        {canDeleteTask(task) && (
+                          <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDeleteTask(task.id)}>
                             <Trash2 className="h-4 w-4 mr-1" />
                             Delete
                           </Button>

@@ -1,3 +1,4 @@
+
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -48,6 +49,7 @@ export interface Issue {
   status: 'open' | 'in_progress' | 'resolved';
   reportedAt: string; // ISO date string
   assignedTo?: string; // User ID
+  assignedBy?: string; // User ID who assigned this issue
   resolvedAt?: string; // ISO date string
   trainId?: string; // Train ID
   carId?: string; // Car ID
@@ -70,6 +72,7 @@ export interface Task {
   trainId?: string; // Train ID if applicable
   carId?: string; // Car ID if applicable
   category: 'maintenance' | 'inspection' | 'repair' | 'cleaning' | 'administrative' | 'other';
+  workDetails?: string; // Details of work progress, updates, etc.
 }
 
 export interface ActivityLog {
@@ -136,4 +139,10 @@ export interface AttendanceRecord {
   status: 'present' | 'absent' | 'late' | 'half-day';
   workHours?: number;
   notes?: string;
+}
+
+export interface GoogleSheetsConfig {
+  sheetId: string;
+  tabName: string;
+  credentialsPath?: string;
 }

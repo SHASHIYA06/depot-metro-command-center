@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Issue, UserRole } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserById, updateIssue } from '@/lib/mockData';
+import { getUserById, updateIssue, deleteIssue } from '@/lib/mockData';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { syncIssueToSheets } from '@/utils/googleSheetsIntegration';
 
 interface IssuesListProps {
   issues: Issue[];
@@ -66,7 +67,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   const [detailIssue, setDetailIssue] = useState<Issue | null>(null);
   const [showWorkDetails, setShowWorkDetails] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredIssues(issues);
     } else {
@@ -112,11 +113,21 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   };
 
   const confirmDelete = () => {
-    // This would call an API to delete the issue in a real app
-    toast({
-      title: 'Activity Deleted',
-      description: `The work activity "${issueToDelete?.title}" has been deleted.`,
-    });
+    if (issueToDelete) {
+      // Delete the issue
+      const success = deleteIssue(issueToDelete.id);
+      
+      if (success) {
+        toast({
+          title: 'Activity Deleted',
+          description: `The work activity "${issueToDelete.title}" has been deleted.`,
+        });
+        
+        // Remove the deleted issue from the filtered list
+        setFilteredIssues(filteredIssues.filter(issue => issue.id !== issueToDelete.id));
+      }
+    }
+    
     setIsDeleteDialogOpen(false);
     setIssueToDelete(null);
   };
@@ -129,6 +140,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
 
   const handleViewDetails = (issue: Issue) => {
     setDetailIssue(issue);
+    setShowWorkDetails(false);
   };
 
   const handleViewWorkLog = (issue: Issue) => {
@@ -150,8 +162,11 @@ export const IssuesList: React.FC<IssuesListProps> = ({
         variant: 'default',
       });
       
+      // Sync to Google Sheets
+      syncIssueToSheets(updatedIssue);
+      
       // Refresh the issues list
-      const updatedIssues = issues.map(i => 
+      const updatedIssues = filteredIssues.map(i => 
         i.id === issue.id ? updatedIssue : i
       );
       setFilteredIssues(updatedIssues);
@@ -162,7 +177,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
     // Depot incharge can update any issue
     if (user?.role === UserRole.DEPOT_INCHARGE) return true;
     
-    // Engineers can update issues they created or are assigned to them
+    // Engineers can update issues assigned to them
     if (user?.role === UserRole.ENGINEER && issue.assignedTo === user.id) return true;
     
     // Technicians can only update issues assigned to them
@@ -171,8 +186,29 @@ export const IssuesList: React.FC<IssuesListProps> = ({
     return false;
   };
 
-  const canManageIssue = (issue: Issue) => {
-    return user?.role === UserRole.DEPOT_INCHARGE || (user?.role === UserRole.ENGINEER && !viewOnly);
+  const canEditIssue = (issue: Issue) => {
+    // Depot incharge can edit any issue
+    if (user?.role === UserRole.DEPOT_INCHARGE) return true;
+    
+    // Engineers can edit their own issues and update issues assigned to them
+    if (user?.role === UserRole.ENGINEER) {
+      return issue.assignedTo === user.id;
+    }
+    
+    // Technicians can only update issues assigned to them
+    if (user?.role === UserRole.TECHNICIAN && issue.assignedTo === user.id) return true;
+    
+    return false;
+  };
+
+  const canDeleteIssue = (issue: Issue) => {
+    // Only depot incharge can delete issues
+    return user?.role === UserRole.DEPOT_INCHARGE;
+  };
+
+  const canViewWorkLog = (issue: Issue) => {
+    // Depot incharge and engineers can view work logs
+    return user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
   };
 
   if (filteredIssues.length === 0) {
@@ -266,7 +302,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                     </Button>
                     
                     {/* View work log - mainly for supervisors */}
-                    {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && issue.workDetails && (
+                    {canViewWorkLog(issue) && issue.workDetails && (
                       <Button 
                         variant="outline" 
                         size="icon" 
@@ -276,8 +312,8 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                       </Button>
                     )}
                     
-                    {/* Edit button - based on user role */}
-                    {!viewOnly && (
+                    {/* Edit button - based on user role and permissions */}
+                    {canEditIssue(issue) && !viewOnly && (
                       <Button 
                         variant="outline" 
                         size="icon" 
@@ -288,7 +324,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                     )}
                     
                     {/* Delete button - only for depot incharge */}
-                    {user?.role === UserRole.DEPOT_INCHARGE && (
+                    {canDeleteIssue(issue) && (
                       <Button 
                         variant="outline" 
                         size="icon"
@@ -402,7 +438,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-            {canManageIssue(detailIssue!) && (
+            {canEditIssue(detailIssue!) && (
               <Button onClick={() => {
                 setDetailIssue(null);
                 onEdit(detailIssue!);
@@ -457,7 +493,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-            {canManageIssue(detailIssue!) && (
+            {canEditIssue(detailIssue!) && (
               <Button onClick={() => {
                 setDetailIssue(null);
                 setShowWorkDetails(false);
