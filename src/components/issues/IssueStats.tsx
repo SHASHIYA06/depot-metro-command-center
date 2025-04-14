@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
@@ -23,6 +22,7 @@ import {
 } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatCard } from '../dashboard/StatCard';
+import { UserRole } from '@/types';
 
 export const IssueStats: React.FC = () => {
   const { user } = useAuth();
@@ -43,23 +43,9 @@ export const IssueStats: React.FC = () => {
     ? getIssuesByAssignee(user.id) 
     : [];
   
-  // Data for charts
-  const statusData = [
-    { name: 'Open', value: openIssues.length, color: '#94a3b8' },
-    { name: 'In Progress', value: inProgressIssues.length, color: '#60a5fa' },
-    { name: 'Resolved', value: resolvedIssues.length, color: '#4ade80' },
-  ];
-
-  const severityData = [
-    { name: 'Low', value: lowIssues.length, color: '#93c5fd' },
-    { name: 'Medium', value: mediumIssues.length, color: '#fcd34d' },
-    { name: 'High', value: highIssues.length, color: '#fb923c' },
-    { name: 'Critical', value: criticalIssues.length, color: '#f87171' },
-  ];
-
   // Staff performance data (for depot incharge)
   const staffData = users
-    .filter(u => u.role === 'engineer' || u.role === 'technician')
+    .filter(u => u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN)
     .map(staff => {
       const assignedIssues = getIssuesByAssignee(staff.id);
       const completedIssues = assignedIssues.filter(issue => issue.status === 'resolved');
@@ -74,6 +60,19 @@ export const IssueStats: React.FC = () => {
 
   const totalIssues = openIssues.length + inProgressIssues.length + resolvedIssues.length;
   const completionRate = totalIssues ? Math.round((resolvedIssues.length / totalIssues) * 100) : 0;
+
+  const statusData = [
+    { name: 'Open', value: openIssues.length, color: '#94a3b8' },
+    { name: 'In Progress', value: inProgressIssues.length, color: '#60a5fa' },
+    { name: 'Resolved', value: resolvedIssues.length, color: '#4ade80' },
+  ];
+
+  const severityData = [
+    { name: 'Low', value: lowIssues.length, color: '#93c5fd' },
+    { name: 'Medium', value: mediumIssues.length, color: '#fcd34d' },
+    { name: 'High', value: highIssues.length, color: '#fb923c' },
+    { name: 'Critical', value: criticalIssues.length, color: '#f87171' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -167,7 +166,7 @@ export const IssueStats: React.FC = () => {
       </div>
 
       {/* Staff Performance Chart (Depot Incharge Only) */}
-      {user?.role === 'depot_incharge' && staffData.length > 0 && (
+      {user?.role === UserRole.DEPOT_INCHARGE && staffData.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Staff Performance</CardTitle>
@@ -198,7 +197,7 @@ export const IssueStats: React.FC = () => {
       )}
 
       {/* Personal Performance (Engineers and Technicians Only) */}
-      {(user?.role === 'engineer' || user?.role === 'technician') && (
+      {(user?.role === UserRole.ENGINEER || user?.role === UserRole.TECHNICIAN) && (
         <Card>
           <CardHeader>
             <CardTitle>Your Performance</CardTitle>

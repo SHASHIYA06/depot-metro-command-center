@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { UserRole } from '@/types';
 
 export const IssueReports: React.FC = () => {
   const { toast } = useToast();
@@ -36,7 +36,7 @@ export const IssueReports: React.FC = () => {
 
   // Filter staff to only engineers and technicians
   const assignableStaff = users.filter(u => 
-    u.role === 'engineer' || u.role === 'technician'
+    u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN
   );
 
   const handleGenerateReport = () => {
