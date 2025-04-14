@@ -1,4 +1,3 @@
-
 import { User, Train, Task, ActivityLog, DashboardStats, MaintenanceSchedule, Issue, Car } from '@/types';
 import { addDays, subDays, format, addHours } from 'date-fns';
 
@@ -389,3 +388,140 @@ export const generateMaintenanceHistory = () => {
   
   return history;
 };
+
+// Additional helper functions for filtering issues
+export const getIssuesByStatus = (status: string) => {
+  return issues.filter(issue => issue.status === status);
+};
+
+export const getIssuesBySeverity = (severity: string) => {
+  return issues.filter(issue => issue.severity === severity);
+};
+
+export const getIssuesByAssignee = (userId: string) => {
+  return issues.filter(issue => issue.assignedTo === userId);
+};
+
+// Mock issues data
+export const issues = [
+  {
+    id: "issue-001",
+    title: "HVAC Malfunction in Car 3",
+    description: "Air conditioning unit in car 3 of Train A1 is not functioning properly. Temperature readings show inconsistent cooling.",
+    severity: "high",
+    status: "in_progress",
+    reportedAt: "2025-04-10T08:30:00Z",
+    assignedTo: "user-002",
+    trainId: "train-001",
+    carId: "car-003",
+    resolvedAt: null
+  },
+  {
+    id: "issue-002",
+    title: "Brake Inspection Required",
+    description: "Routine brake inspection needed for Train B2 before next service cycle.",
+    severity: "medium",
+    status: "open",
+    reportedAt: "2025-04-11T09:15:00Z",
+    assignedTo: null,
+    trainId: "train-002",
+    carId: null,
+    resolvedAt: null
+  },
+  {
+    id: "issue-003",
+    title: "Door Sensor Calibration",
+    description: "Door sensors on car 2 of Train A1 need calibration. Occasional false readings detected during operation.",
+    severity: "low",
+    status: "open",
+    reportedAt: "2025-04-12T14:20:00Z",
+    assignedTo: "user-003",
+    trainId: "train-001",
+    carId: "car-002",
+    resolvedAt: null
+  },
+  {
+    id: "issue-004",
+    title: "Track Circuit Failure",
+    description: "Track circuit 23B reporting intermittent failures. Requires immediate investigation.",
+    severity: "critical",
+    status: "in_progress",
+    reportedAt: "2025-04-09T11:45:00Z",
+    assignedTo: "user-002",
+    trainId: null,
+    carId: null,
+    resolvedAt: null
+  },
+  {
+    id: "issue-005",
+    title: "Battery Replacement",
+    description: "Auxiliary batteries in Train B2 showing reduced capacity. Scheduled replacement recommended.",
+    severity: "medium",
+    status: "resolved",
+    reportedAt: "2025-04-08T10:30:00Z",
+    assignedTo: "user-003",
+    trainId: "train-002",
+    carId: null,
+    resolvedAt: "2025-04-13T15:20:00Z"
+  },
+  {
+    id: "issue-006",
+    title: "Wheel Profiling Required",
+    description: "Wheels on car 4 of Train A1 showing uneven wear pattern. Profiling needed during next maintenance cycle.",
+    severity: "medium",
+    status: "open",
+    reportedAt: "2025-04-13T08:15:00Z",
+    assignedTo: null,
+    trainId: "train-001",
+    carId: "car-004",
+    resolvedAt: null
+  },
+  {
+    id: "issue-007",
+    title: "Signal Relay Replacement",
+    description: "Signal relay at junction 5 needs replacement. Intermittent failures observed during peak hours.",
+    severity: "high",
+    status: "resolved",
+    reportedAt: "2025-04-07T09:10:00Z",
+    assignedTo: "user-002",
+    trainId: null,
+    carId: null,
+    resolvedAt: "2025-04-12T11:30:00Z"
+  },
+  {
+    id: "issue-008",
+    title: "Pantograph Inspection",
+    description: "Routine inspection of pantograph on Train B2 required before next deployment.",
+    severity: "low",
+    status: "resolved",
+    reportedAt: "2025-04-06T14:45:00Z",
+    assignedTo: "user-003",
+    trainId: "train-002",
+    carId: null,
+    resolvedAt: "2025-04-10T17:20:00Z"
+  },
+  {
+    id: "issue-009",
+    title: "Coupling Mechanism Adjustment",
+    description: "Coupling mechanism between cars 1 and 2 of Train A1 requires adjustment. Slight misalignment detected.",
+    severity: "medium",
+    status: "in_progress",
+    reportedAt: "2025-04-12T11:30:00Z",
+    assignedTo: "user-003",
+    trainId: "train-001",
+    carId: null,
+    resolvedAt: null
+  },
+  {
+    id: "issue-010",
+    title: "Emergency Lighting Test",
+    description: "Scheduled test of emergency lighting systems in all trains.",
+    severity: "low",
+    status: "open",
+    reportedAt: "2025-04-13T10:00:00Z",
+    assignedTo: null,
+    trainId: null,
+    carId: null,
+    resolvedAt: null
+  }
+];

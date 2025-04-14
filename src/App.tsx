@@ -9,6 +9,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
+import Issues from "./pages/Issues";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ const App = () => (
               <Route path="/maintenance" element={<Dashboard />} /> {/* Placeholder */}
               <Route path="/staff" element={<Dashboard />} /> {/* Placeholder */}
               <Route path="/activities" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/issues" element={<Dashboard />} /> {/* Placeholder */}
+              <Route path="/issues" element={<Issues />} />
               <Route path="/analytics" element={<Dashboard />} /> {/* Placeholder */}
               <Route path="/profile" element={<Dashboard />} /> {/* Placeholder */}
               <Route path="/settings" element={<Dashboard />} /> {/* Placeholder */}
