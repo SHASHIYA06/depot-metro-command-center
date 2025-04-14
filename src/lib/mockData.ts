@@ -775,3 +775,105 @@ export const updateIssue = (issueId: string, updatedFields: Partial<Omit<Issue, 
   
   return null;
 };
+
+// Function to generate data for the tasks chart
+export const generateTasksChartData = () => {
+  // Generate data for the last 7 days
+  const data = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dateStr = format(date, 'MMM dd');
+    
+    // Generate some random but realistic numbers
+    const completed = Math.floor(Math.random() * 5) + 1;
+    const assigned = Math.floor(Math.random() * 8) + 3;
+    const delayed = Math.floor(Math.random() * 3);
+    
+    data.push({
+      date: dateStr,
+      completed,
+      assigned,
+      delayed
+    });
+  }
+  
+  return data;
+};
+
+// Function to add a new task
+export const addNewTask = (taskData: Omit<Task, 'id'>): Task => {
+  const newTask: Task = {
+    ...taskData,
+    id: `t${mockTasks.length + 1}`, // Generate a new unique ID
+  };
+
+  // Add to mockTasks array
+  mockTasks.push(newTask);
+  return newTask;
+};
+
+// Function to update a task
+export const updateTask = (taskId: string, updatedFields: Partial<Omit<Task, 'id'>>): Task | null => {
+  const taskIndex = mockTasks.findIndex(task => task.id === taskId);
+  
+  if (taskIndex !== -1) {
+    mockTasks[taskIndex] = {
+      ...mockTasks[taskIndex],
+      ...updatedFields,
+    };
+    
+    return mockTasks[taskIndex];
+  }
+  
+  return null;
+};
+
+// Function to delete a task
+export const deleteTask = (taskId: string): boolean => {
+  const initialLength = mockTasks.length;
+  const filteredTasks = mockTasks.filter(task => task.id !== taskId);
+  
+  if (filteredTasks.length < initialLength) {
+    // Clear the original array and repopulate
+    mockTasks.length = 0;
+    mockTasks.push(...filteredTasks);
+    return true;
+  }
+  
+  return false;
+};
+
+// Function to generate efficiency data for analytics
+export const generateEfficiencyData = () => {
+  // Generate data for the last 7 days
+  const data = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const dateStr = format(date, 'MMM dd');
+    
+    // Generate some random but realistic numbers
+    const efficiency = Math.floor(Math.random() * 30) + 70; // 70-100%
+    const target = 90;
+    
+    data.push({
+      date: dateStr,
+      efficiency,
+      target
+    });
+  }
+  
+  return data;
+};
+
+// Function to get working hours for users
+export const getUserWorkingHours = () => {
+  // Generate data for each user role
+  return [
+    { name: 'Engineers', value: 42.5 },
+    { name: 'Technicians', value: 45.8 },
+    { name: 'Support Staff', value: 40.2 },
+    { name: 'Management', value: 38.5 }
+  ];
+};
