@@ -490,7 +490,7 @@ export const issues: Issue[] = [
 ];
 
 // Tasks data for dashboard
-export const tasks = [
+export const mockTasks: Task[] = [
   {
     id: 't1',
     title: 'Inspect and replace brake pads on Train C',
@@ -562,6 +562,9 @@ export const tasks = [
   }
 ];
 
+// For backward compatibility
+export const tasks = mockTasks;
+
 // Helper functions to filter issues data
 export const getIssuesByStatus = (status: Issue['status']): Issue[] => {
   return issues.filter(issue => issue.status === status);
@@ -584,12 +587,12 @@ export const getUserById = (id: string): User | undefined => {
 };
 
 // Helper functions for tasks
-export const getTasksByStatus = (status: string): any[] => {
-  return tasks.filter(task => task.status === status);
+export const getTasksByStatus = (status: string): Task[] => {
+  return mockTasks.filter(task => task.status === status);
 };
 
-export const getTasksByAssignee = (assigneeId: string): any[] => {
-  return tasks.filter(task => task.assignedTo === assigneeId);
+export const getTasksByAssignee = (assigneeId: string): Task[] => {
+  return mockTasks.filter(task => task.assignedTo === assigneeId);
 };
 
 // Mock work categories
@@ -728,243 +731,4 @@ export const getRecentActivities = (limit: number = 5): ActivityLog[] => {
 };
 
 // Function to add a new issue
-export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'>): Issue => {
-  const newIssue: Issue = {
-    id: `i${issues.length + 1}`,
-    title: issue.title,
-    description: issue.description,
-    severity: issue.severity,
-    status: issue.status,
-    assignedTo: issue.assignedTo,
-    reportedAt: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    trainId: issue.trainId,
-    carId: issue.carId,
-    workCategory: issue.workCategory,
-    workDetails: issue.workDetails,
-    resolvedAt: issue.resolvedAt
-  };
-  
-  issues.push(newIssue);
-  
-  // Create an activity log for the new issue
-  activityLogs.push({
-    id: `act${activityLogs.length + 1}`,
-    userId: newIssue.assignedTo || 'u1', // Default to depot incharge if unassigned
-    action: 'Issue Created',
-    details: `Created new issue: ${newIssue.title}`,
-    timestamp: new Date().toISOString(),
-    trainId: newIssue.trainId
-  });
-  
-  return newIssue;
-};
-
-// Function to update an existing issue
-export const updateIssue = (id: string, updates: Partial<Issue>): Issue | undefined => {
-  const issueIndex = issues.findIndex(issue => issue.id === id);
-  if (issueIndex === -1) return undefined;
-  
-  const updatedIssue = {
-    ...issues[issueIndex],
-    ...updates,
-    lastUpdated: new Date().toISOString()
-  };
-  
-  // If status changed to resolved, add resolvedAt
-  if (updates.status === 'resolved' && !updatedIssue.resolvedAt) {
-    updatedIssue.resolvedAt = new Date().toISOString();
-  }
-  
-  issues[issueIndex] = updatedIssue;
-  
-  // Create an activity log for the updated issue
-  activityLogs.push({
-    id: `act${activityLogs.length + 1}`,
-    userId: updatedIssue.assignedTo || 'u1',
-    action: 'Issue Updated',
-    details: `Updated issue: ${updatedIssue.title}`,
-    timestamp: new Date().toISOString(),
-    trainId: updatedIssue.trainId
-  });
-  
-  return updatedIssue;
-};
-
-export const addDailyWorkLog = (workLog: Omit<DailyWorkLog, 'id'>): DailyWorkLog => {
-  const newWorkLog: DailyWorkLog = {
-    id: `wl${dailyWorkLogs.length + 1}`,
-    ...workLog
-  };
-  
-  dailyWorkLogs.push(newWorkLog);
-  
-  // Update the corresponding issue with work details
-  if (workLog.issueId) {
-    const issueIndex = issues.findIndex(issue => issue.id === workLog.issueId);
-    if (issueIndex !== -1) {
-      issues[issueIndex] = {
-        ...issues[issueIndex],
-        workDetails: workLog.workDescription,
-        lastUpdated: new Date().toISOString()
-      };
-    }
-  }
-  
-  // Create an activity log
-  activityLogs.push({
-    id: `act${activityLogs.length + 1}`,
-    userId: workLog.userId,
-    action: 'Work Log Added',
-    details: `Added work log for issue #${workLog.issueId}`,
-    timestamp: new Date().toISOString()
-  });
-  
-  return newWorkLog;
-};
-
-// Function to add attendance record
-export const addAttendanceRecord = (record: Omit<AttendanceRecord, 'id'>): AttendanceRecord => {
-  const newRecord: AttendanceRecord = {
-    id: `att-${record.userId}-${new Date().getTime()}`,
-    ...record
-  };
-  
-  attendanceRecords.push(newRecord);
-  
-  // Create activity log for attendance
-  activityLogs.push({
-    id: `act${activityLogs.length + 1}`,
-    userId: record.userId,
-    action: 'Attendance',
-    details: `${record.status === 'present' ? 'Logged in' : record.status === 'absent' ? 'Marked absent' : 'Logged in (late)'}`,
-    timestamp: new Date().toISOString()
-  });
-  
-  return newRecord;
-};
-
-// Function to generate Tasks chart data
-export const generateTasksChartData = () => {
-  const data = [];
-  
-  // Generate data for the last 7 days
-  for (let i = 6; i >= 0; i--) {
-    const date = subDays(new Date(), i);
-    const formattedDate = format(date, 'MMM dd');
-    
-    data.push({
-      date: formattedDate,
-      assigned: Math.floor(Math.random() * 10) + 5,
-      completed: Math.floor(Math.random() * 7) + 3,
-      delayed: Math.floor(Math.random() * 3)
-    });
-  }
-  
-  return data;
-};
-
-// Function to get the user's working hours for analytics
-export const getUserWorkingHours = (userId: string) => {
-  // Get all work logs for the user
-  const userLogs = dailyWorkLogs.filter(log => log.userId === userId);
-  
-  // Calculate total hours spent
-  const totalHours = userLogs.reduce((sum, log) => sum + log.hoursSpent, 0);
-  
-  return {
-    totalHours,
-    averageDaily: userLogs.length > 0 ? (totalHours / userLogs.length) : 0,
-    logs: userLogs
-  };
-};
-
-// Function to generate efficiency data for analytics
-export const generateEfficiencyData = () => {
-  return users
-    .filter(user => user.role !== UserRole.DEPOT_INCHARGE)
-    .map(user => {
-      const assignedTasks = tasks.filter(task => task.assignedTo === user.id).length;
-      const completedTasks = tasks.filter(task => 
-        task.assignedTo === user.id && task.status === 'completed'
-      ).length;
-      
-      const userIssues = getIssuesByAssignee(user.id);
-      const resolvedIssues = userIssues.filter(issue => issue.status === 'resolved').length;
-      
-      return {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        assignedTasks,
-        completedTasks,
-        resolvedIssues,
-        efficiency: assignedTasks > 0 ? 
-          ((completedTasks + resolvedIssues) / (assignedTasks + userIssues.length) * 100).toFixed(1) : 
-          0
-      };
-    });
-};
-
-// Function to add a new task
-export const addNewTask = (taskData: Partial<Task>): Task => {
-  const newTask: Task = {
-    id: `task${tasks.length + 1}`,
-    title: taskData.title || 'New Task',
-    description: taskData.description || '',
-    priority: taskData.priority || 'medium',
-    status: taskData.status || 'pending',
-    assignedTo: taskData.assignedTo || '',
-    assignedBy: taskData.assignedBy || '',
-    createdAt: taskData.createdAt || new Date().toISOString(),
-    dueDate: taskData.dueDate || addDays(new Date(), 1).toISOString(),
-    completedAt: taskData.completedAt,
-    trainId: taskData.trainId,
-    carId: taskData.carId,
-    category: taskData.category || 'maintenance',
-    workDetails: taskData.workDetails || ''
-  };
-  
-  tasks.push(newTask);
-  
-  // Log for Google Sheets integration
-  console.log('Task added, would sync to Google Sheets:', newTask);
-  
-  return newTask;
-};
-
-// Function to update an existing task
-export const updateTask = (taskId: string, taskData: Partial<Task>): Task | null => {
-  const taskIndex = tasks.findIndex(t => t.id === taskId);
-  
-  if (taskIndex === -1) return null;
-  
-  // Update the task
-  tasks[taskIndex] = {
-    ...tasks[taskIndex],
-    ...taskData,
-    // Add timestamp for when status changes to completed
-    ...(taskData.status === 'completed' && !tasks[taskIndex].completedAt ? 
-      { completedAt: new Date().toISOString() } : {})
-  };
-  
-  // Log for Google Sheets integration
-  console.log('Task updated, would sync to Google Sheets:', tasks[taskIndex]);
-  
-  return tasks[taskIndex];
-};
-
-// Function to delete a task
-export const deleteTask = (taskId: string): boolean => {
-  const taskIndex = tasks.findIndex(t => t.id === taskId);
-  
-  if (taskIndex === -1) return false;
-  
-  // Log for Google Sheets integration
-  console.log('Task deleted, would sync to Google Sheets:', tasks[taskIndex]);
-  
-  // Delete the task
-  tasks.splice(taskIndex, 1);
-  
-  return true;
-};
+export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { Task, UserRole } from '@/types';
-import { users, addNewTask, updateTask, deleteTask } from '@/lib/mockData';
+import { users, addNewTask, updateTask, deleteTask, mockTasks } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 
 // Import TaskForm component
@@ -41,14 +40,10 @@ const Tasks = () => {
   const canCreateTasks = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
 
   useEffect(() => {
-    // Fetch tasks - in a real app this would be an API call
-    // For now we'll use mock data
-    import('@/lib/mockData').then(({ mockTasks }) => {
-      setTasks(mockTasks);
-    });
+    // Load tasks from mockData
+    setTasks(mockTasks);
   }, []);
 
-  // Filter tasks based on active tab, search term, and user role
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -167,17 +162,14 @@ const Tasks = () => {
     setEditingTask(null);
     
     if (refreshData) {
-      // In a real app, this would re-fetch the data
-      // For now, just show a toast
+      // Show success toast
       toast({
         title: "Success",
         description: editingTask ? "Task updated successfully" : "Task created successfully",
       });
       
-      // Refresh tasks - in a real app, this would be an API call
-      import('@/lib/mockData').then(({ mockTasks }) => {
-        setTasks(mockTasks);
-      });
+      // Refresh tasks directly from mockTasks
+      setTasks([...mockTasks]);
     }
   };
 
@@ -186,37 +178,35 @@ const Tasks = () => {
   };
 
   const markTaskComplete = (taskId: string) => {
-    // In a real app, this would update the task in the database
-    // For now, just show a toast
-    toast({
-      title: 'Task Completed',
-      description: 'The task has been marked as completed.',
-    });
-    
     // Update task status in mock data
     const updatedTask = updateTask(taskId, { status: 'completed', completedAt: new Date().toISOString() });
     
-    // Refresh tasks
-    import('@/lib/mockData').then(({ mockTasks }) => {
-      setTasks(mockTasks);
-    });
+    if (updatedTask) {
+      // Show success toast
+      toast({
+        title: 'Task Completed',
+        description: 'The task has been marked as completed.',
+      });
+      
+      // Refresh tasks directly from mockTasks
+      setTasks([...mockTasks]);
+    }
   };
 
   const handleDeleteTask = (taskId: string) => {
-    // In a real app, this would delete the task from the database
-    // For now, just show a toast
-    toast({
-      title: 'Task Deleted',
-      description: 'The task has been deleted.',
-    });
-    
     // Delete task from mock data
-    deleteTask(taskId);
+    const success = deleteTask(taskId);
     
-    // Refresh tasks
-    import('@/lib/mockData').then(({ mockTasks }) => {
-      setTasks(mockTasks);
-    });
+    if (success) {
+      // Show success toast
+      toast({
+        title: 'Task Deleted',
+        description: 'The task has been deleted.',
+      });
+      
+      // Refresh tasks directly from mockTasks
+      setTasks([...mockTasks]);
+    }
   };
 
   // Function to determine if user can edit a task
