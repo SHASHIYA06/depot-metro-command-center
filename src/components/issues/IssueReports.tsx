@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -192,7 +193,7 @@ export const IssueReports: React.FC = () => {
                       <SelectValue placeholder="Select staff member" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Staff Members</SelectItem>
+                      <SelectItem value="all_staff">All Staff Members</SelectItem>
                       {assignableStaff.map(staff => (
                         <SelectItem key={staff.id} value={staff.id}>
                           {staff.name} ({staff.role.replace('_', ' ')})
@@ -214,7 +215,7 @@ export const IssueReports: React.FC = () => {
                       <SelectValue placeholder="Select train" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Trains</SelectItem>
+                      <SelectItem value="all_trains">All Trains</SelectItem>
                       {trains.map(train => (
                         <SelectItem key={train.id} value={train.id}>
                           {train.name}

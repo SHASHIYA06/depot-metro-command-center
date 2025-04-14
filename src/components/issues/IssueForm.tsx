@@ -284,7 +284,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Unassigned</SelectItem>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
                         {assignableUsers.map(staff => (
                           <SelectItem key={staff.id} value={staff.id}>
                             {staff.name} ({staff.role === UserRole.ENGINEER ? 'Engineer' : 'Technician'})
@@ -316,7 +316,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Not applicable</SelectItem>
+                        <SelectItem value="not_applicable">Not applicable</SelectItem>
                         {trains.map(train => (
                           <SelectItem key={train.id} value={train.id}>
                             {train.name}
@@ -346,7 +346,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Entire train</SelectItem>
+                        <SelectItem value="entire_train">Entire train</SelectItem>
                         {trainCars.map(car => (
                           <SelectItem key={car.id} value={car.id}>
                             Car {car.position} ({car.status})
