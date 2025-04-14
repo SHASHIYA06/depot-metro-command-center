@@ -11,6 +11,11 @@ import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 import Issues from "./pages/Issues";
 import Profile from "./pages/Profile";
+import Staff from "./pages/Staff";
+import Tasks from "./pages/Tasks";
+import Maintenance from "./pages/Maintenance";
+import Activities from "./pages/Activities";
+import Analytics from "./pages/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -28,15 +33,15 @@ const App = () => (
             {/* Protected Routes */}
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/trains" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/tasks" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/maintenance" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/staff" element={<Dashboard />} /> {/* Placeholder */}
-              <Route path="/activities" element={<Dashboard />} /> {/* Placeholder */}
+              <Route path="/trains" element={<Dashboard />} /> {/* Still using Dashboard as placeholder */}
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/maintenance" element={<Maintenance />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/activities" element={<Activities />} />
               <Route path="/issues" element={<Issues />} />
-              <Route path="/analytics" element={<Dashboard />} /> {/* Placeholder */}
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Dashboard />} /> {/* Placeholder */}
+              <Route path="/settings" element={<Dashboard />} /> {/* Still using Dashboard as placeholder */}
             </Route>
             
             {/* Catch-all Route */}

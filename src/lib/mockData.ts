@@ -1,528 +1,451 @@
+// Keep existing code and update the sections that need to be modified
+import { User, UserRole, Train, Car, Issue, Task, ActivityLog, MaintenanceSchedule, WorkCategory, DailyWorkLog, AttendanceRecord } from '@/types';
+import { addDays, subDays } from 'date-fns';
 
-import { User, Train, Task, ActivityLog, DashboardStats, MaintenanceSchedule, Issue, Car, UserRole } from '@/types';
-import { addDays, subDays, format, addHours } from 'date-fns';
-
-// Mock Users
+// Mock users data
 export const users: User[] = [
   {
     id: 'u1',
-    name: 'Rajesh Kumar',
-    email: 'rajesh.kumar@metrodepot.com',
+    name: 'Rajiv Kumar',
+    email: 'rajiv.kumar@metro.com',
     role: UserRole.DEPOT_INCHARGE,
+    department: 'Operations',
     avatar: '/placeholder.svg'
   },
   {
     id: 'u2',
     name: 'Priya Sharma',
-    email: 'priya.sharma@metrodepot.com',
+    email: 'priya.sharma@metro.com',
     role: UserRole.ENGINEER,
-    department: 'Electrical',
+    department: 'Electrical Systems',
     avatar: '/placeholder.svg'
   },
   {
     id: 'u3',
-    name: 'Vikram Singh',
-    email: 'vikram.singh@metrodepot.com',
+    name: 'Sunil Verma',
+    email: 'sunil.verma@metro.com',
     role: UserRole.ENGINEER,
-    department: 'Mechanical',
+    department: 'Mechanical Systems',
     avatar: '/placeholder.svg'
   },
   {
     id: 'u4',
-    name: 'Ananya Patel',
-    email: 'ananya.patel@metrodepot.com',
+    name: 'Arun Singh',
+    email: 'arun.singh@metro.com',
     role: UserRole.TECHNICIAN,
-    department: 'Electrical',
+    department: 'Maintenance',
     avatar: '/placeholder.svg'
   },
   {
     id: 'u5',
-    name: 'Suresh Gupta',
-    email: 'suresh.gupta@metrodepot.com',
+    name: 'Meera Patel',
+    email: 'meera.patel@metro.com',
     role: UserRole.TECHNICIAN,
-    department: 'Mechanical',
+    department: 'Electrical Systems',
     avatar: '/placeholder.svg'
   }
 ];
 
-// Mock Cars
-export const generateCars = (trainId: string): Car[] => {
-  return Array.from({ length: 8 }, (_, i) => ({
-    id: `${trainId}-car-${i + 1}`,
-    position: i + 1,
-    status: i === 3 && trainId === 't1' ? 'maintenance' : 'operational',
-    lastInspection: format(subDays(new Date(), Math.floor(Math.random() * 30)), 'yyyy-MM-dd'),
-    issues: i === 3 && trainId === 't1' ? [
-      {
-        id: `issue-${trainId}-${i}-1`,
-        title: 'HVAC Malfunction',
-        description: 'Air conditioning system not functioning properly in car 4',
-        severity: 'medium',
-        status: 'in_progress',
-        reportedAt: format(subDays(new Date(), 2), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-        assignedTo: 'u2'
-      }
-    ] : []
-  }));
-};
-
-// Mock Trains
+// Mock train data
 export const trains: Train[] = [
   {
     id: 't1',
-    name: 'Metro Train 01',
+    name: 'Metro Train A',
     status: 'active',
-    lastMaintenance: format(subDays(new Date(), 15), 'yyyy-MM-dd'),
-    nextMaintenance: format(addDays(new Date(), 15), 'yyyy-MM-dd'),
-    totalKilometers: 12568,
-    cars: generateCars('t1')
+    lastMaintenance: subDays(new Date(), 15).toISOString(),
+    nextMaintenance: addDays(new Date(), 15).toISOString(),
+    totalKilometers: 12500,
+    cars: [
+      { id: 'c1-t1', position: 1, status: 'operational', lastInspection: subDays(new Date(), 10).toISOString() },
+      { id: 'c2-t1', position: 2, status: 'operational', lastInspection: subDays(new Date(), 10).toISOString() },
+      { id: 'c3-t1', position: 3, status: 'maintenance', lastInspection: subDays(new Date(), 20).toISOString() },
+      { id: 'c4-t1', position: 4, status: 'operational', lastInspection: subDays(new Date(), 10).toISOString() }
+    ]
   },
   {
     id: 't2',
-    name: 'Metro Train 02',
+    name: 'Metro Train B',
     status: 'maintenance',
-    lastMaintenance: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
-    nextMaintenance: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-    totalKilometers: 15783,
-    cars: generateCars('t2')
+    lastMaintenance: subDays(new Date(), 30).toISOString(),
+    nextMaintenance: addDays(new Date(), 1).toISOString(),
+    totalKilometers: 15000,
+    cars: [
+      { id: 'c1-t2', position: 1, status: 'operational', lastInspection: subDays(new Date(), 15).toISOString() },
+      { id: 'c2-t2', position: 2, status: 'faulty', lastInspection: subDays(new Date(), 15).toISOString() },
+      { id: 'c3-t2', position: 3, status: 'maintenance', lastInspection: subDays(new Date(), 15).toISOString() },
+      { id: 'c4-t2', position: 4, status: 'operational', lastInspection: subDays(new Date(), 15).toISOString() }
+    ]
+  },
+  {
+    id: 't3',
+    name: 'Metro Train C',
+    status: 'active',
+    lastMaintenance: subDays(new Date(), 5).toISOString(),
+    nextMaintenance: addDays(new Date(), 25).toISOString(),
+    totalKilometers: 8900,
+    cars: [
+      { id: 'c1-t3', position: 1, status: 'operational', lastInspection: subDays(new Date(), 5).toISOString() },
+      { id: 'c2-t3', position: 2, status: 'operational', lastInspection: subDays(new Date(), 5).toISOString() },
+      { id: 'c3-t3', position: 3, status: 'operational', lastInspection: subDays(new Date(), 5).toISOString() },
+      { id: 'c4-t3', position: 4, status: 'operational', lastInspection: subDays(new Date(), 5).toISOString() }
+    ]
+  },
+  {
+    id: 't4',
+    name: 'Metro Train D',
+    status: 'out_of_service',
+    lastMaintenance: subDays(new Date(), 60).toISOString(),
+    nextMaintenance: addDays(new Date(), 0).toISOString(),
+    totalKilometers: 22000,
+    cars: [
+      { id: 'c1-t4', position: 1, status: 'faulty', lastInspection: subDays(new Date(), 30).toISOString() },
+      { id: 'c2-t4', position: 2, status: 'faulty', lastInspection: subDays(new Date(), 30).toISOString() },
+      { id: 'c3-t4', position: 3, status: 'maintenance', lastInspection: subDays(new Date(), 30).toISOString() },
+      { id: 'c4-t4', position: 4, status: 'operational', lastInspection: subDays(new Date(), 30).toISOString() }
+    ]
   }
 ];
-
-// Mock Tasks
-export const tasks: Task[] = [
-  {
-    id: 'task1',
-    title: 'Routine Inspection of Train 01',
-    description: 'Conduct the regular inspection of all systems on Train 01',
-    priority: 'medium',
-    status: 'completed',
-    assignedTo: 'u3',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 5), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(subDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    completedAt: format(subDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't1',
-    category: 'inspection'
-  },
-  {
-    id: 'task2',
-    title: 'HVAC Repair in Train 01 Car 4',
-    description: 'Fix the air conditioning system in car 4 of Train 01',
-    priority: 'high',
-    status: 'in_progress',
-    assignedTo: 'u2',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 3), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(addDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't1',
-    carId: 't1-car-4',
-    category: 'repair'
-  },
-  {
-    id: 'task3',
-    title: 'Brake System Maintenance in Train 02',
-    description: 'Complete maintenance of the brake system in Train 02',
-    priority: 'high',
-    status: 'pending',
-    assignedTo: 'u5',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 2), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(addDays(new Date(), 2), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't2',
-    category: 'maintenance'
-  },
-  {
-    id: 'task4',
-    title: 'Quarterly Electrical Systems Audit',
-    description: 'Conduct quarterly audit of all electrical systems in both trains',
-    priority: 'medium',
-    status: 'pending',
-    assignedTo: 'u2',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(addDays(new Date(), 7), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    category: 'inspection'
-  },
-  {
-    id: 'task5',
-    title: 'Clean Train 01 Exterior',
-    description: 'Complete exterior cleaning of Train 01',
-    priority: 'low',
-    status: 'pending',
-    assignedTo: 'u4',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(addDays(new Date(), 3), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't1',
-    category: 'cleaning'
-  },
-  {
-    id: 'task6',
-    title: 'Update Maintenance Records',
-    description: 'Update all maintenance records for the past month',
-    priority: 'medium',
-    status: 'delayed',
-    assignedTo: 'u3',
-    assignedBy: 'u1',
-    createdAt: format(subDays(new Date(), 10), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    dueDate: format(subDays(new Date(), 2), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    category: 'administrative'
-  }
-];
-
-// Mock Activity Logs
-export const activityLogs: ActivityLog[] = [
-  {
-    id: 'log1',
-    userId: 'u1',
-    action: 'Task Assignment',
-    details: 'Assigned HVAC repair task to Priya Sharma',
-    timestamp: format(subDays(new Date(), 3), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    taskId: 'task2',
-    trainId: 't1',
-    carId: 't1-car-4'
-  },
-  {
-    id: 'log2',
-    userId: 'u3',
-    action: 'Task Completion',
-    details: 'Completed routine inspection of Train 01',
-    timestamp: format(subDays(new Date(), 1), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    taskId: 'task1',
-    trainId: 't1'
-  },
-  {
-    id: 'log3',
-    userId: 'u2',
-    action: 'Issue Reported',
-    details: 'Reported HVAC malfunction in Car 4 of Train 01',
-    timestamp: format(subDays(new Date(), 3), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't1',
-    carId: 't1-car-4'
-  },
-  {
-    id: 'log4',
-    userId: 'u2',
-    action: 'Task Started',
-    details: 'Started HVAC repair in Car 4 of Train 01',
-    timestamp: format(subDays(new Date(), 2), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    taskId: 'task2',
-    trainId: 't1',
-    carId: 't1-car-4'
-  },
-  {
-    id: 'log5',
-    userId: 'u1',
-    action: 'Maintenance Schedule',
-    details: 'Scheduled monthly maintenance for Train 02',
-    timestamp: format(subDays(new Date(), 5), 'yyyy-MM-dd\'T\'HH:mm:ss'),
-    trainId: 't2'
-  }
-];
-
-// Mock Maintenance Schedules
-export const maintenanceSchedules: MaintenanceSchedule[] = [
-  {
-    id: 'ms1',
-    trainId: 't2',
-    type: 'monthly',
-    description: 'Monthly complete system check and maintenance for Train 02',
-    startDate: format(new Date(), 'yyyy-MM-dd'),
-    endDate: format(addDays(new Date(), 2), 'yyyy-MM-dd'),
-    status: 'scheduled',
-    assignedTo: ['u2', 'u3', 'u5']
-  },
-  {
-    id: 'ms2',
-    trainId: 't1',
-    type: 'weekly',
-    description: 'Weekly brake inspection for Train 01',
-    startDate: format(addDays(new Date(), 5), 'yyyy-MM-dd'),
-    endDate: format(addDays(new Date(), 5), 'yyyy-MM-dd'),
-    status: 'scheduled',
-    assignedTo: ['u3', 'u5']
-  },
-  {
-    id: 'ms3',
-    trainId: 't1',
-    type: 'daily',
-    description: 'Daily safety checks for Train 01',
-    startDate: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-    endDate: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-    status: 'scheduled',
-    assignedTo: ['u4']
-  }
-];
-
-// Dashboard Stats
-export const dashboardStats: DashboardStats = {
-  totalTasks: tasks.length,
-  completedTasks: tasks.filter(t => t.status === 'completed').length,
-  pendingTasks: tasks.filter(t => t.status === 'pending').length,
-  delayedTasks: tasks.filter(t => t.status === 'delayed').length,
-  activeTrains: trains.filter(t => t.status === 'active').length,
-  trainsInMaintenance: trains.filter(t => t.status === 'maintenance').length,
-  issuesByPriority: {
-    low: tasks.filter(t => t.priority === 'low').length,
-    medium: tasks.filter(t => t.priority === 'medium').length,
-    high: tasks.filter(t => t.priority === 'high').length,
-    critical: tasks.filter(t => t.priority === 'urgent').length
-  },
-  upcomingMaintenance: maintenanceSchedules.filter(ms => new Date(ms.startDate) > new Date()),
-  recentActivities: activityLogs.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  ).slice(0, 5)
-};
-
-// Generate tasks data for charts
-export const generateTasksChartData = () => {
-  const today = new Date();
-  const data = [];
-  
-  for (let i = 6; i >= 0; i--) {
-    const date = subDays(today, i);
-    const formattedDate = format(date, 'MMM dd');
-    
-    // Random data for demo purposes
-    data.push({
-      date: formattedDate,
-      completed: Math.floor(Math.random() * 8) + 1,
-      assigned: Math.floor(Math.random() * 5) + 3,
-      delayed: Math.floor(Math.random() * 3)
-    });
-  }
-  
-  return data;
-};
-
-// Generate maintenance progress data for charts
-export const generateMaintenanceProgressData = () => {
-  return [
-    { name: 'Train 01', completed: 85, total: 100 },
-    { name: 'Train 02', completed: 65, total: 100 }
-  ];
-};
-
-// Generate train usage data for charts
-export const generateTrainUsageData = () => {
-  const data = [];
-  const today = new Date();
-  
-  for (let i = 0; i < 12; i++) {
-    const date = addDays(today, i);
-    data.push({
-      date: format(date, 'MMM dd'),
-      'Train 01': Math.floor(Math.random() * 300) + 200,
-      'Train 02': Math.floor(Math.random() * 300) + 150
-    });
-  }
-  
-  return data;
-};
-
-// Get user by ID
-export const getUserById = (id: string): User | undefined => {
-  return users.find(user => user.id === id);
-};
-
-// Get train by ID
-export const getTrainById = (id: string): Train | undefined => {
-  return trains.find(train => train.id === id);
-};
-
-// Get tasks for user
-export const getTasksForUser = (userId: string): Task[] => {
-  return tasks.filter(task => task.assignedTo === userId);
-};
-
-// Get tasks by status
-export const getTasksByStatus = (status: Task['status']): Task[] => {
-  return tasks.filter(task => task.status === status);
-};
-
-// Get all issues
-export const getAllIssues = (): Issue[] => {
-  const issues: Issue[] = [];
-  
-  for (const train of trains) {
-    for (const car of train.cars) {
-      if (car.issues && car.issues.length > 0) {
-        issues.push(...car.issues);
-      }
-    }
-  }
-  
-  return issues;
-};
-
-// Generate activity chart data
-export const generateActivityChartData = () => {
-  const categories = ['Maintenance', 'Inspection', 'Repair', 'Cleaning', 'Administrative'];
-  return categories.map(category => {
-    return {
-      category,
-      completed: Math.floor(Math.random() * 20) + 5,
-      pending: Math.floor(Math.random() * 15) + 1
-    };
-  });
-};
-
-// Generate maintenance history
-export const generateMaintenanceHistory = () => {
-  const history = [];
-  const today = new Date();
-  
-  for (let i = 0; i < 10; i++) {
-    const date = subDays(today, i * 10);
-    history.push({
-      id: `hist-${i}`,
-      title: i % 2 === 0 ? 'Routine Maintenance' : 'Emergency Repair',
-      train: i % 3 === 0 ? 'Train 02' : 'Train 01',
-      date: format(date, 'yyyy-MM-dd'),
-      status: 'completed',
-      performedBy: i % 2 === 0 ? 'Vikram Singh' : 'Priya Sharma',
-      details: i % 2 === 0 
-        ? 'Performed routine maintenance on all systems' 
-        : 'Emergency repair of critical component'
-    });
-  }
-  
-  return history;
-};
-
-// Additional helper functions for filtering issues
-export const getIssuesByStatus = (status: string): Issue[] => {
-  return issues.filter(issue => issue.status === status);
-};
-
-export const getIssuesBySeverity = (severity: string): Issue[] => {
-  return issues.filter(issue => issue.severity === severity);
-};
-
-export const getIssuesByAssignee = (userId: string): Issue[] => {
-  return issues.filter(issue => issue.assignedTo === userId);
-};
 
 // Mock issues data
 export const issues: Issue[] = [
   {
-    id: "issue-001",
-    title: "HVAC Malfunction in Car 3",
-    description: "Air conditioning unit in car 3 of Train A1 is not functioning properly. Temperature readings show inconsistent cooling.",
-    severity: "high",
-    status: "in_progress",
-    reportedAt: "2025-04-10T08:30:00Z",
-    assignedTo: "user-002",
-    trainId: "train-001",
-    carId: "car-003",
-    resolvedAt: undefined
+    id: 'i1',
+    title: 'Faulty door mechanism in Car 2',
+    description: 'The door in Car 2 of Train B is not closing properly and needs immediate attention.',
+    severity: 'high',
+    status: 'open',
+    reportedAt: subDays(new Date(), 2).toISOString(),
+    assignedTo: 'u3',
+    trainId: 't2',
+    carId: 'c2-t2',
+    workCategory: 'mechanical',
+    lastUpdated: subDays(new Date(), 1).toISOString()
   },
   {
-    id: "issue-002",
-    title: "Brake Inspection Required",
-    description: "Routine brake inspection needed for Train B2 before next service cycle.",
-    severity: "medium",
-    status: "open",
-    reportedAt: "2025-04-11T09:15:00Z",
-    assignedTo: undefined,
-    trainId: "train-002",
-    carId: undefined,
-    resolvedAt: undefined
+    id: 'i2',
+    title: 'Air conditioning failure in Car 3',
+    description: 'The AC system in Car 3 of Train A is not functioning properly and passengers are complaining about high temperature.',
+    severity: 'medium',
+    status: 'in_progress',
+    reportedAt: subDays(new Date(), 3).toISOString(),
+    assignedTo: 'u4',
+    trainId: 't1',
+    carId: 'c3-t1',
+    workCategory: 'electrical',
+    workDetails: 'Identified faulty compressor. Ordering replacement parts.',
+    lastUpdated: new Date().toISOString()
   },
   {
-    id: "issue-003",
-    title: "Door Sensor Calibration",
-    description: "Door sensors on car 2 of Train A1 need calibration. Occasional false readings detected during operation.",
-    severity: "low",
-    status: "open",
-    reportedAt: "2025-04-12T14:20:00Z",
-    assignedTo: "user-003",
-    trainId: "train-001",
-    carId: "car-002",
-    resolvedAt: undefined
+    id: 'i3',
+    title: 'Unusual noise from braking system',
+    description: 'Train C is making unusual noise when braking, especially at higher speeds. This requires inspection.',
+    severity: 'medium',
+    status: 'in_progress',
+    reportedAt: subDays(new Date(), 5).toISOString(),
+    assignedTo: 'u5',
+    trainId: 't3',
+    workCategory: 'mechanical',
+    workDetails: 'Initial inspection shows worn brake pads. Will replace all brake pads as preventive maintenance.',
+    lastUpdated: subDays(new Date(), 1).toISOString()
   },
   {
-    id: "issue-004",
-    title: "Track Circuit Failure",
-    description: "Track circuit 23B reporting intermittent failures. Requires immediate investigation.",
-    severity: "critical",
-    status: "in_progress",
-    reportedAt: "2025-04-09T11:45:00Z",
-    assignedTo: "user-002",
-    trainId: undefined,
-    carId: undefined,
-    resolvedAt: undefined
+    id: 'i4',
+    title: 'Lighting failure in Car 1',
+    description: 'The lighting system in Car 1 of Train D is completely non-functional.',
+    severity: 'low',
+    status: 'open',
+    reportedAt: subDays(new Date(), 10).toISOString(),
+    trainId: 't4',
+    carId: 'c1-t4',
+    workCategory: 'electrical',
+    lastUpdated: subDays(new Date(), 10).toISOString()
   },
   {
-    id: "issue-005",
-    title: "Battery Replacement",
-    description: "Auxiliary batteries in Train B2 showing reduced capacity. Scheduled replacement recommended.",
-    severity: "medium",
-    status: "resolved",
-    reportedAt: "2025-04-08T10:30:00Z",
-    assignedTo: "user-003",
-    trainId: "train-002",
-    carId: undefined,
-    resolvedAt: "2025-04-13T15:20:00Z"
+    id: 'i5',
+    title: 'Signaling system malfunction',
+    description: 'Train B is experiencing intermittent issues with the signaling system causing delays.',
+    severity: 'critical',
+    status: 'in_progress',
+    reportedAt: subDays(new Date(), 1).toISOString(),
+    assignedTo: 'u2',
+    trainId: 't2',
+    workCategory: 'signal',
+    workDetails: 'Troubleshooting the main signal processor unit. May need firmware update.',
+    lastUpdated: new Date().toISOString()
   },
   {
-    id: "issue-006",
-    title: "Wheel Profiling Required",
-    description: "Wheels on car 4 of Train A1 showing uneven wear pattern. Profiling needed during next maintenance cycle.",
-    severity: "medium",
-    status: "open",
-    reportedAt: "2025-04-13T08:15:00Z",
-    assignedTo: undefined,
-    trainId: "train-001",
-    carId: "car-004",
-    resolvedAt: undefined
-  },
-  {
-    id: "issue-007",
-    title: "Signal Relay Replacement",
-    description: "Signal relay at junction 5 needs replacement. Intermittent failures observed during peak hours.",
-    severity: "high",
-    status: "resolved",
-    reportedAt: "2025-04-07T09:10:00Z",
-    assignedTo: "user-002",
-    trainId: undefined,
-    carId: undefined,
-    resolvedAt: "2025-04-12T11:30:00Z"
-  },
-  {
-    id: "issue-008",
-    title: "Pantograph Inspection",
-    description: "Routine inspection of pantograph on Train B2 required before next deployment.",
-    severity: "low",
-    status: "resolved",
-    reportedAt: "2025-04-06T14:45:00Z",
-    assignedTo: "user-003",
-    trainId: "train-002",
-    carId: undefined,
-    resolvedAt: "2025-04-10T17:20:00Z"
-  },
-  {
-    id: "issue-009",
-    title: "Coupling Mechanism Adjustment",
-    description: "Coupling mechanism between cars 1 and 2 of Train A1 requires adjustment. Slight misalignment detected.",
-    severity: "medium",
-    status: "in_progress",
-    reportedAt: "2025-04-12T11:30:00Z",
-    assignedTo: "user-003",
-    trainId: "train-001",
-    carId: undefined,
-    resolvedAt: undefined
-  },
-  {
-    id: "issue-010",
-    title: "Emergency Lighting Test",
-    description: "Scheduled test of emergency lighting systems in all trains.",
-    severity: "low",
-    status: "open",
-    reportedAt: "2025-04-13T10:00:00Z",
-    assignedTo: undefined,
-    trainId: undefined,
-    carId: undefined,
-    resolvedAt: undefined
+    id: 'i6',
+    title: 'Seat vandalism in Car 4',
+    description: 'Multiple seats in Car 4 of Train A have been vandalized and need repair/replacement.',
+    severity: 'low',
+    status: 'resolved',
+    reportedAt: subDays(new Date(), 15).toISOString(),
+    assignedTo: 'u4',
+    resolvedAt: subDays(new Date(), 10).toISOString(),
+    trainId: 't1',
+    carId: 'c4-t1',
+    workCategory: 'interior',
+    workDetails: 'Replaced all damaged seats and installed anti-vandal covering on seats.',
+    lastUpdated: subDays(new Date(), 10).toISOString()
   }
 ];
+
+// Helper functions to filter issues data
+export const getIssuesByStatus = (status: Issue['status']): Issue[] => {
+  return issues.filter(issue => issue.status === status);
+};
+
+export const getIssuesByAssignee = (assigneeId: string): Issue[] => {
+  return issues.filter(issue => issue.assignedTo === assigneeId);
+};
+
+export const getIssuesBySeverity = (severity: Issue['severity']): Issue[] => {
+  return issues.filter(issue => issue.severity === severity);
+};
+
+export const getUserById = (id: string): User | undefined => {
+  return users.find(user => user.id === id);
+};
+
+// Mock work categories
+export const workCategories: WorkCategory[] = [
+  { id: 'mechanical', name: 'Mechanical' },
+  { id: 'electrical', name: 'Electrical' },
+  { id: 'electronic', name: 'Electronic' },
+  { id: 'structural', name: 'Structural' },
+  { id: 'interior', name: 'Interior' },
+  { id: 'exterior', name: 'Exterior' },
+  { id: 'brake', name: 'Braking System' },
+  { id: 'engine', name: 'Engine' },
+  { id: 'transmission', name: 'Transmission' },
+  { id: 'hvac', name: 'HVAC' },
+  { id: 'signal', name: 'Signal System' },
+  { id: 'safety', name: 'Safety Equipment' }
+];
+
+// Mock daily work logs
+export const dailyWorkLogs: DailyWorkLog[] = [
+  {
+    id: 'wl1',
+    userId: 'u4',
+    issueId: 'i2',
+    date: new Date().toISOString(),
+    workDescription: 'Inspected AC system, identified faulty compressor, ordered replacement parts.',
+    hoursSpent: 3,
+    status: 'in_progress'
+  },
+  {
+    id: 'wl2',
+    userId: 'u5',
+    issueId: 'i3',
+    date: subDays(new Date(), 1).toISOString(),
+    workDescription: 'Inspected brake system, confirmed worn brake pads, prepared replacement parts list.',
+    hoursSpent: 2.5,
+    status: 'in_progress'
+  },
+  {
+    id: 'wl3',
+    userId: 'u2',
+    issueId: 'i5',
+    date: new Date().toISOString(),
+    workDescription: 'Troubleshooting signal system, checking firmware versions, coordinating with manufacturer.',
+    hoursSpent: 4,
+    status: 'in_progress'
+  },
+  {
+    id: 'wl4',
+    userId: 'u4',
+    issueId: 'i6',
+    date: subDays(new Date(), 10).toISOString(),
+    workDescription: 'Replaced all damaged seats in Car 4, installed protective coverings on new seats.',
+    hoursSpent: 6,
+    status: 'completed'
+  }
+];
+
+// Mock attendance records for a week
+const generateAttendanceRecords = (): AttendanceRecord[] => {
+  const records: AttendanceRecord[] = [];
+  
+  for (let i = 0; i < 5; i++) { // Last 5 days
+    for (const usr of users) {
+      const date = subDays(new Date(), i);
+      const loginTime = new Date(date);
+      loginTime.setHours(8 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0);
+      
+      const logoutTime = new Date(date);
+      logoutTime.setHours(16 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0);
+      
+      const workHours = (logoutTime.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
+      
+      // Randomly mark some as absent or late
+      const statuses: AttendanceRecord['status'][] = ['present', 'late', 'half-day', 'absent'];
+      const randomStatus = Math.random() > 0.8 ? statuses[Math.floor(Math.random() * statuses.length)] : 'present';
+      
+      records.push({
+        id: `att-${usr.id}-${i}`,
+        userId: usr.id,
+        date: date.toISOString(),
+        loginTime: loginTime.toISOString(),
+        logoutTime: randomStatus !== 'absent' ? logoutTime.toISOString() : undefined,
+        status: randomStatus,
+        workHours: randomStatus !== 'absent' ? parseFloat(workHours.toFixed(2)) : 0,
+        notes: randomStatus === 'absent' ? 'On leave' : randomStatus === 'late' ? 'Traffic delay' : ''
+      });
+    }
+  }
+  
+  return records;
+};
+
+export const attendanceRecords = generateAttendanceRecords();
+
+// Mock activity logs
+export const activityLogs: ActivityLog[] = [
+  {
+    id: 'act1',
+    userId: 'u2',
+    action: 'Task Completion',
+    details: 'Completed electrical inspection on Train A',
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: 'act2',
+    userId: 'u3',
+    action: 'Issue Reported',
+    details: 'Reported brake system issue on Train B',
+    timestamp: subDays(new Date(), 1).toISOString(),
+    trainId: 't2'
+  },
+  {
+    id: 'act3',
+    userId: 'u4',
+    action: 'Task Started',
+    details: 'Started AC repair on Train C',
+    timestamp: subDays(new Date(), 2).toISOString(),
+    trainId: 't3'
+  },
+  {
+    id: 'act4',
+    userId: 'u1',
+    action: 'New Schedule',
+    details: 'Created new maintenance schedule for Train D',
+    timestamp: subDays(new Date(), 3).toISOString(),
+  }
+];
+
+// Helper function to get recent activities
+export const getRecentActivities = (limit: number = 5): ActivityLog[] => {
+  // Sort activities by timestamp (most recent first) and return limited number
+  return [...activityLogs].sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  ).slice(0, limit);
+};
+
+// Function to add a new issue
+export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'>): Issue => {
+  const newIssue: Issue = {
+    id: `i${issues.length + 1}`,
+    reportedAt: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    ...issue
+  };
+  
+  issues.push(newIssue);
+  
+  // Create an activity log for the new issue
+  activityLogs.push({
+    id: `act${activityLogs.length + 1}`,
+    userId: newIssue.assignedTo || 'u1', // Default to depot incharge if unassigned
+    action: 'Issue Created',
+    details: `Created new issue: ${newIssue.title}`,
+    timestamp: new Date().toISOString(),
+    trainId: newIssue.trainId
+  });
+  
+  return newIssue;
+};
+
+// Function to update an existing issue
+export const updateIssue = (id: string, updates: Partial<Issue>): Issue | undefined => {
+  const issueIndex = issues.findIndex(issue => issue.id === id);
+  if (issueIndex === -1) return undefined;
+  
+  const updatedIssue = {
+    ...issues[issueIndex],
+    ...updates,
+    lastUpdated: new Date().toISOString()
+  };
+  
+  // If status changed to resolved, add resolvedAt
+  if (updates.status === 'resolved' && !updatedIssue.resolvedAt) {
+    updatedIssue.resolvedAt = new Date().toISOString();
+  }
+  
+  issues[issueIndex] = updatedIssue;
+  
+  // Create an activity log for the updated issue
+  activityLogs.push({
+    id: `act${activityLogs.length + 1}`,
+    userId: updatedIssue.assignedTo || 'u1',
+    action: 'Issue Updated',
+    details: `Updated issue: ${updatedIssue.title}`,
+    timestamp: new Date().toISOString(),
+    trainId: updatedIssue.trainId
+  });
+  
+  return updatedIssue;
+};
+
+export const addDailyWorkLog = (workLog: Omit<DailyWorkLog, 'id'>): DailyWorkLog => {
+  const newWorkLog: DailyWorkLog = {
+    id: `wl${dailyWorkLogs.length + 1}`,
+    ...workLog
+  };
+  
+  dailyWorkLogs.push(newWorkLog);
+  
+  // Update the corresponding issue with work details
+  if (workLog.issueId) {
+    const issueIndex = issues.findIndex(issue => issue.id === workLog.issueId);
+    if (issueIndex !== -1) {
+      issues[issueIndex] = {
+        ...issues[issueIndex],
+        workDetails: workLog.workDescription,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+  }
+  
+  // Create an activity log
+  activityLogs.push({
+    id: `act${activityLogs.length + 1}`,
+    userId: workLog.userId,
+    action: 'Work Log Added',
+    details: `Added work log for issue #${workLog.issueId}`,
+    timestamp: new Date().toISOString()
+  });
+  
+  return newWorkLog;
+};
+
+// Function to add attendance record
+export const addAttendanceRecord = (record: Omit<AttendanceRecord, 'id'>): AttendanceRecord => {
+  const newRecord: AttendanceRecord = {
+    id: `att-${record.userId}-${new Date().getTime()}`,
+    ...record
+  };
+  
+  attendanceRecords.push(newRecord);
+  
+  // Create activity log for attendance
+  activityLogs.push({
+    id: `act${activityLogs.length + 1}`,
+    userId: record.userId,
+    action: 'Attendance',
+    details: `${record.status === 'present' ? 'Logged in' : record.status === 'absent' ? 'Marked absent' : 'Logged in (late)'}`,
+    timestamp: new Date().toISOString()
+  });
+  
+  return newRecord;
+};

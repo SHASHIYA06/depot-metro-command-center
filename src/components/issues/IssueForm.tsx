@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,29 +24,14 @@ import {
 } from '@/components/ui/select';
 import { Issue, UserRole } from '@/types';
 import { X } from 'lucide-react';
-import { users, trains } from '@/lib/mockData';
+import { users, trains, workCategories, addNewIssue, updateIssue } from '@/lib/mockData';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface IssueFormProps {
   issue?: Issue | null;
   onClose: (refreshData?: boolean) => void;
 }
-
-// Work categories for the dropdown
-const workCategories = [
-  { id: 'maintenance', name: 'Maintenance' },
-  { id: 'inspection', name: 'Inspection' },
-  { id: 'repair', name: 'Repair' },
-  { id: 'cleaning', name: 'Cleaning' },
-  { id: 'safety', name: 'Safety Check' },
-  { id: 'electrical', name: 'Electrical' },
-  { id: 'mechanical', name: 'Mechanical' },
-  { id: 'structural', name: 'Structural' },
-  { id: 'signal', name: 'Signal System' },
-  { id: 'interior', name: 'Interior' },
-  { id: 'exterior', name: 'Exterior' },
-  { id: 'other', name: 'Other' }
-];
 
 const issueSchema = z.object({
   title: z.string().min(3, {
@@ -65,6 +51,7 @@ const issueSchema = z.object({
 
 export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedTrain, setSelectedTrain] = React.useState<string | undefined>(
     issue?.trainId
   );
@@ -90,8 +77,29 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
   });
 
   const onSubmit = (data: z.infer<typeof issueSchema>) => {
-    // In a real app, this would call an API to create/update the issue
-    console.log('Form submitted:', data);
+    if (issue) {
+      // Update existing issue
+      const updatedIssue = updateIssue(issue.id, data);
+      if (updatedIssue) {
+        toast({
+          title: "Activity Updated",
+          description: "The work activity has been updated successfully.",
+        });
+      }
+    } else {
+      // Create new issue
+      const newIssue = addNewIssue({
+        ...data,
+        // Add other required fields
+        resolvedAt: data.status === 'resolved' ? new Date().toISOString() : undefined,
+      });
+      
+      toast({
+        title: "Activity Created",
+        description: "The new work activity has been created successfully.",
+      });
+    }
+    
     onClose(true);
   };
 

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Issue, UserRole } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserById } from '@/lib/mockData';
+import { getUserById, updateIssue } from '@/lib/mockData';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -112,7 +112,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   };
 
   const confirmDelete = () => {
-    // In a real app, this would call an API to delete the issue
+    // This would call an API to delete the issue in a real app
     toast({
       title: 'Activity Deleted',
       description: `The work activity "${issueToDelete?.title}" has been deleted.`,
@@ -134,6 +134,28 @@ export const IssuesList: React.FC<IssuesListProps> = ({
   const handleViewWorkLog = (issue: Issue) => {
     setDetailIssue(issue);
     setShowWorkDetails(true);
+  };
+
+  const handleCompleteTask = (issue: Issue) => {
+    // Update the issue status to resolved
+    const updatedIssue = updateIssue(issue.id, { 
+      status: 'resolved',
+      resolvedAt: new Date().toISOString()
+    });
+    
+    if (updatedIssue) {
+      toast({
+        title: 'Activity Completed',
+        description: 'The work activity has been marked as completed.',
+        variant: 'default',
+      });
+      
+      // Refresh the issues list
+      const updatedIssues = issues.map(i => 
+        i.id === issue.id ? updatedIssue : i
+      );
+      setFilteredIssues(updatedIssues);
+    }
   };
 
   const canUpdateIssueStatus = (issue: Issue) => {
@@ -282,7 +304,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({
                         variant="outline" 
                         size="icon"
                         className="text-metro-success"
-                        onClick={() => onEdit({...issue, status: 'resolved'})}
+                        onClick={() => handleCompleteTask(issue)}
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
