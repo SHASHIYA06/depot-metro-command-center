@@ -1,4 +1,3 @@
-
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -18,6 +17,9 @@ export interface User {
   skills?: string[];
   education?: string;
   emergencyContact?: string;
+  badgeNo?: string;
+  aadharNo?: string;
+  vehicleNo?: string;
 }
 
 export interface Train {

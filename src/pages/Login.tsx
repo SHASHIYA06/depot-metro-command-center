@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,13 +100,13 @@ const Login = () => {
                 />
                 <div className="text-sm text-muted-foreground">
                   <p>For demo purposes, you can use any of these emails:</p>
-                  <div className="text-xs mt-1">
-                    <p>rajiv.kumar@metro.com</p>
-                    <p>priya.sharma@metro.com</p>
-                    <p>sunil.verma@metro.com</p>
-                    <p>arun.singh@metro.com</p>
-                    <p>meera.patel@metro.com</p>
-                    <p>(Use any password)</p>
+                  <div className="text-xs mt-1 space-y-1">
+                    <p>shashi.mishra@metro.com (Depot Incharge)</p>
+                    <p>shilpa.sahu@metro.com (Engineer)</p>
+                    <p>sunil.rajan@metro.com (Engineer)</p>
+                    <p>manidip.baisya@metro.com (Employee)</p>
+                    <p>md.aslam@metro.com (Employee)</p>
+                    <p><strong>Password Format:</strong> firstname@4321 (e.g., shashi@4321)</p>
                   </div>
                 </div>
               </CardContent>

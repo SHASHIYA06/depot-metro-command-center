@@ -14,8 +14,11 @@ import {
   Filter, 
   Calendar, 
   GraduationCap, 
-  MapPin, 
-  BadgeCheck
+  MapPin,
+  BadgeCheck,
+  CreditCard,
+  Car,
+  User
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { users } from '@/lib/mockData';
@@ -46,9 +49,11 @@ const Staff = () => {
   
   // Filter staff members based on search term and active tab
   const filteredStaff = users.filter(staff => {
-    const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (staff.department && staff.department.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = 
+      staff.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (staff.department && staff.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (staff.badgeNo && staff.badgeNo.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (activeTab === 'all') return matchesSearch;
     if (activeTab === 'engineers') return matchesSearch && staff.role === UserRole.ENGINEER;
@@ -72,7 +77,7 @@ const Staff = () => {
       case UserRole.ENGINEER:
         return 'Engineer';
       case UserRole.TECHNICIAN:
-        return 'Technician';
+        return 'Employee';
       default:
         return 'Staff';
     }
@@ -105,6 +110,10 @@ const Staff = () => {
               <Input id="name" placeholder="Enter full name" required />
             </div>
             <div className="space-y-2">
+              <label htmlFor="badgeNo" className="text-sm font-medium">Badge Number</label>
+              <Input id="badgeNo" placeholder="Enter badge number" required />
+            </div>
+            <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email Address</label>
               <Input id="email" type="email" placeholder="email@example.com" required />
             </div>
@@ -116,12 +125,20 @@ const Staff = () => {
               <label htmlFor="role" className="text-sm font-medium">Role</label>
               <select id="role" className="w-full px-3 py-2 border rounded-md">
                 <option value={UserRole.ENGINEER}>Engineer</option>
-                <option value={UserRole.TECHNICIAN}>Technician</option>
+                <option value={UserRole.TECHNICIAN}>Employee</option>
               </select>
             </div>
             <div className="space-y-2">
               <label htmlFor="department" className="text-sm font-medium">Department</label>
               <Input id="department" placeholder="Enter department" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="aadharNo" className="text-sm font-medium">Aadhar Number</label>
+              <Input id="aadharNo" placeholder="Enter Aadhar number" required />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="vehicleNo" className="text-sm font-medium">Vehicle Number</label>
+              <Input id="vehicleNo" placeholder="Enter vehicle number (NA if not applicable)" />
             </div>
             <div className="space-y-2">
               <label htmlFor="joiningDate" className="text-sm font-medium">Joining Date</label>
@@ -195,7 +212,7 @@ const Staff = () => {
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="engineers">Engineers</TabsTrigger>
-              <TabsTrigger value="technicians">Technicians</TabsTrigger>
+              <TabsTrigger value="technicians">Employees</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -212,8 +229,8 @@ const Staff = () => {
                 </Avatar>
                 <h3 className="text-xl font-semibold">{staff.name}</h3>
                 <p className="text-muted-foreground">{getRoleName(staff.role)}</p>
-                {staff.department && (
-                  <Badge variant="outline" className="mt-2">{staff.department}</Badge>
+                {staff.badgeNo && (
+                  <Badge variant="outline" className="mt-2">{staff.badgeNo}</Badge>
                 )}
               </div>
               <div className="p-6 space-y-4">
@@ -235,14 +252,12 @@ const Staff = () => {
                     {staff.department || 'Engineering Department'}
                   </span>
                 </div>
-                {staff.joiningDate && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      Joined: {format(new Date(staff.joiningDate), 'dd MMM yyyy')}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Aadhar: {staff.aadharNo || 'N/A'}
+                  </span>
+                </div>
                 <div className="flex gap-2 mt-4">
                   <Button variant="outline" size="sm" className="w-full" onClick={() => viewStaffDetails(staff)}>
                     View Details
@@ -280,7 +295,7 @@ const Staff = () => {
                 <div>
                   <h3 className="text-lg font-semibold">{selectedStaff.name}</h3>
                   <p className="text-muted-foreground">{getRoleName(selectedStaff.role)}</p>
-                  <Badge variant="outline" className="mt-1">{selectedStaff.department}</Badge>
+                  <Badge variant="outline" className="mt-1">{selectedStaff.badgeNo}</Badge>
                 </div>
               </div>
               
@@ -305,6 +320,30 @@ const Staff = () => {
                   </div>
                 </div>
                 
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Badge Number</p>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedStaff.badgeNo || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Aadhar Number</p>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedStaff.aadharNo || 'N/A'}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Vehicle Number</p>
+                  <div className="flex items-center gap-2">
+                    <Car className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedStaff.vehicleNo || 'N/A'}</span>
+                  </div>
+                </div>
+                
                 {selectedStaff.joiningDate && (
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Joining Date</p>
@@ -323,6 +362,16 @@ const Staff = () => {
                     <div className="flex items-center gap-2">
                       <GraduationCap className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{selectedStaff.education}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedStaff.department && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Department</p>
+                    <div className="flex items-center gap-2">
+                      <Building className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedStaff.department}</span>
                     </div>
                   </div>
                 )}
@@ -378,6 +427,11 @@ const Staff = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      <div className="fixed bottom-4 right-4 text-xs text-muted-foreground text-right">
+        <p>Depot Incharge: Shashi Shekhar Mishra</p>
+        <p>Email: shashiaaidu@gmail.com</p>
+      </div>
     </div>
   );
 };

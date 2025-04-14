@@ -33,8 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In a real app, you would validate credentials against a backend
-      // For this demo, we'll just check if the email exists in our mock users
+      // Find user by email
       const normalizedEmail = email.toLowerCase().trim();
       const foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
       
@@ -42,10 +41,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Invalid credentials. User not found.');
       }
       
-      // For demo purposes, any password is accepted
-      // In a real app, you'd verify the password here
+      // Get first name for password validation
+      const firstName = foundUser.name.split(' ')[0].toLowerCase();
+      const expectedPassword = `${firstName}@4321`;
       
-      // Simulate successful login
+      // Validate password
+      if (password !== expectedPassword) {
+        throw new Error('Invalid credentials. Incorrect password.');
+      }
+      
+      // Successful login
       setUser(foundUser);
       localStorage.setItem('metroDepotUser', JSON.stringify(foundUser));
       
@@ -54,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Welcome back, ${foundUser.name}!`,
       });
       
-      return; // Successfully logged in
+      return;
     } catch (error) {
       toast({
         title: 'Login failed',
