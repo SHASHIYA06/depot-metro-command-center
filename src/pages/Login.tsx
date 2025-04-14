@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,7 +32,6 @@ const Login = () => {
       await login(data.email, data.password);
       navigate('/');
     } catch (error) {
-      // Error is handled in the AuthContext
       console.log('Login error:', error);
     } finally {
       setIsSubmitting(false);
@@ -132,9 +130,8 @@ const Login = () => {
         </Card>
       </div>
       
-      {/* Creator Information */}
       <div className="fixed bottom-4 right-4 text-xs text-white/50 text-right">
-        <p>Created by Shashi Shekhar Mishra</p>
+        <p>Depot Incharge: Shashi Shekhar Mishra</p>
         <p>Email: shashiaaidu@gmail.com</p>
       </div>
     </div>
