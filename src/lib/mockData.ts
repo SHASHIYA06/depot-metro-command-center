@@ -390,20 +390,20 @@ export const generateMaintenanceHistory = () => {
 };
 
 // Additional helper functions for filtering issues
-export const getIssuesByStatus = (status: string) => {
+export const getIssuesByStatus = (status: string): Issue[] => {
   return issues.filter(issue => issue.status === status);
 };
 
-export const getIssuesBySeverity = (severity: string) => {
+export const getIssuesBySeverity = (severity: string): Issue[] => {
   return issues.filter(issue => issue.severity === severity);
 };
 
-export const getIssuesByAssignee = (userId: string) => {
+export const getIssuesByAssignee = (userId: string): Issue[] => {
   return issues.filter(issue => issue.assignedTo === userId);
 };
 
 // Mock issues data
-export const issues = [
+export const issues: Issue[] = [
   {
     id: "issue-001",
     title: "HVAC Malfunction in Car 3",
@@ -414,7 +414,7 @@ export const issues = [
     assignedTo: "user-002",
     trainId: "train-001",
     carId: "car-003",
-    resolvedAt: null
+    resolvedAt: undefined
   },
   {
     id: "issue-002",
@@ -423,10 +423,10 @@ export const issues = [
     severity: "medium",
     status: "open",
     reportedAt: "2025-04-11T09:15:00Z",
-    assignedTo: null,
+    assignedTo: undefined,
     trainId: "train-002",
-    carId: null,
-    resolvedAt: null
+    carId: undefined,
+    resolvedAt: undefined
   },
   {
     id: "issue-003",
@@ -438,7 +438,7 @@ export const issues = [
     assignedTo: "user-003",
     trainId: "train-001",
     carId: "car-002",
-    resolvedAt: null
+    resolvedAt: undefined
   },
   {
     id: "issue-004",
@@ -448,9 +448,9 @@ export const issues = [
     status: "in_progress",
     reportedAt: "2025-04-09T11:45:00Z",
     assignedTo: "user-002",
-    trainId: null,
-    carId: null,
-    resolvedAt: null
+    trainId: undefined,
+    carId: undefined,
+    resolvedAt: undefined
   },
   {
     id: "issue-005",
@@ -461,7 +461,7 @@ export const issues = [
     reportedAt: "2025-04-08T10:30:00Z",
     assignedTo: "user-003",
     trainId: "train-002",
-    carId: null,
+    carId: undefined,
     resolvedAt: "2025-04-13T15:20:00Z"
   },
   {
@@ -471,10 +471,10 @@ export const issues = [
     severity: "medium",
     status: "open",
     reportedAt: "2025-04-13T08:15:00Z",
-    assignedTo: null,
+    assignedTo: undefined,
     trainId: "train-001",
     carId: "car-004",
-    resolvedAt: null
+    resolvedAt: undefined
   },
   {
     id: "issue-007",
@@ -484,8 +484,8 @@ export const issues = [
     status: "resolved",
     reportedAt: "2025-04-07T09:10:00Z",
     assignedTo: "user-002",
-    trainId: null,
-    carId: null,
+    trainId: undefined,
+    carId: undefined,
     resolvedAt: "2025-04-12T11:30:00Z"
   },
   {
@@ -497,7 +497,7 @@ export const issues = [
     reportedAt: "2025-04-06T14:45:00Z",
     assignedTo: "user-003",
     trainId: "train-002",
-    carId: null,
+    carId: undefined,
     resolvedAt: "2025-04-10T17:20:00Z"
   },
   {
@@ -509,8 +509,8 @@ export const issues = [
     reportedAt: "2025-04-12T11:30:00Z",
     assignedTo: "user-003",
     trainId: "train-001",
-    carId: null,
-    resolvedAt: null
+    carId: undefined,
+    resolvedAt: undefined
   },
   {
     id: "issue-010",
@@ -519,9 +519,9 @@ export const issues = [
     severity: "low",
     status: "open",
     reportedAt: "2025-04-13T10:00:00Z",
-    assignedTo: null,
-    trainId: null,
-    carId: null,
-    resolvedAt: null
+    assignedTo: undefined,
+    trainId: undefined,
+    carId: undefined,
+    resolvedAt: undefined
   }
 ];

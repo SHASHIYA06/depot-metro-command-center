@@ -30,7 +30,7 @@ const Issues = () => {
   const resolvedIssues = getIssuesByStatus('resolved');
   
   // For employees/engineers, show only their assigned issues
-  const userIssues = user?.role !== 'depot_incharge' 
+  const userIssues = user?.role !== UserRole.DEPOT_INCHARGE 
     ? getIssuesByAssignee(user?.id || '')
     : [];
   
@@ -62,13 +62,13 @@ const Issues = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Issues & Work Activity</h1>
           <p className="text-muted-foreground">
-            {user?.role === 'depot_incharge' 
+            {user?.role === UserRole.DEPOT_INCHARGE 
               ? 'Manage and assign work activities for all staff' 
               : 'View and update your assigned work activities'}
           </p>
         </div>
         
-        {user?.role === 'depot_incharge' && (
+        {user?.role === UserRole.DEPOT_INCHARGE && (
           <Button onClick={handleAddNewIssue}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Activity
@@ -100,7 +100,7 @@ const Issues = () => {
             />
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {user?.role !== 'depot_incharge' && userIssues.length > 0 && (
+              {user?.role !== UserRole.DEPOT_INCHARGE && userIssues.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Your Assigned Activities</CardTitle>
@@ -112,7 +112,7 @@ const Issues = () => {
                     <IssuesList 
                       issues={userIssues} 
                       onEdit={handleEditIssue}
-                      viewOnly={user?.role !== 'depot_incharge'} 
+                      viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
                     />
                   </CardContent>
                 </Card>
@@ -129,7 +129,7 @@ const Issues = () => {
                   <IssuesList 
                     issues={openIssues} 
                     onEdit={handleEditIssue}
-                    viewOnly={user?.role !== 'depot_incharge'} 
+                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
                   />
                 </CardContent>
               </Card>
@@ -145,7 +145,7 @@ const Issues = () => {
                   <IssuesList 
                     issues={inProgressIssues} 
                     onEdit={handleEditIssue}
-                    viewOnly={user?.role !== 'depot_incharge'} 
+                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
                   />
                 </CardContent>
               </Card>
@@ -161,7 +161,7 @@ const Issues = () => {
                   <IssuesList 
                     issues={resolvedIssues} 
                     onEdit={handleEditIssue}
-                    viewOnly={user?.role !== 'depot_incharge'} 
+                    viewOnly={user?.role !== UserRole.DEPOT_INCHARGE} 
                   />
                 </CardContent>
               </Card>

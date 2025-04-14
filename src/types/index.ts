@@ -1,5 +1,9 @@
 
-export type UserRole = 'depot_incharge' | 'engineer' | 'technician';
+export enum UserRole {
+  DEPOT_INCHARGE = 'depot_incharge',
+  ENGINEER = 'engineer',
+  TECHNICIAN = 'technician'
+}
 
 export interface User {
   id: string;
