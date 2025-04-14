@@ -21,7 +21,7 @@ import {
 } from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserRole } from '@/types';
+import { UserRole, Task } from '@/types';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -46,9 +46,9 @@ const Dashboard = () => {
   const getMetricDetailData = () => {
     switch (selectedMetric) {
       case 'total-tasks':
-        return tasks;
+        return tasks as Task[];
       case 'pending-tasks':
-        return tasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
+        return tasks.filter(t => t.status === 'pending' || t.status === 'in_progress') as Task[];
       case 'active-trains':
         return trains.filter(t => t.status === 'active');
       case 'open-issues':
