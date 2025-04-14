@@ -1,6 +1,23 @@
-// Keep existing code and update the sections that need to be modified
+
 import { User, UserRole, Train, Car, Issue, Task, ActivityLog, MaintenanceSchedule, WorkCategory, DailyWorkLog, AttendanceRecord } from '@/types';
-import { addDays, subDays } from 'date-fns';
+import { addDays, subDays, format } from 'date-fns';
+
+// Dashboard stats
+export const dashboardStats = {
+  totalTasks: 26,
+  completedTasks: 18,
+  pendingTasks: 8,
+  delayedTasks: 4,
+  activeTrains: 3,
+  trainsInMaintenance: 1,
+  issuesByPriority: {
+    low: 2,
+    medium: 3,
+    high: 4,
+    critical: 1
+  },
+  upcomingMaintenance: []
+};
 
 // Mock users data
 export const users: User[] = [
@@ -10,7 +27,13 @@ export const users: User[] = [
     email: 'rajiv.kumar@metro.com',
     role: UserRole.DEPOT_INCHARGE,
     department: 'Operations',
-    avatar: '/placeholder.svg'
+    avatar: '/placeholder.svg',
+    phone: '9876543210',
+    address: 'Metro Colony, New Delhi',
+    joiningDate: '2020-01-15',
+    skills: ['Management', 'Operations', 'Team Leadership'],
+    education: 'B.Tech in Mechanical Engineering',
+    emergencyContact: '9876543211'
   },
   {
     id: 'u2',
@@ -18,7 +41,13 @@ export const users: User[] = [
     email: 'priya.sharma@metro.com',
     role: UserRole.ENGINEER,
     department: 'Electrical Systems',
-    avatar: '/placeholder.svg'
+    avatar: '/placeholder.svg',
+    phone: '9876543212',
+    address: 'Metro Staff Quarters, Block A, New Delhi',
+    joiningDate: '2021-03-10',
+    skills: ['Electrical Systems', 'PLC Programming', 'Troubleshooting'],
+    education: 'B.Tech in Electrical Engineering',
+    emergencyContact: '9876543213'
   },
   {
     id: 'u3',
@@ -26,7 +55,13 @@ export const users: User[] = [
     email: 'sunil.verma@metro.com',
     role: UserRole.ENGINEER,
     department: 'Mechanical Systems',
-    avatar: '/placeholder.svg'
+    avatar: '/placeholder.svg',
+    phone: '9876543214',
+    address: 'Sector 45, Gurgaon',
+    joiningDate: '2021-05-20',
+    skills: ['Mechanical Systems', 'HVAC', 'Preventive Maintenance'],
+    education: 'B.Tech in Mechanical Engineering',
+    emergencyContact: '9876543215'
   },
   {
     id: 'u4',
@@ -34,7 +69,13 @@ export const users: User[] = [
     email: 'arun.singh@metro.com',
     role: UserRole.TECHNICIAN,
     department: 'Maintenance',
-    avatar: '/placeholder.svg'
+    avatar: '/placeholder.svg',
+    phone: '9876543216',
+    address: 'Mayur Vihar, Delhi',
+    joiningDate: '2022-02-15',
+    skills: ['Electrical Maintenance', 'Basic Electronics', 'Tool Handling'],
+    education: 'Diploma in Electrical Engineering',
+    emergencyContact: '9876543217'
   },
   {
     id: 'u5',
@@ -42,7 +83,13 @@ export const users: User[] = [
     email: 'meera.patel@metro.com',
     role: UserRole.TECHNICIAN,
     department: 'Electrical Systems',
-    avatar: '/placeholder.svg'
+    avatar: '/placeholder.svg',
+    phone: '9876543218',
+    address: 'Dwarka, New Delhi',
+    joiningDate: '2022-06-10',
+    skills: ['Wiring', 'AC/DC Systems', 'Circuit Testing'],
+    education: 'ITI in Electrical',
+    emergencyContact: '9876543219'
   }
 ];
 
@@ -190,6 +237,79 @@ export const issues: Issue[] = [
   }
 ];
 
+// Tasks data for dashboard
+export const tasks = [
+  {
+    id: 't1',
+    title: 'Inspect and replace brake pads on Train C',
+    description: 'Complete inspection of all brake systems and replace worn pads',
+    priority: 'high',
+    status: 'in_progress',
+    assignedTo: 'u3',
+    assignedBy: 'u1',
+    createdAt: subDays(new Date(), 5).toISOString(),
+    dueDate: addDays(new Date(), 2).toISOString(),
+    trainId: 't3',
+    category: 'maintenance'
+  },
+  {
+    id: 't2',
+    title: 'AC system repair in Car 3',
+    description: 'Replace compressor and check refrigerant levels',
+    priority: 'medium',
+    status: 'pending',
+    assignedTo: 'u4',
+    assignedBy: 'u1',
+    createdAt: subDays(new Date(), 3).toISOString(),
+    dueDate: addDays(new Date(), 4).toISOString(),
+    trainId: 't1',
+    carId: 'c3-t1',
+    category: 'repair'
+  },
+  {
+    id: 't3',
+    title: 'Monthly safety inspection for Train A',
+    description: 'Conduct comprehensive safety checks as per protocol',
+    priority: 'medium',
+    status: 'completed',
+    assignedTo: 'u2',
+    assignedBy: 'u1',
+    createdAt: subDays(new Date(), 10).toISOString(),
+    dueDate: subDays(new Date(), 5).toISOString(),
+    completedAt: subDays(new Date(), 6).toISOString(),
+    trainId: 't1',
+    category: 'inspection'
+  },
+  {
+    id: 't4',
+    title: 'Signal system firmware update',
+    description: 'Apply latest firmware patch to fix intermittent issues',
+    priority: 'urgent',
+    status: 'pending',
+    assignedTo: 'u2',
+    assignedBy: 'u1',
+    createdAt: subDays(new Date(), 1).toISOString(),
+    dueDate: addDays(new Date(), 1).toISOString(),
+    trainId: 't2',
+    category: 'maintenance'
+  },
+  {
+    id: 't5',
+    title: 'Deep clean Car 4 after vandalism repairs',
+    description: 'Clean seats, floors, and surfaces thoroughly',
+    priority: 'low',
+    status: 'completed',
+    assignedTo: 'u5',
+    assignedBy: 'u1',
+    createdAt: subDays(new Date(), 8).toISOString(),
+    dueDate: subDays(new Date(), 6).toISOString(),
+    completedAt: subDays(new Date(), 7).toISOString(),
+    trainId: 't1',
+    carId: 'c4-t1',
+    category: 'cleaning'
+  }
+];
+
 // Helper functions to filter issues data
 export const getIssuesByStatus = (status: Issue['status']): Issue[] => {
   return issues.filter(issue => issue.status === status);
@@ -205,6 +325,15 @@ export const getIssuesBySeverity = (severity: Issue['severity']): Issue[] => {
 
 export const getUserById = (id: string): User | undefined => {
   return users.find(user => user.id === id);
+};
+
+// Helper functions for tasks
+export const getTasksByStatus = (status: string): any[] => {
+  return tasks.filter(task => task.status === status);
+};
+
+export const getTasksByAssignee = (assigneeId: string): any[] => {
+  return tasks.filter(task => task.assignedTo === assigneeId);
 };
 
 // Mock work categories
@@ -346,9 +475,18 @@ export const getRecentActivities = (limit: number = 5): ActivityLog[] => {
 export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'>): Issue => {
   const newIssue: Issue = {
     id: `i${issues.length + 1}`,
+    title: issue.title,
+    description: issue.description,
+    severity: issue.severity,
+    status: issue.status,
+    assignedTo: issue.assignedTo,
     reportedAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
-    ...issue
+    trainId: issue.trainId,
+    carId: issue.carId,
+    workCategory: issue.workCategory,
+    workDetails: issue.workDetails,
+    resolvedAt: issue.resolvedAt
   };
   
   issues.push(newIssue);
@@ -448,4 +586,66 @@ export const addAttendanceRecord = (record: Omit<AttendanceRecord, 'id'>): Atten
   });
   
   return newRecord;
+};
+
+// Function to generate Tasks chart data
+export const generateTasksChartData = () => {
+  const data = [];
+  
+  // Generate data for the last 7 days
+  for (let i = 6; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const formattedDate = format(date, 'MMM dd');
+    
+    data.push({
+      date: formattedDate,
+      assigned: Math.floor(Math.random() * 10) + 5,
+      completed: Math.floor(Math.random() * 7) + 3,
+      delayed: Math.floor(Math.random() * 3)
+    });
+  }
+  
+  return data;
+};
+
+// Function to get the user's working hours for analytics
+export const getUserWorkingHours = (userId: string) => {
+  // Get all work logs for the user
+  const userLogs = dailyWorkLogs.filter(log => log.userId === userId);
+  
+  // Calculate total hours spent
+  const totalHours = userLogs.reduce((sum, log) => sum + log.hoursSpent, 0);
+  
+  return {
+    totalHours,
+    averageDaily: userLogs.length > 0 ? (totalHours / userLogs.length) : 0,
+    logs: userLogs
+  };
+};
+
+// Function to generate efficiency data for analytics
+export const generateEfficiencyData = () => {
+  return users
+    .filter(user => user.role !== UserRole.DEPOT_INCHARGE)
+    .map(user => {
+      const assignedTasks = tasks.filter(task => task.assignedTo === user.id).length;
+      const completedTasks = tasks.filter(task => 
+        task.assignedTo === user.id && task.status === 'completed'
+      ).length;
+      
+      const userIssues = getIssuesByAssignee(user.id);
+      const resolvedIssues = userIssues.filter(issue => issue.status === 'resolved').length;
+      
+      return {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        assignedTasks,
+        completedTasks,
+        resolvedIssues,
+        efficiency: assignedTasks > 0 ? 
+          ((completedTasks + resolvedIssues) / (assignedTasks + userIssues.length) * 100).toFixed(1) : 
+          0
+      };
+    });
 };

@@ -88,11 +88,20 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
       }
     } else {
       // Create new issue
-      const newIssue = addNewIssue({
-        ...data,
-        // Add other required fields
-        resolvedAt: data.status === 'resolved' ? new Date().toISOString() : undefined,
-      });
+      const newIssueData = {
+        title: data.title,
+        description: data.description,
+        severity: data.severity,
+        status: data.status,
+        assignedTo: data.assignedTo,
+        trainId: data.trainId,
+        carId: data.carId,
+        workCategory: data.workCategory,
+        workDetails: data.workDetails,
+        resolvedAt: data.status === 'resolved' ? new Date().toISOString() : undefined
+      };
+      
+      const newIssue = addNewIssue(newIssueData);
       
       toast({
         title: "Activity Created",
@@ -275,7 +284,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        <SelectItem value="">Unassigned</SelectItem>
                         {assignableUsers.map(staff => (
                           <SelectItem key={staff.id} value={staff.id}>
                             {staff.name} ({staff.role === UserRole.ENGINEER ? 'Engineer' : 'Technician'})
@@ -307,7 +316,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Not applicable</SelectItem>
+                        <SelectItem value="">Not applicable</SelectItem>
                         {trains.map(train => (
                           <SelectItem key={train.id} value={train.id}>
                             {train.name}
@@ -337,7 +346,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="entire">Entire train</SelectItem>
+                        <SelectItem value="">Entire train</SelectItem>
                         {trainCars.map(car => (
                           <SelectItem key={car.id} value={car.id}>
                             Car {car.position} ({car.status})

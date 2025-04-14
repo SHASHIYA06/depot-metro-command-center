@@ -12,6 +12,12 @@ export interface User {
   role: UserRole;
   department?: string;
   avatar?: string;
+  phone?: string;
+  address?: string;
+  joiningDate?: string;
+  skills?: string[];
+  education?: string;
+  emergencyContact?: string;
 }
 
 export interface Train {

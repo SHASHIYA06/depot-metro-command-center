@@ -5,11 +5,33 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Mail, Phone, Building, UserPlus, Filter } from 'lucide-react';
+import { 
+  Search, 
+  Mail, 
+  Phone, 
+  Building, 
+  UserPlus, 
+  Filter, 
+  Calendar, 
+  GraduationCap, 
+  MapPin, 
+  BadgeCheck
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { users } from '@/lib/mockData';
 import { UserRole } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 
 const Staff = () => {
   const { user } = useAuth();
@@ -17,6 +39,7 @@ const Staff = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [showAddStaffForm, setShowAddStaffForm] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<typeof users[0] | null>(null);
   
   // Only depot incharge can access this page
   const isDepotIncharge = user?.role === UserRole.DEPOT_INCHARGE;
@@ -24,7 +47,8 @@ const Staff = () => {
   // Filter staff members based on search term and active tab
   const filteredStaff = users.filter(staff => {
     const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          staff.email.toLowerCase().includes(searchTerm.toLowerCase());
+                          staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (staff.department && staff.department.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (activeTab === 'all') return matchesSearch;
     if (activeTab === 'engineers') return matchesSearch && staff.role === UserRole.ENGINEER;
@@ -60,6 +84,10 @@ const Staff = () => {
       description: "The new staff member has been added successfully.",
     });
     setShowAddStaffForm(false);
+  };
+
+  const viewStaffDetails = (staff: typeof users[0]) => {
+    setSelectedStaff(staff);
   };
 
   // Add staff form component
@@ -98,6 +126,22 @@ const Staff = () => {
             <div className="space-y-2">
               <label htmlFor="joiningDate" className="text-sm font-medium">Joining Date</label>
               <Input id="joiningDate" type="date" required />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="address" className="text-sm font-medium">Address</label>
+              <Input id="address" placeholder="Enter address" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="education" className="text-sm font-medium">Education</label>
+              <Input id="education" placeholder="Enter education qualifications" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="emergency" className="text-sm font-medium">Emergency Contact</label>
+              <Input id="emergency" placeholder="Emergency contact number" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="skills" className="text-sm font-medium">Skills (comma separated)</label>
+              <Input id="skills" placeholder="e.g. Electrical, Mechanical, Programming" />
             </div>
           </div>
           
@@ -159,7 +203,7 @@ const Staff = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredStaff.map((staff) => (
-          <Card key={staff.id} className="overflow-hidden">
+          <Card key={staff.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
             <CardContent className="p-0">
               <div className="bg-primary/10 p-6 flex flex-col items-center">
                 <Avatar className="h-24 w-24 mb-4">
@@ -168,6 +212,9 @@ const Staff = () => {
                 </Avatar>
                 <h3 className="text-xl font-semibold">{staff.name}</h3>
                 <p className="text-muted-foreground">{getRoleName(staff.role)}</p>
+                {staff.department && (
+                  <Badge variant="outline" className="mt-2">{staff.department}</Badge>
+                )}
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-2">
@@ -178,8 +225,8 @@ const Staff = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a href={`tel:123-456-7890`} className="text-sm hover:underline">
-                    123-456-7890
+                  <a href={`tel:${staff.phone || "9876543210"}`} className="text-sm hover:underline">
+                    {staff.phone || "9876543210"}
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
@@ -188,15 +235,20 @@ const Staff = () => {
                     {staff.department || 'Engineering Department'}
                   </span>
                 </div>
+                {staff.joiningDate && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">
+                      Joined: {format(new Date(staff.joiningDate), 'dd MMM yyyy')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex gap-2 mt-4">
-                  <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href={`mailto:${staff.email}`}>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email
-                    </a>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => viewStaffDetails(staff)}>
+                    View Details
                   </Button>
                   <Button variant="outline" size="sm" className="w-full" asChild>
-                    <a href={`tel:123-456-7890`}>
+                    <a href={`tel:${staff.phone || "9876543210"}`}>
                       <Phone className="h-4 w-4 mr-2" />
                       Call
                     </a>
@@ -207,6 +259,125 @@ const Staff = () => {
           </Card>
         ))}
       </div>
+
+      {/* Staff Detail Dialog */}
+      <Dialog open={!!selectedStaff} onOpenChange={(open) => !open && setSelectedStaff(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Staff Profile</DialogTitle>
+            <DialogDescription>
+              Detailed information about {selectedStaff?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedStaff && (
+            <div className="py-4">
+              <div className="flex items-center space-x-4 mb-6">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedStaff.avatar} alt={selectedStaff.name} />
+                  <AvatarFallback>{getInitials(selectedStaff.name)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedStaff.name}</h3>
+                  <p className="text-muted-foreground">{getRoleName(selectedStaff.role)}</p>
+                  <Badge variant="outline" className="mt-1">{selectedStaff.department}</Badge>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Email</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <a href={`mailto:${selectedStaff.email}`} className="text-sm hover:underline">
+                      {selectedStaff.email}
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Phone</p>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <a href={`tel:${selectedStaff.phone}`} className="text-sm hover:underline">
+                      {selectedStaff.phone || "9876543210"}
+                    </a>
+                  </div>
+                </div>
+                
+                {selectedStaff.joiningDate && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Joining Date</p>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">
+                        {format(new Date(selectedStaff.joiningDate), 'dd MMMM yyyy')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedStaff.education && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Education</p>
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedStaff.education}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedStaff.address && (
+                  <div className="space-y-1 col-span-2">
+                    <p className="text-sm font-medium">Address</p>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{selectedStaff.address}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {selectedStaff.emergencyContact && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Emergency Contact</p>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <a href={`tel:${selectedStaff.emergencyContact}`} className="text-sm hover:underline">
+                        {selectedStaff.emergencyContact}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {selectedStaff.skills && selectedStaff.skills.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-medium mb-2">Skills & Expertise</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedStaff.skills.map((skill, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center">
+                        <BadgeCheck className="h-3 w-3 mr-1" />
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="border-t pt-4 mt-4">
+                <div className="flex gap-2 justify-end">
+                  {isDepotIncharge && (
+                    <Button variant="outline">Edit Details</Button>
+                  )}
+                  <DialogClose asChild>
+                    <Button>Close</Button>
+                  </DialogClose>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -6,78 +6,53 @@ import { dashboardStats } from '@/lib/mockData';
 
 export const PriorityChart = () => {
   const data = [
-    { name: 'Low', value: dashboardStats.issuesByPriority.low, color: '#74C0FC' },
-    { name: 'Medium', value: dashboardStats.issuesByPriority.medium, color: '#FFE066' },
-    { name: 'High', value: dashboardStats.issuesByPriority.high, color: '#FA8072' },
-    { name: 'Critical', value: dashboardStats.issuesByPriority.critical, color: '#E03131' },
+    { name: 'Low', value: dashboardStats.issuesByPriority.low, color: '#3B82F6' },
+    { name: 'Medium', value: dashboardStats.issuesByPriority.medium, color: '#FBBF24' },
+    { name: 'High', value: dashboardStats.issuesByPriority.high, color: '#F97316' },
+    { name: 'Critical', value: dashboardStats.issuesByPriority.critical, color: '#EF4444' },
   ];
 
-  // Filter out zero values
-  const filteredData = data.filter(item => item.value > 0);
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+    const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
   
-  // Custom legend for Pie Chart
-  const renderLegend = (props: any) => {
-    const { payload } = props;
+    if (percent < 0.05) return null;
     
     return (
-      <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs pt-2">
-        {payload.map((entry: any, index: number) => (
-          <li key={`item-${index}`} className="flex items-center">
-            <div 
-              className="h-3 w-3 mr-1 rounded-sm" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span>{entry.value}: {entry.payload.value}</span>
-          </li>
-        ))}
-      </ul>
+      <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central">
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
     );
-  };
-
-  // Custom tooltip
-  const renderTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-2 border rounded shadow-sm text-xs">
-          <p>{`${payload[0].name}: ${payload[0].value}`}</p>
-        </div>
-      );
-    }
-    return null;
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Task Priority</CardTitle>
-        <CardDescription>Distribution of tasks by priority</CardDescription>
+        <CardTitle>Issues by Priority</CardTitle>
+        <CardDescription>Distribution of issues by priority level</CardDescription>
       </CardHeader>
-      <CardContent className="h-[200px]">
-        {filteredData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={filteredData}
-                cx="50%"
-                cy="50%"
-                innerRadius={40}
-                outerRadius={70}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {filteredData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={renderTooltip} />
-              <Legend content={renderLegend} />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-            No task data available
-          </div>
-        )}
+      <CardContent className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={renderLabel}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend verticalAlign="bottom" height={36} />
+          </PieChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
