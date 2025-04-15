@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { StatCard } from '@/components/dashboard/StatCard';
@@ -7,7 +8,7 @@ import { TrainStatusCard } from '@/components/dashboard/TrainStatusCard';
 import { TaskList } from '@/components/dashboard/TaskList';
 import { PriorityChart } from '@/components/dashboard/PriorityChart';
 import { Dashboard3DChart } from '@/components/dashboard/Dashboard3DChart';
-import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users } from 'lucide-react';
+import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   dashboardStats, 
@@ -16,16 +17,24 @@ import {
   activityLogs, 
   getTasksByStatus,
   getIssuesByStatus,
-  getIssuesBySeverity
+  getIssuesBySeverity,
+  getProjects
 } from '@/lib/mockData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UserRole, Task } from '@/types';
+import { UserRole, Task, Project } from '@/types';
+import { useQuery } from '@tanstack/react-query';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  
+  // Get metro projects data
+  const { data: projects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: getProjects,
+  });
   
   // Filter tasks based on user role
   const relevantTasks = user?.role === UserRole.DEPOT_INCHARGE 
@@ -63,6 +72,17 @@ const Dashboard = () => {
   const handleViewIssuesClick = () => {
     navigate('/issues');
   };
+
+  const handleViewProjectsClick = () => {
+    navigate('/projects');
+  };
+
+  // Get top 3 ongoing metro projects
+  const ongoingProjects = projects
+    ? projects
+        .filter(project => project.status === 'Under Construction' || project.completionPercentage !== 100)
+        .slice(0, 3)
+    : [];
 
   return (
     <div className="space-y-6">
@@ -173,6 +193,65 @@ const Dashboard = () => {
             <TasksChart />
             <RecentActivities activities={activityLogs.slice(0, 5)} />
           </div>
+
+          {/* Metro Projects Overview (new section) */}
+          {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && (
+            <Card className="col-span-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Metro Project Review</CardTitle>
+                  <CardDescription>Latest updates from metro projects across India</CardDescription>
+                </div>
+                <Button variant="outline" onClick={handleViewProjectsClick}>View All Projects</Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {ongoingProjects.map((project) => (
+                    <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">{project.name}</CardTitle>
+                        <CardDescription className="flex items-center">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {project.location}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="text-sm text-muted-foreground line-clamp-2">
+                          {project.description}
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Length: {project.networkLength} km</span>
+                          <span>Stations: {project.stations || 'N/A'}</span>
+                        </div>
+                        {project.completionPercentage && (
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span>Completion:</span>
+                              <span>{project.completionPercentage}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full" 
+                                style={{ width: `${project.completionPercentage}%` }} 
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full mt-2"
+                          onClick={() => navigate(`/projects`)}
+                        >
+                          View Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Train Status Row */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

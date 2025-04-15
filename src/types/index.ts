@@ -1,4 +1,3 @@
-
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -145,4 +144,34 @@ export interface GoogleSheetsConfig {
   sheetId: string;
   tabName: string;
   credentialsPath?: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  location: string;
+  description: string;
+  status?: 'Operational' | 'Under Construction' | 'Planned' | 'Approved';
+  implementingAgency: string;
+  startDate: string;
+  completionDate?: string;
+  cost: number;
+  networkLength: number;
+  keyFeatures?: string[];
+  website?: string;
+  stations?: number;
+  dailyRidership?: string;
+  lines?: number;
+  trainSets?: number;
+  completionPercentage?: number;
+  trackType?: string;
+}
+
+export interface ProjectUpdate {
+  id: string;
+  projectId: string;
+  title: string;
+  date: string;
+  content: string;
+  source?: string;
 }

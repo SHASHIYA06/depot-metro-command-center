@@ -16,7 +16,8 @@ import {
   LogOut,
   Menu,
   AlertTriangle,
-  UserCircle
+  UserCircle,
+  Building
 } from 'lucide-react';
 import { UserRole } from '@/types';
 
@@ -67,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
     { to: '/staff', icon: Users, label: 'Staff', showFor: [UserRole.DEPOT_INCHARGE] },
     { to: '/activities', icon: Activity, label: 'Activities', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER] },
     { to: '/issues', icon: AlertTriangle, label: 'Issues', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
+    { to: '/projects', icon: Building, label: 'Projects', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER] },
     { to: '/analytics', icon: BarChart, label: 'Analytics', showFor: [UserRole.DEPOT_INCHARGE] },
     { to: '/profile', icon: UserCircle, label: 'Profile', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
     { to: '/settings', icon: Settings, label: 'Settings', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] }
@@ -87,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
         {open ? (
           <div className="flex items-center">
             <Train className="h-6 w-6 text-primary animate-pulse" />
-            <span className="ml-2 text-lg font-semibold text-sidebar-foreground">Metro Depot</span>
+            <span className="ml-2 text-lg font-semibold text-sidebar-foreground">Metro Project Review</span>
           </div>
         ) : (
           <Train className="h-6 w-6 mx-auto text-primary animate-pulse" />

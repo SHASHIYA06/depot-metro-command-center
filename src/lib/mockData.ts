@@ -1,4 +1,4 @@
-import { User, UserRole, Train, Car, Issue, Task, ActivityLog, MaintenanceSchedule, WorkCategory, DailyWorkLog, AttendanceRecord } from '@/types';
+import { User, UserRole, Train, Car, Issue, Task, ActivityLog, MaintenanceSchedule, WorkCategory, DailyWorkLog, AttendanceRecord, Project, ProjectUpdate } from '@/types';
 import { addDays, subDays, format } from 'date-fns';
 
 // Dashboard stats
@@ -876,4 +876,418 @@ export const getUserWorkingHours = () => {
     { name: 'Support Staff', value: 40.2 },
     { name: 'Management', value: 38.5 }
   ];
+};
+
+// Mock metro projects data
+export const metroProjects: Project[] = [
+  {
+    id: 'p1',
+    name: 'Delhi Metro',
+    location: 'Delhi NCR',
+    description: 'The Delhi Metro is a mass rapid transit system serving Delhi and its satellite cities. It is the largest and busiest metro in India, and one of the largest in the world.',
+    status: 'Operational',
+    implementingAgency: 'Delhi Metro Rail Corporation (DMRC)',
+    startDate: 'October 1998',
+    completionDate: 'Ongoing expansions',
+    cost: 70632,
+    networkLength: 389.87,
+    keyFeatures: [
+      'First modern metro system in India',
+      'Extensive network covering Delhi NCR with multiple color-coded lines',
+      'Fully integrated with other transport systems',
+      'Mix of underground, at-grade, and elevated stations',
+      'Uses 25 kV AC traction on standard gauge tracks'
+    ],
+    website: 'https://www.delhimetrorail.com',
+    stations: 285,
+    dailyRidership: '6.5 million',
+    lines: 12,
+    trainSets: 336,
+    completionPercentage: 95,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p2',
+    name: 'Mumbai Metro',
+    location: 'Mumbai, Maharashtra',
+    description: 'The Mumbai Metro is a mass rapid transit system serving the city of Mumbai and the wider Metropolitan Region. The system is designed to reduce traffic congestion and supplement the overcrowded Mumbai Suburban Railway network.',
+    status: 'Operational',
+    implementingAgency: 'Mumbai Metro Rail Corporation (MMRC)',
+    startDate: 'February 2008',
+    completionDate: 'Ongoing expansions',
+    cost: 40000,
+    networkLength: 11.4,
+    keyFeatures: [
+      'Multiple lines under construction to create comprehensive network',
+      'Line 1 (Versova-Andheri-Ghatkopar) was first operational line',
+      'Line 3 will be Mumbai\'s first underground metro line',
+      'Will connect previously unserved parts of the city',
+      'Designed to reduce travel time across the city'
+    ],
+    website: 'https://www.mumbaimetrorail.com',
+    stations: 12,
+    dailyRidership: '450,000',
+    lines: 1,
+    trainSets: 16,
+    completionPercentage: 15,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p3',
+    name: 'Kolkata Metro',
+    location: 'Kolkata, West Bengal',
+    description: 'The Kolkata Metro is the first metro railway in India, operating since 1984. It is an essential part of the city\'s urban transportation infrastructure and continues to expand.',
+    status: 'Operational',
+    implementingAgency: 'Kolkata Metro Rail Corporation (KMRC)',
+    startDate: 'June 1972',
+    completionDate: 'Ongoing expansions',
+    cost: 8900,
+    networkLength: 33.02,
+    keyFeatures: [
+      'India\'s first metro system',
+      'Line 2 (East-West) features underwater tunnel beneath Hooghly River',
+      'Combination of underground and elevated sections',
+      'Air-conditioned rakes with regenerative braking',
+      'Both broad gauge and standard gauge lines'
+    ],
+    website: 'https://mtp.indianrailways.gov.in',
+    stations: 29,
+    dailyRidership: '700,000',
+    lines: 2,
+    trainSets: 27,
+    completionPercentage: 40,
+    trackType: 'Broad Gauge & Standard Gauge'
+  },
+  {
+    id: 'p4',
+    name: 'Chennai Metro',
+    location: 'Chennai, Tamil Nadu',
+    description: 'The Chennai Metro is a rapid transit system serving the city of Chennai, designed to provide seamless travel to commuters and reduce traffic congestion.',
+    status: 'Operational',
+    implementingAgency: 'Chennai Metro Rail Limited (CMRL)',
+    startDate: 'June 2009',
+    completionDate: 'Ongoing expansions',
+    cost: 14600,
+    networkLength: 54.05,
+    keyFeatures: [
+      'First metro in India to connect airport with direct service',
+      'Uses both underground and elevated stations',
+      'Features driverless train operations',
+      'Intermodal integration with MRTS and suburban rail',
+      'Four-car train sets with longitudinal seating'
+    ],
+    website: 'https://chennaimetrorail.org',
+    stations: 41,
+    dailyRidership: '226,000',
+    lines: 2,
+    trainSets: 32,
+    completionPercentage: 65,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p5',
+    name: 'Bangalore Metro (Namma Metro)',
+    location: 'Bengaluru, Karnataka',
+    description: 'The Bangalore Metro, also known as Namma Metro, is a rapid transit system serving the city of Bengaluru. It is the second longest operational metro network in India.',
+    status: 'Operational',
+    implementingAgency: 'Bangalore Metro Rail Corporation Limited (BMRCL)',
+    startDate: 'April 2007',
+    completionDate: 'Ongoing expansions',
+    cost: 16800,
+    networkLength: 56,
+    keyFeatures: [
+      'First metro in South India',
+      'Third-rail electric power supply',
+      'Purple and Green lines form complete phase I',
+      'Extensive phase II under construction',
+      'Features six-car trains with capacity of 2000 passengers'
+    ],
+    website: 'https://www.bmrc.co.in',
+    stations: 51,
+    dailyRidership: '600,000',
+    lines: 2,
+    trainSets: 50,
+    completionPercentage: 60,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p6',
+    name: 'Hyderabad Metro',
+    location: 'Hyderabad, Telangana',
+    description: 'The Hyderabad Metro is a rapid transit system serving the city of Hyderabad. It is the second largest operational metro network in India after the Delhi Metro.',
+    status: 'Operational',
+    implementingAgency: 'Hyderabad Metro Rail Limited (HMRL)',
+    startDate: 'May 2012',
+    completionDate: 'November 2019',
+    cost: 16375,
+    networkLength: 69.2,
+    keyFeatures: [
+      'Developed under PPP model with L&T',
+      'Elevated metro with advanced signaling system',
+      'Transit-oriented development with integrated malls',
+      'Uses CBTC signaling for driverless operations',
+      'Features energy-efficient regenerative braking'
+    ],
+    website: 'https://hmrl.co.in',
+    stations: 57,
+    dailyRidership: '500,000',
+    lines: 3,
+    trainSets: 56,
+    completionPercentage: 90,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p7',
+    name: 'Ahmedabad Metro',
+    location: 'Ahmedabad, Gujarat',
+    description: 'The Ahmedabad Metro is a mass rapid transit system serving the city of Ahmedabad and Gandhinagar in Gujarat. The first phase was inaugurated in March 2019.',
+    status: 'Operational',
+    implementingAgency: 'Gujarat Metro Rail Corporation (GMRC)',
+    startDate: 'March 2015',
+    completionDate: 'Ongoing expansions',
+    cost: 10773,
+    networkLength: 40.03,
+    keyFeatures: [
+      'Connects Ahmedabad with Gandhinagar capital',
+      'Integrated with BRTS and other transit systems',
+      'Modern three-car trains with third rail power supply',
+      'Phase II will connect newer areas of the city',
+      'Energy-efficient system with solar power integration'
+    ],
+    website: 'https://www.gujaratmetrorail.com',
+    stations: 32,
+    dailyRidership: '150,000',
+    lines: 2,
+    trainSets: 20,
+    completionPercentage: 70,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p8',
+    name: 'Lucknow Metro',
+    location: 'Lucknow, Uttar Pradesh',
+    description: 'The Lucknow Metro is a rapid transit system serving the city of Lucknow, Uttar Pradesh. It was inaugurated in September 2017 and is one of the fastest completed metro projects in India.',
+    status: 'Operational',
+    implementingAgency: 'Uttar Pradesh Metro Rail Corporation (UPMRC)',
+    startDate: 'September 2014',
+    completionDate: 'March 2019',
+    cost: 6928,
+    networkLength: 22.87,
+    keyFeatures: [
+      'One of the fastest completed metro projects in India',
+      'Features driverless train capability',
+      'Integrated with other public transportation',
+      'Uses advanced CBTC signaling system',
+      'Energy-efficient with regenerative braking system'
+    ],
+    website: 'https://www.upmetrorail.com',
+    stations: 21,
+    dailyRidership: '80,000',
+    lines: 1,
+    trainSets: 20,
+    completionPercentage: 100,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p9',
+    name: 'Kochi Metro',
+    location: 'Kochi, Kerala',
+    description: 'The Kochi Metro is a rapid transit system serving the city of Kochi, Kerala. It was inaugurated in June 2017 and is notable for its environmentally friendly initiatives.',
+    status: 'Operational',
+    implementingAgency: 'Kochi Metro Rail Limited (KMRL)',
+    startDate: 'June 2013',
+    completionDate: 'Ongoing expansions',
+    cost: 5181,
+    networkLength: 25.2,
+    keyFeatures: [
+      'First metro system to integrate with water transport (Water Metro)',
+      'First metro agency to employ transgender persons',
+      'Extensive vertical gardens on pillars',
+      'Solar panels at stations for energy generation',
+      'Extensive use of communication-based train control'
+    ],
+    website: 'https://kochimetro.org',
+    stations: 22,
+    dailyRidership: '65,000',
+    lines: 1,
+    trainSets: 22,
+    completionPercentage: 85,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p10',
+    name: 'Jaipur Metro',
+    location: 'Jaipur, Rajasthan',
+    description: 'The Jaipur Metro is a rapid transit system serving the city of Jaipur, Rajasthan. The first line was inaugurated in June 2015.',
+    status: 'Operational',
+    implementingAgency: 'Jaipur Metro Rail Corporation (JMRC)',
+    startDate: 'November 2010',
+    completionDate: 'June 2015',
+    cost: 3149,
+    networkLength: 9.63,
+    keyFeatures: [
+      'One of the fastest built metro systems in India',
+      'Architecture reflects Jaipur\'s cultural heritage',
+      'Elevators and escalators at all stations',
+      'Platform screen doors at underground stations',
+      'Integration with other public transportation'
+    ],
+    website: 'https://jaipurmetrorail.in',
+    stations: 9,
+    dailyRidership: '30,000',
+    lines: 1,
+    trainSets: 10,
+    completionPercentage: 100,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p11',
+    name: 'Noida-Greater Noida Metro',
+    location: 'Noida, Uttar Pradesh',
+    description: 'The Noida-Greater Noida Metro, also known as the Aqua Line, is a rapid transit system connecting the cities of Noida and Greater Noida in Uttar Pradesh. It was inaugurated in January 2019.',
+    status: 'Operational',
+    implementingAgency: 'Noida Metro Rail Corporation (NMRC)',
+    startDate: 'May 2014',
+    completionDate: 'January 2019',
+    cost: 5503,
+    networkLength: 29.7,
+    keyFeatures: [
+      'Modern four-car trains with capacity of 1,000 passengers',
+      'Features platform screen doors at all stations',
+      'Dedicated women\'s compartment',
+      'WiFi and mobile charging facilities',
+      'Integration with Delhi Metro in future expansions'
+    ],
+    website: 'https://www.nmrcnoida.com',
+    stations: 21,
+    dailyRidership: '25,000',
+    lines: 1,
+    trainSets: 19,
+    completionPercentage: 100,
+    trackType: 'Standard Gauge'
+  },
+  {
+    id: 'p12',
+    name: 'Nagpur Metro',
+    location: 'Nagpur, Maharashtra',
+    description: 'The Nagpur Metro is a rapid transit system serving the city of Nagpur, Maharashtra. The first phase was inaugurated in March 2019.',
+    status: 'Operational',
+    implementingAgency: 'Maharashtra Metro Rail Corporation (MahaMetro)',
+    startDate: 'August 2014',
+    completionDate: 'Ongoing expansions',
+    cost: 8680,
+    networkLength: 24.5,
+    keyFeatures: [
+      'First metro to use 5 dimensional BIM in India',
+      'Extensive use of solar power at stations',
+      'Uses third-rail electric power supply',
+      'Digital ticketing and smart card system',
+      'Metro stations with theme-based designs'
+    ],
+    website: 'https://www.mahametro.org',
+    stations: 24,
+    dailyRidership: '60,000',
+    lines: 2,
+    trainSets: 23,
+    completionPercentage: 80,
+    trackType: 'Standard Gauge'
+  }
+];
+
+// Sample project updates (news, progress reports, etc.)
+export const projectUpdatesList: ProjectUpdate[] = [
+  {
+    id: 'pu1',
+    projectId: 'p1',
+    title: 'Delhi Metro completes tunneling work for Phase IV\'s Magenta Line extension',
+    date: '2025-03-15',
+    content: 'The Delhi Metro Rail Corporation (DMRC) has successfully completed the tunneling work for the Magenta Line extension under Phase IV. This 12.55 km extension will connect Janakpuri West to RK Ashram and is expected to be operational by late 2025.',
+    source: 'Delhi Metro Rail Corporation'
+  },
+  {
+    id: 'pu2',
+    projectId: 'p1',
+    title: 'New metro trains with upgraded features arrive for Delhi Metro',
+    date: '2025-02-20',
+    content: 'A new fleet of advanced metro trains has arrived for the Delhi Metro. These trains feature improved energy efficiency, enhanced passenger information systems, and increased capacity. The first set of these trains will be deployed on the Blue Line by April 2025.',
+    source: 'Transport Daily'
+  },
+  {
+    id: 'pu3',
+    projectId: 'p2',
+    title: 'Mumbai Metro Line 3 underground section nears completion',
+    date: '2025-03-05',
+    content: 'The Mumbai Metro Rail Corporation has announced that the tunneling work for the underground Line 3 is now 95% complete. This 33.5 km line connecting Colaba-Bandra-SEEPZ is expected to be partially operational by the end of 2025.',
+    source: 'Mumbai Metro Rail Corporation'
+  },
+  {
+    id: 'pu4',
+    projectId: 'p2',
+    title: 'Mumbai Metro introduces new ticketing system with QR code-based entry',
+    date: '2025-01-10',
+    content: 'The Mumbai Metro has launched a new digital ticketing system that allows passengers to enter stations using QR codes generated through a mobile app. This contactless system aims to reduce queues and improve efficiency at entry points.',
+    source: 'Tech Transit News'
+  },
+  {
+    id: 'pu5',
+    projectId: 'p3',
+    title: 'Kolkata Metro extends operating hours to serve night shift workers',
+    date: '2025-02-15',
+    content: 'The Kolkata Metro has extended its operating hours until midnight on weekdays to accommodate night shift workers in the IT and service sectors. This change comes after multiple requests from industry associations in the city.',
+    source: 'Eastern Transit Authority'
+  },
+  {
+    id: 'pu6',
+    projectId: 'p3',
+    title: 'East-West corridor of Kolkata Metro faces technical challenges',
+    date: '2025-01-25',
+    content: 'The East-West corridor of Kolkata Metro, which features the underwater tunnel beneath the Hooghly River, is facing technical challenges related to water seepage. Officials have reassured that these issues are being addressed with advanced engineering solutions.',
+    source: 'Infrastructure Report'
+  },
+  {
+    id: 'pu7',
+    projectId: 'p4',
+    title: 'Chennai Metro Phase II construction begins on three corridors simultaneously',
+    date: '2025-03-12',
+    content: 'Construction has begun simultaneously on three corridors of Chennai Metro\'s ambitious Phase II project. This 118.9 km expansion with 128 stations will connect previously unserved parts of the city and is expected to be completed by 2030.',
+    source: 'Chennai Metro Rail Limited'
+  },
+  {
+    id: 'pu8',
+    projectId: 'p4',
+    title: 'Chennai Metro achieves record daily ridership of 300,000 passengers',
+    date: '2025-02-05',
+    content: 'The Chennai Metro has achieved a record daily ridership of 300,000 passengers, marking a significant increase from its pre-pandemic numbers. Officials attribute this growth to improved last-mile connectivity and integration with bus services.',
+    source: 'Urban Mobility Report'
+  },
+  {
+    id: 'pu9',
+    projectId: 'p5',
+    title: 'Bangalore Metro\'s Purple Line extended to Whitefield',
+    date: '2025-01-15',
+    content: 'The Bangalore Metro has successfully extended its Purple Line to Whitefield, a major IT hub in the city. This 15.5 km extension with 12 stations is expected to significantly reduce travel time for thousands of IT professionals.',
+    source: 'Bangalore Metro Rail Corporation'
+  },
+  {
+    id: 'pu10',
+    projectId: 'p5',
+    title: 'Bangalore Metro plans to implement AI-based crowd management system',
+    date: '2025-03-20',
+    content: 'The Bangalore Metro Rail Corporation has announced plans to implement an AI-based crowd management system to optimize train frequency based on real-time passenger density. This system will use camera feeds and sensors to adjust services during peak hours.',
+    source: 'Tech Transportation Weekly'
+  }
+];
+
+// Functions to access project data
+export const getProjects = (): Project[] => {
+  return metroProjects;
+};
+
+export const getProjectById = (projectId: string): Project | undefined => {
+  return metroProjects.find(project => project.id === projectId);
+};
+
+export const getProjectUpdates = (projectId?: string): ProjectUpdate[] => {
+  if (!projectId) return projectUpdatesList;
+  return projectUpdatesList.filter(update => update.projectId === projectId);
 };
