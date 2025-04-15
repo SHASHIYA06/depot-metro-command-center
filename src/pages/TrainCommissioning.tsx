@@ -40,8 +40,8 @@ const TrainCommissioning = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredActivities, setFilteredActivities] = useState<CommissioningActivity[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [trainSetFilter, setTrainSetFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [trainSetFilter, setTrainSetFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingActivity, setEditingActivity] = useState<CommissioningActivity | null>(null);
   const itemsPerPage = 10;
@@ -98,12 +98,12 @@ const TrainCommissioning = () => {
     let result = [...activities];
 
     // Apply train set filter
-    if (trainSetFilter) {
+    if (trainSetFilter && trainSetFilter !== 'all') {
       result = result.filter(item => item.trainSet === trainSetFilter);
     }
 
     // Apply status filter
-    if (statusFilter) {
+    if (statusFilter && statusFilter !== 'all') {
       result = result.filter(item => item.status === statusFilter);
     }
 
@@ -321,7 +321,7 @@ const TrainCommissioning = () => {
               <SelectValue placeholder="Train Set" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Train Sets</SelectItem>
+              <SelectItem value="all">All Train Sets</SelectItem>
               <SelectItem value="TS15">TS15</SelectItem>
               <SelectItem value="TS16">TS16</SelectItem>
               <SelectItem value="TS17">TS17</SelectItem>
@@ -333,7 +333,7 @@ const TrainCommissioning = () => {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="In Progress">In Progress</SelectItem>
               <SelectItem value="Completed">Completed</SelectItem>
