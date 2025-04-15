@@ -846,36 +846,36 @@ export const deleteTask = (taskId: string): boolean => {
 
 // Function to generate efficiency data for analytics
 export const generateEfficiencyData = () => {
-  // Generate data for the last 7 days
-  const data = [];
-  
-  for (let i = 6; i >= 0; i--) {
-    const date = subDays(new Date(), i);
-    const dateStr = format(date, 'MMM dd');
-    
-    // Generate some random but realistic numbers
-    const efficiency = Math.floor(Math.random() * 30) + 70; // 70-100%
-    const target = 90;
-    
-    data.push({
-      date: dateStr,
-      efficiency,
-      target
+  // Generate efficiency data for all engineers and technicians
+  return users
+    .filter(user => user.role === UserRole.ENGINEER || user.role === UserRole.TECHNICIAN)
+    .map(user => {
+      // Generate random values for demonstration
+      const assignedTasks = Math.floor(Math.random() * 10) + 2;
+      const completedTasks = Math.floor(Math.random() * assignedTasks);
+      const resolvedIssues = Math.floor(Math.random() * 5);
+      const efficiency = Math.floor((completedTasks / assignedTasks) * 100);
+      
+      return {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        assignedTasks,
+        completedTasks,
+        resolvedIssues,
+        efficiency
+      };
     });
-  }
-  
-  return data;
 };
 
-// Function to get working hours for users
-export const getUserWorkingHours = () => {
-  // Generate data for each user role
-  return [
-    { name: 'Engineers', value: 42.5 },
-    { name: 'Technicians', value: 45.8 },
-    { name: 'Support Staff', value: 40.2 },
-    { name: 'Management', value: 38.5 }
-  ];
+// Function to get user working hours (used in Analytics page)
+export const getUserWorkingHours = (userId: string) => {
+  // This function should return working hours data for a specific user
+  // Simulate some data for demonstration purposes
+  return {
+    totalHours: Math.floor(Math.random() * 40) + 20,
+    averageDaily: Math.floor(Math.random() * 5) + 4
+  };
 };
 
 // Mock metro projects data
@@ -974,7 +974,7 @@ export const metroProjects: Project[] = [
       'Uses both underground and elevated stations',
       'Features driverless train operations',
       'Intermodal integration with MRTS and suburban rail',
-      'Four-car train sets with longitudinal seating'
+      'Four-car train sets with capacity of 2000 passengers'
     ],
     website: 'https://chennaimetrorail.org',
     stations: 41,

@@ -8,7 +8,7 @@ import { TrainStatusCard } from '@/components/dashboard/TrainStatusCard';
 import { TaskList } from '@/components/dashboard/TaskList';
 import { PriorityChart } from '@/components/dashboard/PriorityChart';
 import { Dashboard3DChart } from '@/components/dashboard/Dashboard3DChart';
-import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building } from 'lucide-react';
+import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   dashboardStats, 

@@ -91,7 +91,16 @@ const Projects = () => {
                       <MapPin className="h-3 w-3 mr-1" />
                       {selectedProject.location}
                       {selectedProject.status && (
-                        <Badge className="ml-2" variant={selectedProject.status === 'Operational' ? 'success' : selectedProject.status === 'Under Construction' ? 'warning' : 'outline'}>
+                        <Badge 
+                          className="ml-2" 
+                          variant={
+                            selectedProject.status === 'Operational' 
+                              ? 'secondary'
+                              : selectedProject.status === 'Under Construction' 
+                                ? 'default' 
+                                : 'outline'
+                          }
+                        >
                           {selectedProject.status}
                         </Badge>
                       )}

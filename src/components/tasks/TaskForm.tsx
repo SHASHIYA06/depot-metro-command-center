@@ -85,12 +85,19 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
 
   const onSubmit = async (values: z.infer<typeof taskSchema>) => {
     // Format the data for submission
-    const formattedData = {
-      ...values,
+    const formattedData: Omit<Task, 'id'> = {
+      title: values.title,
+      description: values.description,
+      priority: values.priority,
+      status: values.status,
+      assignedTo: values.assignedTo,
       assignedBy: user?.id || '',
       createdAt: task?.createdAt || new Date().toISOString(),
-      // Convert date string to ISO format
       dueDate: new Date(values.dueDate).toISOString(),
+      category: values.category,
+      workDetails: values.workDetails,
+      trainId: values.trainId,
+      carId: values.carId,
     };
 
     if (task) {
