@@ -1,145 +1,134 @@
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  ListTodo, 
-  AlertCircle, 
-  Settings, 
-  Users, 
-  History, 
-  BarChart2, 
-  Building,
-  Train 
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  LayoutDashboard,
+  ClipboardCheck,
+  AlertCircle,
+  Wrench,
+  CalendarDays,
+  Users,
+  BarChart3,
+  FolderKanban,
+  Train,
+  UserCheck,
+  FileSpreadsheet,
+  Cloud,
+  LucideIcon
+} from 'lucide-react';
 
-interface NavItemProps {
-  label: string;
-  icon: React.ComponentType<any>;
+interface SidebarLinkProps {
   to: string;
-  active: boolean;
+  icon: LucideIcon;
+  label: string;
+  exact?: boolean;
 }
 
-export const Sidebar = () => {
-  const { user } = useAuth();
-  const location = useLocation();
+const SidebarLink: React.FC<SidebarLinkProps> = ({
+  to,
+  icon: Icon,
+  label,
+  exact = false,
+}) => {
   const isMobile = useIsMobile();
   
-  // Define navigation items
-  const navItems = [
-    {
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      to: '/dashboard',
-      activeOn: ['/dashboard'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
-    },
-    {
-      label: 'Tasks',
-      icon: ListTodo,
-      to: '/tasks',
-      activeOn: ['/tasks'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
-    },
-    {
-      label: 'Issues',
-      icon: AlertCircle,
-      to: '/issues',
-      activeOn: ['/issues'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
-    },
-    {
-      label: 'Maintenance',
-      icon: Settings,
-      to: '/maintenance',
-      activeOn: ['/maintenance'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
-    },
-    {
-      label: 'Staff',
-      icon: Users,
-      to: '/staff',
-      activeOn: ['/staff'],
-      roles: [UserRole.DEPOT_INCHARGE],
-    },
-    {
-      label: 'Activities',
-      icon: History,
-      to: '/activities',
-      activeOn: ['/activities'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
-    },
-    {
-      label: 'Analytics',
-      icon: BarChart2,
-      to: '/analytics',
-      activeOn: ['/analytics'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
-    },
-    {
-      label: 'Projects',
-      icon: Building,
-      to: '/projects',
-      activeOn: ['/projects'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
-    },
-    {
-      label: 'Train Commissioning',
-      icon: Train,
-      to: '/train-commissioning',
-      activeOn: ['/train-commissioning'],
-      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
-    },
-  ];
-
-  const filteredNavItems = navItems.filter(item => item.roles.includes(user?.role as UserRole));
-
   return (
-    <div className={cn(
-      "flex flex-col space-y-4 py-4",
-      isMobile ? "border-r-0" : "border-r"
-    )}>
-      <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Metro Depot
-        </h2>
-        <div className="space-y-1">
-          {filteredNavItems.map((item) => (
-            <NavItem
-              key={item.label}
-              label={item.label}
-              icon={item.icon}
-              to={item.to}
-              active={item.activeOn.some(path => location.pathname.startsWith(path))}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <NavLink
+      to={to}
+      end={exact}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all',
+          'hover:bg-accent hover:text-accent-foreground',
+          isActive
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground'
+        )
+      }
+    >
+      <Icon className="h-5 w-5" />
+      {!isMobile && <span>{label}</span>}
+    </NavLink>
   );
 };
 
-const NavItem = ({ label, icon: Icon, to, active }: NavItemProps) => {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate(to);
-  };
-
+export const Sidebar: React.FC = () => {
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
+  
+  // Check user role for conditional rendering
+  const canAccessStaff = user?.role === UserRole.ADMIN || user?.role === UserRole.DEPOT_INCHARGE;
+  const canAccessAnalytics = user?.role === UserRole.ADMIN || user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
+  
   return (
-    <button
-      className={cn(
-        "group flex w-full items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium hover:bg-secondary hover:text-foreground",
-        active ? "bg-secondary text-foreground" : "text-muted-foreground"
-      )}
-      onClick={handleClick}
-    >
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </button>
+    <div className={cn(
+      "border-r bg-background h-screen hidden md:block fixed",
+      isMobile ? "w-14" : "w-64"
+    )}>
+      <div className="flex flex-col h-full">
+        <div className={cn(
+          "flex h-14 items-center border-b px-4",
+          isMobile ? "justify-center" : "justify-between"
+        )}>
+          {!isMobile && (
+            <NavLink to="/" className="flex items-center space-x-2">
+              <Train className="h-6 w-6 text-metro-primary" />
+              <span className="font-bold">Metro Depot</span>
+            </NavLink>
+          )}
+          {isMobile && <Train className="h-6 w-6 text-metro-primary" />}
+        </div>
+        
+        <ScrollArea className="flex-1 px-2 py-2">
+          <div className="space-y-1">
+            <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
+            <SidebarLink to="/tasks" icon={ClipboardCheck} label="Tasks" />
+            <SidebarLink to="/issues" icon={AlertCircle} label="Issues" />
+            <SidebarLink to="/maintenance" icon={Wrench} label="Maintenance" />
+            <SidebarLink to="/maintenance-schedule" icon={CalendarDays} label="Maint. Schedule" />
+            <SidebarLink to="/daily-activities" icon={FileSpreadsheet} label="Daily Activities" />
+            <SidebarLink to="/activities" icon={CalendarDays} label="Activities" />
+            <SidebarLink to="/train-commissioning" icon={Train} label="Commissioning" />
+            {canAccessStaff && (
+              <>
+                <SidebarLink to="/staff" icon={Users} label="Staff" />
+                <SidebarLink to="/staff-attendance" icon={UserCheck} label="Staff Attendance" />
+              </>
+            )}
+            {canAccessAnalytics && (
+              <SidebarLink to="/analytics" icon={BarChart3} label="Analytics" />
+            )}
+            <SidebarLink to="/projects" icon={FolderKanban} label="Projects" />
+            <SidebarLink to="/backup" icon={Cloud} label="Backup" />
+          </div>
+        </ScrollArea>
+        
+        <div className="border-t p-4">
+          <NavLink to="/profile">
+            <Button variant="ghost" className="w-full justify-start">
+              <div className="flex items-center">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                  {user?.name.charAt(0)}
+                </div>
+                {!isMobile && (
+                  <div className="ml-2 text-left">
+                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.role.replace('_', ' ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Button>
+          </NavLink>
+        </div>
+      </div>
+    </div>
   );
 };

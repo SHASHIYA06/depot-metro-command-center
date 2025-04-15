@@ -11,10 +11,14 @@ import Dashboard from '@/pages/Dashboard';
 import Tasks from '@/pages/Tasks';
 import Issues from '@/pages/Issues';
 import Maintenance from '@/pages/Maintenance';
+import MaintenanceSchedule from '@/pages/MaintenanceSchedule';
 import Activities from '@/pages/Activities';
+import DailyActivities from '@/pages/DailyActivities';
 import Staff from '@/pages/Staff';
+import StaffAttendance from '@/pages/StaffAttendance';
 import Analytics from '@/pages/Analytics';
 import Projects from '@/pages/Projects';
+import Backup from '@/pages/Backup';
 import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import TrainCommissioning from '@/pages/TrainCommissioning';
@@ -28,7 +32,7 @@ const App = () => {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<RootRedirect />} />
+            <Route path="/" element={<Index />} />
             <Route path="/*" element={<AppRoutes />} />
           </Routes>
           <Toaster />
@@ -62,10 +66,14 @@ const AppRoutes = () => {
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/issues" element={<Issues />} />
         <Route path="/maintenance" element={<Maintenance />} />
+        <Route path="/maintenance-schedule" element={<MaintenanceSchedule />} />
         <Route path="/activities" element={<Activities />} />
+        <Route path="/daily-activities" element={<DailyActivities />} />
         <Route path="/staff" element={<Staff />} />
+        <Route path="/staff-attendance" element={<StaffAttendance />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/backup" element={<Backup />} />
         <Route path="/train-commissioning" element={<TrainCommissioning />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
