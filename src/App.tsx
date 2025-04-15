@@ -27,8 +27,8 @@ const App = () => {
       <Router>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/" element={<RootRedirect />} />
             <Route path="/*" element={<AppRoutes />} />
           </Routes>
           <Toaster />
@@ -36,6 +36,14 @@ const App = () => {
       </Router>
     </QueryClientProvider>
   );
+};
+
+// Root redirect component that checks auth state
+const RootRedirect = () => {
+  const { user } = useAuth();
+  
+  // If user is logged in, redirect to dashboard, otherwise to login
+  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
 };
 
 // App routes with layout
