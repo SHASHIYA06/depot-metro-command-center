@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,7 +53,6 @@ export const CloudBackupSettings: React.FC = () => {
     }
     
     try {
-      // Schedule backups
       scheduleAutomaticBackups(backupConfig);
       
       toast({
@@ -62,7 +60,6 @@ export const CloudBackupSettings: React.FC = () => {
         description: `Backup configuration saved. Automatic backups scheduled with ${backupConfig.backupFrequency} frequency.`
       });
       
-      // Switch to history tab
       setActiveTab('history');
       
     } catch (error) {
@@ -90,7 +87,6 @@ export const CloudBackupSettings: React.FC = () => {
     }
     
     try {
-      // Mock data to back up
       const mockDataToBackup = {
         activities: 'All activity data',
         attendance: 'All attendance records',
@@ -179,7 +175,6 @@ export const CloudBackupSettings: React.FC = () => {
     }
   };
   
-  // Load backups when tab changes to history
   React.useEffect(() => {
     if (activeTab === 'history' && backupConfig.bucketName) {
       loadAvailableBackups();
@@ -370,7 +365,7 @@ export const CloudBackupSettings: React.FC = () => {
                   </li>
                   <li>Create a service account with Storage Admin permissions:
                     <ul className="list-disc pl-5 mt-1">
-                      <li>Go to IAM & Admin > Service Accounts</li>
+                      <li>Go to IAM & Admin {'>'}  Service Accounts</li>
                       <li>Create a new service account</li>
                       <li>Assign the Storage Admin role</li>
                       <li>Create and download a JSON key file</li>
