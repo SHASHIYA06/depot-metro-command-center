@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -14,20 +15,19 @@ import {
   Train 
 } from 'lucide-react';
 import { UserRole } from '@/types';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NavItemProps {
   label: string;
   icon: React.ComponentType<any>;
   to: string;
-  activeOn: string[];
-  roles: UserRole[];
+  active: boolean;
 }
 
 export const Sidebar = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   // Define navigation items
   const navItems = [
@@ -122,13 +122,6 @@ export const Sidebar = () => {
     </div>
   );
 };
-
-interface NavItemProps {
-  label: string;
-  icon: React.ComponentType<any>;
-  to: string;
-  active: boolean;
-}
 
 const NavItem = ({ label, icon: Icon, to, active }: NavItemProps) => {
   const navigate = useNavigate();
