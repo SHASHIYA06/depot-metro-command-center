@@ -77,6 +77,10 @@ const Dashboard = () => {
     navigate('/projects');
   };
 
+  const handleViewCommissioningClick = () => {
+    navigate('/train-commissioning');
+  };
+
   // Get top 3 ongoing metro projects
   const ongoingProjects = projects
     ? projects
@@ -194,7 +198,59 @@ const Dashboard = () => {
             <RecentActivities activities={activityLogs.slice(0, 5)} />
           </div>
 
-          {/* Metro Projects Overview (new section) */}
+          {/* Train Commissioning Overview (new section) */}
+          {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && (
+            <Card className="col-span-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Train Commissioning Progress</CardTitle>
+                  <CardDescription>Track the commissioning progress of new train sets TS15-TS17</CardDescription>
+                </div>
+                <Button variant="outline" onClick={handleViewCommissioningClick}>View Commissioning</Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {['TS15', 'TS16', 'TS17'].map((trainSet, index) => (
+                    <Card key={trainSet} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Train Set {trainSet}</CardTitle>
+                        <CardDescription className="flex items-center">
+                          {index === 0 ? '85% complete' : index === 1 ? '40% complete' : '10% complete'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="space-y-1">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full" 
+                              style={{ width: index === 0 ? '85%' : index === 1 ? '40%' : '10%' }} 
+                            />
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground line-clamp-2">
+                          {index === 0 
+                            ? 'Ongoing dynamic tests, 22 activities completed' 
+                            : index === 1 
+                              ? 'System checks in progress, 12 activities completed' 
+                              : 'Initial inspections started, 3 activities completed'}
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full mt-2"
+                          onClick={handleViewCommissioningClick}
+                        >
+                          View Details
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Metro Projects Overview */}
           {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && (
             <Card className="col-span-full">
               <CardHeader className="flex flex-row items-center justify-between">

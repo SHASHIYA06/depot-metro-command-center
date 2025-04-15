@@ -1,140 +1,152 @@
-
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { 
-  Activity, 
-  Calendar, 
-  ClipboardList, 
+  LayoutDashboard, 
+  ListTodo, 
+  AlertCircle, 
   Settings, 
-  Train, 
   Users, 
-  Home,
-  BarChart,
-  LogOut,
-  Menu,
-  AlertTriangle,
-  UserCircle,
-  Building
+  History, 
+  BarChart2, 
+  Building,
+  Train 
 } from 'lucide-react';
 import { UserRole } from '@/types';
+import { useMobile } from '@/hooks/use-mobile';
 
-interface SidebarProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-interface SidebarLinkProps {
-  to: string;
-  icon: React.ElementType;
+interface NavItemProps {
   label: string;
-  open: boolean;
+  icon: React.ComponentType<any>;
+  to: string;
+  activeOn: string[];
+  roles: UserRole[];
 }
 
-const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon: Icon, label, open }) => {
+export const Sidebar = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const isMobile = useMobile();
+  
+  // Define navigation items
+  const navItems = [
+    {
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+      to: '/dashboard',
+      activeOn: ['/dashboard'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
+    },
+    {
+      label: 'Tasks',
+      icon: ListTodo,
+      to: '/tasks',
+      activeOn: ['/tasks'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
+    },
+    {
+      label: 'Issues',
+      icon: AlertCircle,
+      to: '/issues',
+      activeOn: ['/issues'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
+    },
+    {
+      label: 'Maintenance',
+      icon: Settings,
+      to: '/maintenance',
+      activeOn: ['/maintenance'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN],
+    },
+    {
+      label: 'Staff',
+      icon: Users,
+      to: '/staff',
+      activeOn: ['/staff'],
+      roles: [UserRole.DEPOT_INCHARGE],
+    },
+    {
+      label: 'Activities',
+      icon: History,
+      to: '/activities',
+      activeOn: ['/activities'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
+    },
+    {
+      label: 'Analytics',
+      icon: BarChart2,
+      to: '/analytics',
+      activeOn: ['/analytics'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
+    },
+    {
+      label: 'Projects',
+      icon: Building,
+      to: '/projects',
+      activeOn: ['/projects'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
+    },
+    {
+      label: 'Train Commissioning',
+      icon: Train,
+      to: '/train-commissioning',
+      activeOn: ['/train-commissioning'],
+      roles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER],
+    },
+  ];
+
+  const filteredNavItems = navItems.filter(item => item.roles.includes(user?.role as UserRole));
+
   return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-        isActive 
-          ? "bg-primary text-primary-foreground shadow-md" 
-          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-        !open && "justify-center px-2",
-        "group transform transition-transform duration-200 hover:translate-x-1"
-      )}
-    >
-      <Icon className={cn("h-5 w-5", !open && "h-6 w-6")} />
-      {open && <span>{label}</span>}
-      {!open && (
-        <span className="absolute left-full rounded-md bg-primary text-primary-foreground px-2 py-1 ml-2 text-xs invisible opacity-0 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 z-50">
-          {label}
-        </span>
-      )}
-    </NavLink>
+    <div className={cn(
+      "flex flex-col space-y-4 py-4",
+      isMobile ? "border-r-0" : "border-r"
+    )}>
+      <div className="px-3 py-2">
+        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          Metro Depot
+        </h2>
+        <div className="space-y-1">
+          {filteredNavItems.map((item) => (
+            <NavItem
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              to={item.to}
+              active={item.activeOn.some(path => location.pathname.startsWith(path))}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 
-export const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
-  const { user, logout } = useAuth();
+interface NavItemProps {
+  label: string;
+  icon: React.ComponentType<any>;
+  to: string;
+  active: boolean;
+}
 
-  const links = [
-    { to: '/', icon: Home, label: 'Dashboard', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
-    { to: '/trains', icon: Train, label: 'Trains', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
-    { to: '/tasks', icon: ClipboardList, label: 'Tasks', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
-    { to: '/maintenance', icon: Calendar, label: 'Maintenance', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER] },
-    { to: '/staff', icon: Users, label: 'Staff', showFor: [UserRole.DEPOT_INCHARGE] },
-    { to: '/activities', icon: Activity, label: 'Activities', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER] },
-    { to: '/issues', icon: AlertTriangle, label: 'Issues', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
-    { to: '/projects', icon: Building, label: 'Projects', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER] },
-    { to: '/analytics', icon: BarChart, label: 'Analytics', showFor: [UserRole.DEPOT_INCHARGE] },
-    { to: '/profile', icon: UserCircle, label: 'Profile', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] },
-    { to: '/settings', icon: Settings, label: 'Settings', showFor: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.TECHNICIAN] }
-  ];
+const NavItem = ({ label, icon: Icon, to, active }: NavItemProps) => {
+  const navigate = useNavigate();
 
-  const filteredLinks = links.filter(link => 
-    link.showFor.includes(user?.role as UserRole)
-  );
+  const handleClick = () => {
+    navigate(to);
+  };
 
   return (
-    <aside
+    <button
       className={cn(
-        "bg-sidebar flex-shrink-0 border-r border-sidebar-border transition-all duration-300 ease-in-out z-30",
-        open ? "w-64" : "w-16"
+        "group flex w-full items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium hover:bg-secondary hover:text-foreground",
+        active ? "bg-secondary text-foreground" : "text-muted-foreground"
       )}
+      onClick={handleClick}
     >
-      <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-        {open ? (
-          <div className="flex items-center">
-            <Train className="h-6 w-6 text-primary animate-pulse" />
-            <span className="ml-2 text-lg font-semibold text-sidebar-foreground">Metro Project Review</span>
-          </div>
-        ) : (
-          <Train className="h-6 w-6 mx-auto text-primary animate-pulse" />
-        )}
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:hidden"
-          onClick={() => setOpen(!open)}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-1 p-2">
-        {filteredLinks.map((link) => (
-          <SidebarLink
-            key={link.to}
-            to={link.to}
-            icon={link.icon}
-            label={link.label}
-            open={open}
-          />
-        ))}
-      </div>
-
-      <div className="mt-auto p-2">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:translate-x-1 transform transition-transform duration-200",
-            !open && "justify-center"
-          )}
-          onClick={logout}
-        >
-          <LogOut className={cn("h-5 w-5", !open && "h-6 w-6")} />
-          {open && <span className="ml-2">Logout</span>}
-          {!open && (
-            <span className="absolute left-full rounded-md bg-red-500 text-white px-2 py-1 ml-2 text-xs invisible opacity-0 -translate-x-3 transition-all hover:visible hover:opacity-100 hover:translate-x-0 z-50">
-              Logout
-            </span>
-          )}
-        </Button>
-      </div>
-    </aside>
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </button>
   );
 };
