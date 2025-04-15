@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -63,8 +62,8 @@ export const Sidebar: React.FC = () => {
   const isMobile = useIsMobile();
   
   // Check user role for conditional rendering
-  const canAccessStaff = user?.role === UserRole.ADMIN || user?.role === UserRole.DEPOT_INCHARGE;
-  const canAccessAnalytics = user?.role === UserRole.ADMIN || user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
+  const canAccessStaff = user?.role === UserRole.DEPOT_INCHARGE;
+  const canAccessAnalytics = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
   
   return (
     <div className={cn(

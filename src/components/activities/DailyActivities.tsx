@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { users } from '@/lib/mockData';
 import { UserRole } from '@/types';
 
-// Mock daily activities data
 const mockActivities = [
   {
     id: '1',
@@ -81,20 +79,15 @@ export const DailyActivities: React.FC = () => {
   const [activities, setActivities] = useState(mockActivities);
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), 'MMMM yyyy'));
   
-  // Filter activities data based on search and filters
   const filteredActivities = activities.filter(record => {
-    // Apply date filter
     const recordDate = new Date(record.date);
     const isAfterStart = !startDate || recordDate >= startDate;
     const isBeforeEnd = !endDate || recordDate <= endDate;
     
-    // Apply status filter
     const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
     
-    // Apply train filter
     const matchesTrain = trainFilter === 'all' || record.trainSet === trainFilter;
     
-    // Apply search filter
     const matchesSearch = searchTerm === '' || 
       record.activity.toLowerCase().includes(searchTerm.toLowerCase()) ||
       record.remarks.toLowerCase().includes(searchTerm.toLowerCase());
@@ -103,14 +96,12 @@ export const DailyActivities: React.FC = () => {
   });
 
   const exportActivities = (format: 'excel' | 'pdf') => {
-    // In a real app, this would create a file export
     toast({
       title: 'Export Successful',
       description: `Activities data has been exported as ${format.toUpperCase()}`,
     });
   };
 
-  // Calculate activity statistics
   const totalActivities = filteredActivities.length;
   const completedActivities = filteredActivities.filter(a => a.status === 'Completed').length;
   const inProgressActivities = filteredActivities.filter(a => a.status === 'In Progress').length;
@@ -118,14 +109,12 @@ export const DailyActivities: React.FC = () => {
   
   const completionRate = totalActivities > 0 ? (completedActivities / totalActivities) * 100 : 0;
 
-  // Mock function to simulate backing up data to Google Cloud
   const backupToCloud = () => {
     toast({
       title: 'Backup Initiated',
       description: 'Data is being backed up to Google Cloud',
     });
     
-    // Simulate backup completion after 2 seconds
     setTimeout(() => {
       toast({
         title: 'Backup Completed',
@@ -152,7 +141,6 @@ export const DailyActivities: React.FC = () => {
         </CardHeader>
         
         <CardContent>
-          {/* Month Selector */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div className="flex items-center">
               <Calendar className="mr-2 h-5 w-5" />
@@ -174,7 +162,6 @@ export const DailyActivities: React.FC = () => {
             </div>
           </div>
           
-          {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -213,7 +200,6 @@ export const DailyActivities: React.FC = () => {
             </div>
           </div>
           
-          {/* Date Range Picker */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1 space-y-2">
               <Label>From Date</Label>
@@ -226,7 +212,6 @@ export const DailyActivities: React.FC = () => {
             </div>
           </div>
           
-          {/* Activity Statistics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6 text-center">
@@ -257,7 +242,6 @@ export const DailyActivities: React.FC = () => {
             </Card>
           </div>
           
-          {/* Activities Table */}
           <div className="border rounded-md overflow-hidden">
             <Table>
               <TableHeader>
@@ -311,7 +295,7 @@ export const DailyActivities: React.FC = () => {
                       )}
                       <TableCell>
                         <Badge variant={
-                          activity.status === 'Completed' ? 'success' : 
+                          activity.status === 'Completed' ? 'secondary' : 
                           activity.status === 'In Progress' ? 'default' : 
                           'outline'
                         }>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,6 @@ import { format, addDays, differenceInDays, isBefore } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trains } from '@/lib/mockData';
 
-// Mock maintenance schedule data
 const mockMaintenanceSchedule = [
   {
     id: '1',
@@ -82,7 +80,6 @@ export const MaintenanceSchedule: React.FC = () => {
   const [trainFilter, setTrainFilter] = useState('all');
   const [schedule, setSchedule] = useState(mockMaintenanceSchedule);
   
-  // Check and update maintenance status based on current date
   const today = new Date();
   const updatedSchedule = schedule.map(item => {
     const daysRemaining = differenceInDays(new Date(item.nextDate), today);
@@ -98,16 +95,12 @@ export const MaintenanceSchedule: React.FC = () => {
     return { ...item, status: updatedStatus };
   });
   
-  // Filter schedule data based on search and filters
   const filteredSchedule = updatedSchedule.filter(item => {
-    // Apply train filter
     const matchesTrain = trainFilter === 'all' || 
       trains.find(t => t.id === item.trainId)?.name === trainFilter;
     
-    // Apply status filter
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
     
-    // Apply search filter
     const matchesSearch = searchTerm === '' || 
       item.maintenanceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,14 +132,12 @@ export const MaintenanceSchedule: React.FC = () => {
   };
 
   const exportSchedule = (format: 'excel' | 'pdf') => {
-    // In a real app, this would create a file export
     toast({
       title: 'Export Successful',
       description: `Maintenance schedule has been exported as ${format.toUpperCase()}`,
     });
   };
 
-  // Calculate schedule statistics
   const totalTasks = filteredSchedule.length;
   const overdueTasks = filteredSchedule.filter(s => s.status === 'Overdue').length;
   const dueSoonTasks = filteredSchedule.filter(s => s.status === 'Due Soon').length;
@@ -177,7 +168,6 @@ export const MaintenanceSchedule: React.FC = () => {
         </CardHeader>
         
         <CardContent>
-          {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -216,7 +206,6 @@ export const MaintenanceSchedule: React.FC = () => {
             </div>
           </div>
           
-          {/* Maintenance Statistics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6 text-center">
@@ -247,7 +236,6 @@ export const MaintenanceSchedule: React.FC = () => {
             </Card>
           </div>
           
-          {/* Maintenance Table */}
           <div className="border rounded-md overflow-hidden">
             <Table>
               <TableHeader>
@@ -305,8 +293,8 @@ export const MaintenanceSchedule: React.FC = () => {
                       <TableCell>
                         <Badge variant={
                           item.status === 'Overdue' ? 'destructive' : 
-                          item.status === 'Due Soon' ? 'warning' : 
-                          'success'
+                          item.status === 'Due Soon' ? 'default' : 
+                          'secondary'
                         }>
                           {item.status}
                         </Badge>
