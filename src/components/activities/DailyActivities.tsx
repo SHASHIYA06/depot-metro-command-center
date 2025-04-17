@@ -12,9 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { format, subDays, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { users } from '@/lib/mockData';
-import { UserRole } from '@/types';
+import { UserRole, ExportFormat } from '@/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { exportData, ExportFormat, createPdfColumns, formatDataForExport } from '@/utils/exportUtils';
+import { exportData, exportToExcel, exportToPDF, createPdfColumns, formatDataForExport } from '@/utils/exportUtils';
 import { syncDailyActivitiesToSheets, backupToGoogleCloud } from '@/utils/googleSheetsIntegration';
 
 const mockActivities = [
@@ -247,7 +247,6 @@ export const DailyActivities: React.FC = () => {
     const isAfterStart = !startDate || recordDate >= startDate;
     const isBeforeEnd = !endDate || recordDate <= endDate;
     
-    // Check if record is in the selected month
     const isInSelectedMonth = selectedMonth === 'all' || 
       (format(recordDate, 'yyyy-MM') === selectedMonth);
     
@@ -263,7 +262,6 @@ export const DailyActivities: React.FC = () => {
   });
 
   const exportActivities = (format: ExportFormat) => {
-    // Prepare data for export
     const exportData = filteredActivities.map(record => {
       const staff = users.find(u => u.id === record.assignedTo);
       return {
@@ -315,7 +313,6 @@ export const DailyActivities: React.FC = () => {
       description: 'Data is being backed up to Google Cloud',
     });
     
-    // Prepare data for backup with user names
     const dataWithNames = activities.map(activity => {
       const staff = users.find(u => u.id === activity.assignedTo);
       return {
@@ -325,10 +322,8 @@ export const DailyActivities: React.FC = () => {
       };
     });
     
-    // Sync with Google Sheets
     const sheetsSyncResult = await syncDailyActivitiesToSheets(dataWithNames);
     
-    // Backup to Google Cloud
     const cloudBackupResult = await backupToGoogleCloud(dataWithNames, 'daily-activities');
     
     if (sheetsSyncResult && cloudBackupResult) {
@@ -345,7 +340,6 @@ export const DailyActivities: React.FC = () => {
     }
   };
 
-  // Generate month options for the last 12 months
   const getMonthOptions = () => {
     const options = [{ value: 'all', label: 'All Months' }];
     const today = new Date();
@@ -364,7 +358,6 @@ export const DailyActivities: React.FC = () => {
     setSelectedMonth(month);
     
     if (month !== 'all') {
-      // Parse the month string (yyyy-MM) to get the start and end of that month
       const [year, monthNum] = month.split('-').map(Number);
       const monthStart = startOfMonth(new Date(year, monthNum - 1));
       const monthEnd = endOfMonth(new Date(year, monthNum - 1));
@@ -372,7 +365,6 @@ export const DailyActivities: React.FC = () => {
       setStartDate(monthStart);
       setEndDate(monthEnd);
     } else {
-      // If 'All Months' is selected, reset to the last 7 days
       setStartDate(subDays(new Date(), 7));
       setEndDate(new Date());
     }

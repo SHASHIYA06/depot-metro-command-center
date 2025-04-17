@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,10 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import { format, subDays, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { users } from '@/lib/mockData';
-import { UserRole } from '@/types';
+import { UserRole, ExportFormat, AttendanceRecord } from '@/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { syncStaffAttendanceToSheets, backupToGoogleCloud } from '@/utils/googleSheetsIntegration';
-import { exportToExcel, exportToPDF, formatDataForExport, createPdfColumns } from '@/utils/exportUtils';
+import { exportData, exportToExcel, exportToPDF, formatDataForExport, createPdfColumns } from '@/utils/exportUtils';
 
 // Mock attendance data
 const mockAttendance = [
@@ -86,8 +85,18 @@ interface AttendanceRecord {
   remarks: string;
 }
 
+interface AttendanceRecordDisplay {
+  id: string;
+  userId: string;
+  date: Date;
+  checkIn: string;
+  checkOut: string;
+  status: string;
+  remarks: string;
+}
+
 interface AttendanceDetailsProps {
-  record: AttendanceRecord;
+  record: AttendanceRecordDisplay;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -95,7 +104,7 @@ interface AttendanceDetailsProps {
 const AttendanceDetails: React.FC<AttendanceDetailsProps> = ({ record, open, onOpenChange }) => {
   const user = users.find(u => u.id === record.userId);
   
-  const exportRecord = (format: 'excel' | 'pdf') => {
+  const exportRecord = (format: ExportFormat) => {
     const recordData = [{
       Date: format(new Date(record.date), 'PPP'),
       Staff: user?.name || 'Unknown',
@@ -315,7 +324,7 @@ export const StaffAttendance: React.FC = () => {
     });
   };
 
-  const exportAttendance = (format: 'excel' | 'pdf') => {
+  const exportAttendance = (format: ExportFormat) => {
     // Prepare data for export
     const exportData = filteredAttendance.map(record => {
       const user = users.find(u => u.id === record.userId);
@@ -402,11 +411,23 @@ export const StaffAttendance: React.FC = () => {
     // Prepare data for backup with user names
     const dataWithNames = attendanceData.map(record => {
       const user = users.find(u => u.id === record.userId);
-      return {
-        ...record,
-        userName: user?.name || 'Unknown',
-        userRole: user?.role || 'Unknown'
+      
+      // Create valid AttendanceRecord objects with required fields
+      const attendanceRecord: AttendanceRecord = {
+        id: record.id,
+        userId: record.userId,
+        date: format(new Date(record.date), 'yyyy-MM-dd'),
+        loginTime: record.checkIn || '',
+        logoutTime: record.checkOut || '',
+        status: record.status as 'present' | 'absent' | 'late' | 'half-day',
+        workHours: calculateWorkHours(record.checkIn, record.checkOut),
+        notes: record.remarks,
+        checkIn: record.checkIn,
+        checkOut: record.checkOut,
+        remarks: record.remarks,
       };
+      
+      return attendanceRecord;
     });
     
     // Sync with Google Sheets
@@ -427,6 +448,17 @@ export const StaffAttendance: React.FC = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  // Helper function to calculate work hours
+  const calculateWorkHours = (checkIn?: string, checkOut?: string): number => {
+    if (!checkIn || !checkOut) return 0;
+    
+    const [inHour, inMinute] = checkIn.split(':').map(Number);
+    const [outHour, outMinute] = checkOut.split(':').map(Number);
+    
+    const totalMinutes = (outHour * 60 + outMinute) - (inHour * 60 + inMinute);
+    return Math.max(0, totalMinutes / 60); // Convert to hours and ensure non-negative
   };
 
   return (

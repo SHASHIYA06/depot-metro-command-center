@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,42 +16,42 @@ const mockMaintenanceSchedules: MaintenanceSchedule[] = [
   {
     id: 'm1',
     trainId: 't1',
-    type: 'daily',
+    type: 'routine',
     description: 'Daily inspection of braking systems',
     startDate: new Date().toISOString(),
     endDate: addDays(new Date(), 1).toISOString(),
     status: 'scheduled',
-    assignedTo: ['u2', 'u4']
+    assignedTo: 'u2,u4'
   },
   {
     id: 'm2',
     trainId: 't2',
-    type: 'weekly',
+    type: 'preventive',
     description: 'Weekly maintenance of electrical systems',
     startDate: startOfWeek(new Date()).toISOString(),
     endDate: addDays(startOfWeek(new Date()), 2).toISOString(),
     status: 'in_progress',
-    assignedTo: ['u3']
+    assignedTo: 'u3'
   },
   {
     id: 'm3',
     trainId: 't3',
-    type: 'monthly',
+    type: 'corrective',
     description: 'Monthly overhaul of engine components',
     startDate: addWeeks(new Date(), 1).toISOString(),
     endDate: addWeeks(addDays(new Date(), 3), 1).toISOString(),
     status: 'scheduled',
-    assignedTo: ['u2', 'u5']
+    assignedTo: 'u2,u5'
   },
   {
     id: 'm4',
     trainId: 't1',
-    type: 'quarterly',
+    type: 'preventive',
     description: 'Quarterly safety inspection',
     startDate: addDays(new Date(), -5).toISOString(),
     endDate: addDays(new Date(), -3).toISOString(),
     status: 'completed',
-    assignedTo: ['u3', 'u4']
+    assignedTo: 'u3,u4'
   }
 ];
 
@@ -88,8 +87,8 @@ const Maintenance = () => {
     return train ? train.name : 'Unknown Train';
   };
 
-  const getAssignedStaffNames = (assignedIds: string[]): string => {
-    return assignedIds.map(id => {
+  const getAssignedStaffNames = (assignedIds: string): string => {
+    return assignedIds.split(',').map(id => {
       const staff = users.find(u => u.id === id);
       return staff ? staff.name : 'Unknown';
     }).join(', ');
@@ -112,16 +111,12 @@ const Maintenance = () => {
 
   const getTypeBadgeClass = (type: MaintenanceSchedule['type']) => {
     switch (type) {
-      case 'daily':
+      case 'routine':
         return 'bg-gray-100 text-gray-600 hover:bg-gray-200';
-      case 'weekly':
+      case 'preventive':
         return 'bg-blue-100 text-blue-600 hover:bg-blue-200';
-      case 'monthly':
+      case 'corrective':
         return 'bg-purple-100 text-purple-600 hover:bg-purple-200';
-      case 'quarterly':
-        return 'bg-amber-100 text-amber-600 hover:bg-amber-200';
-      case 'annual':
-        return 'bg-green-100 text-green-600 hover:bg-green-200';
       default:
         return '';
     }
@@ -155,11 +150,9 @@ const Maintenance = () => {
             <div className="space-y-2">
               <label htmlFor="type" className="text-sm font-medium">Maintenance Type</label>
               <select id="type" className="w-full px-3 py-2 border rounded-md">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="annual">Annual</option>
+                <option value="routine">Routine</option>
+                <option value="preventive">Preventive</option>
+                <option value="corrective">Corrective</option>
               </select>
             </div>
             <div className="space-y-2">

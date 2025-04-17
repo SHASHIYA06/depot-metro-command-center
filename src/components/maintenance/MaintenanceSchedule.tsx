@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, startOfMonth, endOfMonth, isWithinInterval, addMonths } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { exportToExcel, exportToPDF } from '@/utils/exportUtils';
+import { exportData, exportToExcel, exportToPDF } from '@/utils/exportUtils';
 import { backupToGoogleCloud } from '@/utils/googleSheetsIntegration';
+import { ExportFormat } from '@/types';
 
 // Mock maintenance schedule data
 const mockSchedules = [
@@ -126,7 +126,7 @@ export const MaintenanceSchedule: React.FC = () => {
     setSelectedView('current');
   };
 
-  const exportSchedules = (format: 'excel' | 'pdf') => {
+  const exportSchedules = (format: ExportFormat) => {
     // Prepare data for export
     const exportData = filteredSchedules.map(schedule => ({
       TrainSet: schedule.trainSet,

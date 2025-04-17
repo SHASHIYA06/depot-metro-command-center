@@ -13,7 +13,7 @@ export interface User {
   role: UserRole;
   department?: string;
   photoUrl?: string;
-  avatar?: string; // Add avatar field
+  avatar?: string; // This field is needed for the UI components
   phone?: string;
   address?: string;
   joiningDate?: string;
@@ -149,6 +149,10 @@ export interface AttendanceRecord {
   status: 'present' | 'absent' | 'late' | 'half-day';
   workHours: number;
   notes?: string;
+  // Add these fields to match the implementation in StaffAttendance
+  checkIn?: string;
+  checkOut?: string;
+  remarks?: string;
 }
 
 export interface ProjectUpdate {
@@ -163,13 +167,15 @@ export interface ProjectUpdate {
 export interface MaintenanceSchedule {
   id: string;
   trainId: string;
-  scheduledDate: string;
-  completedDate?: string;
-  status: 'scheduled' | 'in_progress' | 'completed' | 'delayed';
-  type: 'routine' | 'preventive' | 'corrective';
-  assignedTo?: string;
+  type: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'routine' | 'preventive' | 'corrective';
   description: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'delayed';
+  assignedTo: string[] | string; // Allow both string[] and string as seen in the code
+  startDate: string; // Used in Maintenance.tsx instead of scheduledDate
+  endDate: string; // Used in Maintenance.tsx
   notes?: string;
+  scheduledDate?: string; // Keep this for backward compatibility
+  completedDate?: string;
 }
 
 // Define export format type to prevent call errors

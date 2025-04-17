@@ -1,8 +1,8 @@
-
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import autoTable from 'jspdf-autotable';
 import { toast } from '@/hooks/use-toast';
+import { ExportFormat } from '@/types';
 
 /**
  * Export data to Excel file
@@ -109,9 +109,6 @@ export const exportToPDF = (
     });
   }
 };
-
-// Define exportType type to avoid the "expression is not callable" error
-export type ExportFormat = 'excel' | 'pdf';
 
 /**
  * Export data in the specified format
