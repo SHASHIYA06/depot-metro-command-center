@@ -40,7 +40,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Available emails:', users.map(u => u.email.toLowerCase()));
       console.log('Trying to login with:', normalizedEmail);
       
-      const foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
+      // Add support for the emails mentioned in the Login component
+      const loginEmails = [
+        { email: 'shashi.mishra@metro.com', role: UserRole.DEPOT_INCHARGE, name: 'Shashi Mishra' },
+        { email: 'shilpa.sahu@metro.com', role: UserRole.ENGINEER, name: 'Shilpa Sahu' },
+        { email: 'sunil.rajan@metro.com', role: UserRole.ENGINEER, name: 'Sunil Rajan' },
+        { email: 'manidip.baisya@metro.com', role: UserRole.EMPLOYEE, name: 'Manidip Baisya' },
+        { email: 'md.aslam@metro.com', role: UserRole.EMPLOYEE, name: 'Md Aslam' },
+      ];
+      
+      // Look for user in mock users first, then check login emails
+      let foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
+      
+      // If not found in regular users, check in special login emails
+      if (!foundUser) {
+        const loginEmailMatch = loginEmails.find(u => u.email.toLowerCase() === normalizedEmail);
+        
+        if (loginEmailMatch) {
+          // Create a temporary user from the login email data
+          foundUser = {
+            id: `temp-${Date.now()}`,
+            name: loginEmailMatch.name,
+            email: loginEmailMatch.email,
+            role: loginEmailMatch.role,
+            department: loginEmailMatch.role === UserRole.DEPOT_INCHARGE ? 'Operations' : 
+                       loginEmailMatch.role === UserRole.ENGINEER ? 'Engineering' : 'General',
+            phone: '+91 9876543200',
+            photoUrl: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,
+            avatar: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,
+            joiningDate: '2022-01-01',
+          };
+        }
+      }
       
       if (!foundUser) {
         console.error('User not found with email:', normalizedEmail);
