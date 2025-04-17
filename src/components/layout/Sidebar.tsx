@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,9 @@ import {
   UserCheck,
   FileSpreadsheet,
   Cloud,
+  FileText,
+  Activity,
+  Download,
   LucideIcon
 } from 'lucide-react';
 
@@ -92,18 +96,23 @@ export const Sidebar: React.FC = () => {
             <SidebarLink to="/maintenance" icon={Wrench} label="Maintenance" />
             <SidebarLink to="/maintenance-schedule" icon={CalendarDays} label="Maint. Schedule" />
             <SidebarLink to="/daily-activities" icon={FileSpreadsheet} label="Daily Activities" />
-            <SidebarLink to="/activities" icon={CalendarDays} label="Activities" />
+            <SidebarLink to="/activities" icon={Activity} label="Activity Logs" />
             <SidebarLink to="/train-commissioning" icon={Train} label="Commissioning" />
+            
             {canAccessStaff && (
               <>
                 <SidebarLink to="/staff" icon={Users} label="Staff" />
                 <SidebarLink to="/staff-attendance" icon={UserCheck} label="Staff Attendance" />
               </>
             )}
+            
             {canAccessAnalytics && (
               <SidebarLink to="/analytics" icon={BarChart3} label="Analytics" />
             )}
+            
             <SidebarLink to="/projects" icon={FolderKanban} label="Projects" />
+            <SidebarLink to="/reports" icon={FileText} label="Reports" />
+            <SidebarLink to="/exports" icon={Download} label="Data Exports" />
             <SidebarLink to="/backup" icon={Cloud} label="Backup" />
           </div>
         </ScrollArea>

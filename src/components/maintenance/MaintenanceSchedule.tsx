@@ -1,147 +1,219 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Download, PlusCircle, Search, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Calendar, Download, FileText, Cloud } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, startOfMonth, endOfMonth, isWithinInterval, addMonths } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { format, addDays, differenceInDays, isBefore } from 'date-fns';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { trains } from '@/lib/mockData';
+import { exportToExcel, exportToPDF } from '@/utils/exportUtils';
+import { backupToGoogleCloud } from '@/utils/googleSheetsIntegration';
 
-const mockMaintenanceSchedule = [
+// Mock maintenance schedule data
+const mockSchedules = [
   {
     id: '1',
-    trainId: '1', // TS15
-    maintenanceType: 'Regular Inspection',
-    lastDate: new Date(2025, 2, 15),
-    nextDate: new Date(2025, 3, 15),
-    frequency: 30, // days
+    trainSet: 'TS15',
+    type: 'Regular Inspection',
+    dueDate: new Date(2025, 4, 15),
     status: 'Scheduled',
-    assignedTo: 'Araghya',
-    notes: 'Check brake systems and HVAC'
+    assignedTeam: 'Mechanical Team',
+    estimatedDuration: '4 hours',
+    notes: 'Standard inspection as per checklist A-101'
   },
   {
     id: '2',
-    trainId: '2', // TS16
-    maintenanceType: 'Major Overhaul',
-    lastDate: new Date(2025, 0, 10),
-    nextDate: new Date(2025, 6, 10),
-    frequency: 180, // days
+    trainSet: 'TS16',
+    type: 'Critical Systems Check',
+    dueDate: new Date(2025, 4, 18),
     status: 'Scheduled',
-    assignedTo: 'Shashi',
-    notes: 'Full systems check and critical component replacement'
+    assignedTeam: 'Electrical Team',
+    estimatedDuration: '6 hours',
+    notes: 'Verify all safety systems and critical components'
   },
   {
     id: '3',
-    trainId: '3', // TS17
-    maintenanceType: 'Regular Inspection',
-    lastDate: new Date(2025, 3, 1),
-    nextDate: new Date(2025, 4, 1),
-    frequency: 30, // days
-    status: 'Scheduled',
-    assignedTo: 'Araghya',
-    notes: 'Focus on electrical systems and doors'
+    trainSet: 'TS17',
+    type: 'Wheel Maintenance',
+    dueDate: new Date(2025, 4, 10),
+    status: 'Completed',
+    assignedTeam: 'Mechanical Team',
+    estimatedDuration: '8 hours',
+    notes: 'Wheel profiling and maintenance completed'
   },
   {
     id: '4',
-    trainId: '1', // TS15
-    maintenanceType: 'Battery Check',
-    lastDate: new Date(2025, 2, 20),
-    nextDate: new Date(2025, 3, 20),
-    frequency: 30, // days
+    trainSet: 'TS15',
+    type: 'Brake System Check',
+    dueDate: new Date(2025, 4, 25),
     status: 'Scheduled',
-    assignedTo: 'Shashi',
-    notes: 'Check battery condition and charging systems'
+    assignedTeam: 'Brake Team',
+    estimatedDuration: '5 hours',
+    notes: 'Complete brake system inspection and testing'
   },
   {
     id: '5',
-    trainId: '2', // TS16
-    maintenanceType: 'Safety Systems',
-    lastDate: new Date(2025, 2, 25),
-    nextDate: new Date(2025, 3, 25),
-    frequency: 30, // days
+    trainSet: 'TS16',
+    type: 'Door System Maintenance',
+    dueDate: new Date(2025, 5, 5),
     status: 'Scheduled',
-    assignedTo: 'Araghya',
-    notes: 'Validate all safety systems and emergency protocols'
+    assignedTeam: 'Mechanical Team',
+    estimatedDuration: '3 hours',
+    notes: 'Door alignment and sensor calibration'
   },
+  {
+    id: '6',
+    trainSet: 'TS17',
+    type: 'HVAC System Service',
+    dueDate: new Date(2025, 5, 12),
+    status: 'Scheduled',
+    assignedTeam: 'HVAC Team',
+    estimatedDuration: '4 hours',
+    notes: 'Check cooling performance and clean filters'
+  }
 ];
 
 export const MaintenanceSchedule: React.FC = () => {
   const { toast } = useToast();
-  const isMobile = useIsMobile();
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [selectedView, setSelectedView] = useState<string>('current');
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedTrainSet, setSelectedTrainSet] = useState<string>('all');
   
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [trainFilter, setTrainFilter] = useState('all');
-  const [schedule, setSchedule] = useState(mockMaintenanceSchedule);
-  
-  const today = new Date();
-  const updatedSchedule = schedule.map(item => {
-    const daysRemaining = differenceInDays(new Date(item.nextDate), today);
+  // Filter schedules based on selected criteria
+  const filteredSchedules = mockSchedules.filter(schedule => {
+    const scheduleDate = new Date(schedule.dueDate);
     
-    let updatedStatus = item.status;
-    
-    if (daysRemaining < 0) {
-      updatedStatus = 'Overdue';
-    } else if (daysRemaining <= 7) {
-      updatedStatus = 'Due Soon';
+    // Date filter based on selected view
+    let isInDateRange = false;
+    if (selectedView === 'current') {
+      // Current month view
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(currentMonth);
+      isInDateRange = isWithinInterval(scheduleDate, { start: monthStart, end: monthEnd });
+    } else if (selectedView === 'next') {
+      // Next month view
+      const nextMonth = addMonths(currentMonth, 1);
+      const monthStart = startOfMonth(nextMonth);
+      const monthEnd = endOfMonth(nextMonth);
+      isInDateRange = isWithinInterval(scheduleDate, { start: monthStart, end: monthEnd });
+    } else if (selectedView === 'all') {
+      // All schedules view
+      isInDateRange = true;
     }
     
-    return { ...item, status: updatedStatus };
-  });
-  
-  const filteredSchedule = updatedSchedule.filter(item => {
-    const matchesTrain = trainFilter === 'all' || 
-      trains.find(t => t.id === item.trainId)?.name === trainFilter;
+    // Type filter
+    const matchesType = selectedType === 'all' || schedule.type === selectedType;
     
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    // Train set filter
+    const matchesTrainSet = selectedTrainSet === 'all' || schedule.trainSet === selectedTrainSet;
     
-    const matchesSearch = searchTerm === '' || 
-      item.maintenanceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesTrain && matchesStatus && matchesSearch;
+    return isInDateRange && matchesType && matchesTrainSet;
   });
 
-  const completeMaintenanceTask = (id: string) => {
-    setSchedule(prev => 
-      prev.map(item => {
-        if (item.id === id) {
-          const nextDate = addDays(new Date(), item.frequency);
-          return {
-            ...item,
-            lastDate: new Date(),
-            nextDate: nextDate,
-            status: 'Scheduled'
-          };
-        }
-        return item;
-      })
-    );
+  const handlePreviousMonth = () => {
+    setCurrentMonth(prevMonth => addMonths(prevMonth, -1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prevMonth => addMonths(prevMonth, 1));
+  };
+
+  const handleCurrentMonth = () => {
+    setCurrentMonth(new Date());
+    setSelectedView('current');
+  };
+
+  const exportSchedules = (format: 'excel' | 'pdf') => {
+    // Prepare data for export
+    const exportData = filteredSchedules.map(schedule => ({
+      TrainSet: schedule.trainSet,
+      MaintenanceType: schedule.type,
+      DueDate: format(new Date(schedule.dueDate), 'PPP'),
+      Status: schedule.status,
+      AssignedTeam: schedule.assignedTeam,
+      EstimatedDuration: schedule.estimatedDuration,
+      Notes: schedule.notes
+    }));
     
-    toast({
-      title: 'Maintenance Completed',
-      description: 'Maintenance task has been marked as completed and next date updated',
-    });
+    if (format === 'excel') {
+      exportToExcel(exportData, 'Maintenance_Schedule');
+      toast({
+        title: 'Export Successful',
+        description: 'Maintenance schedule has been exported to Excel',
+      });
+    } else {
+      exportToPDF(
+        exportData,
+        'Maintenance_Schedule',
+        'Metro Depot Maintenance Schedule',
+        [
+          { header: 'Train Set', dataKey: 'TrainSet' },
+          { header: 'Type', dataKey: 'MaintenanceType' },
+          { header: 'Due Date', dataKey: 'DueDate' },
+          { header: 'Status', dataKey: 'Status' },
+          { header: 'Team', dataKey: 'AssignedTeam' },
+          { header: 'Duration', dataKey: 'EstimatedDuration' }
+        ]
+      );
+      toast({
+        title: 'Export Successful',
+        description: 'Maintenance schedule has been exported to PDF',
+      });
+    }
   };
 
-  const exportSchedule = (format: 'excel' | 'pdf') => {
+  const backupScheduleData = async () => {
     toast({
-      title: 'Export Successful',
-      description: `Maintenance schedule has been exported as ${format.toUpperCase()}`,
+      title: 'Backup Started',
+      description: 'Backing up maintenance schedule data to Google Cloud...',
     });
+    
+    // Backup to Google Cloud
+    const cloudBackupResult = await backupToGoogleCloud(mockSchedules, 'maintenance-schedule');
+    
+    if (cloudBackupResult) {
+      toast({
+        title: 'Backup Completed',
+        description: 'Maintenance schedule data has been successfully backed up to Google Cloud',
+      });
+    } else {
+      toast({
+        title: 'Backup Failed',
+        description: 'There was an issue with the backup process. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const totalTasks = filteredSchedule.length;
-  const overdueTasks = filteredSchedule.filter(s => s.status === 'Overdue').length;
-  const dueSoonTasks = filteredSchedule.filter(s => s.status === 'Due Soon').length;
-  const scheduledTasks = filteredSchedule.filter(s => s.status === 'Scheduled').length;
+  const getMaintenanceTypes = () => {
+    const types = new Set<string>();
+    mockSchedules.forEach(schedule => types.add(schedule.type));
+    return Array.from(types);
+  };
+
+  const getTrainSets = () => {
+    const sets = new Set<string>();
+    mockSchedules.forEach(schedule => sets.add(schedule.trainSet));
+    return Array.from(sets);
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return 'default';
+      case 'In Progress':
+        return 'secondary';
+      case 'Scheduled':
+        return 'outline';
+      case 'Delayed':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -151,86 +223,114 @@ export const MaintenanceSchedule: React.FC = () => {
             <div>
               <CardTitle>Maintenance Schedule</CardTitle>
               <CardDescription>
-                Track and manage train maintenance schedules
+                Plan and track scheduled maintenance activities
               </CardDescription>
             </div>
-            <div className="flex gap-2 mt-2 sm:mt-0">
-              <Button variant="outline" onClick={() => exportSchedule('excel')}>
+            <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
+              <Button variant="outline" onClick={() => exportSchedules('excel')}>
                 <Download className="mr-2 h-4 w-4" />
                 Export Excel
               </Button>
-              <Button variant="outline" onClick={() => exportSchedule('pdf')}>
+              <Button variant="outline" onClick={() => exportSchedules('pdf')}>
                 <Download className="mr-2 h-4 w-4" />
                 Export PDF
+              </Button>
+              <Button onClick={backupScheduleData}>
+                <Cloud className="mr-2 h-4 w-4" />
+                Backup
               </Button>
             </div>
           </div>
         </CardHeader>
         
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search maintenance tasks..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <div className="flex items-center">
+              <Calendar className="mr-2 h-5 w-5" />
+              <span className="text-lg font-medium">{format(currentMonth, 'MMMM yyyy')}</span>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Overdue">Overdue</SelectItem>
-                  <SelectItem value="Due Soon">Due Soon</SelectItem>
-                  <SelectItem value="Scheduled">Scheduled</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={trainFilter} onValueChange={setTrainFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Train Set" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Trains</SelectItem>
-                  <SelectItem value="TS15">TS15</SelectItem>
-                  <SelectItem value="TS16">TS16</SelectItem>
-                  <SelectItem value="TS17">TS17</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
+                Current Month
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleNextMonth}>
+                Next
+              </Button>
             </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Select value={selectedView} onValueChange={setSelectedView}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="current">Current Month</SelectItem>
+                <SelectItem value="next">Next Month</SelectItem>
+                <SelectItem value="all">All Scheduled</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Maintenance Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {getMaintenanceTypes().map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedTrainSet} onValueChange={setSelectedTrainSet}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Train Set" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Trains</SelectItem>
+                {getTrainSets().map(set => (
+                  <SelectItem key={set} value={set}>{set}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold">{totalTasks}</div>
-                <div className="text-sm text-muted-foreground">Total Tasks</div>
+                <div className="text-2xl font-bold">{filteredSchedules.length}</div>
+                <div className="text-sm text-muted-foreground">Total Scheduled</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-red-600">{overdueTasks}</div>
-                <div className="text-sm text-muted-foreground">Overdue</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {filteredSchedules.filter(s => s.status === 'Completed').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Completed</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-amber-600">{dueSoonTasks}</div>
-                <div className="text-sm text-muted-foreground">Due Soon (7 days)</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {filteredSchedules.filter(s => s.status === 'In Progress').length}
+                </div>
+                <div className="text-sm text-muted-foreground">In Progress</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-green-600">{scheduledTasks}</div>
+                <div className="text-2xl font-bold text-amber-600">
+                  {filteredSchedules.filter(s => s.status === 'Scheduled').length}
+                </div>
                 <div className="text-sm text-muted-foreground">Scheduled</div>
               </CardContent>
             </Card>
@@ -240,82 +340,40 @@ export const MaintenanceSchedule: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Train</TableHead>
+                  <TableHead>Train Set</TableHead>
                   <TableHead>Maintenance Type</TableHead>
-                  {!isMobile && <TableHead>Last Date</TableHead>}
-                  <TableHead>Next Date</TableHead>
-                  {!isMobile && (
-                    <>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Notes</TableHead>
-                    </>
-                  )}
+                  <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Team</TableHead>
+                  <TableHead>Duration</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSchedule.map(item => {
-                  const train = trains.find(t => t.id === item.trainId);
-                  const daysRemaining = differenceInDays(new Date(item.nextDate), today);
-                  
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell>{train?.name || '-'}</TableCell>
-                      <TableCell>
-                        <div className="font-medium">{item.maintenanceType}</div>
-                        {isMobile && (
-                          <div className="text-xs text-muted-foreground">
-                            Last: {format(new Date(item.lastDate), 'dd MMM yyyy')} •
-                            Assigned: {item.assignedTo}
-                          </div>
-                        )}
-                      </TableCell>
-                      {!isMobile && (
-                        <TableCell>
-                          {format(new Date(item.lastDate), 'dd MMM yyyy')}
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <div>{format(new Date(item.nextDate), 'dd MMM yyyy')}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {daysRemaining < 0 
-                            ? `${Math.abs(daysRemaining)} days overdue` 
-                            : `${daysRemaining} days remaining`}
-                        </div>
-                      </TableCell>
-                      {!isMobile && (
-                        <>
-                          <TableCell>{item.assignedTo}</TableCell>
-                          <TableCell>{item.notes}</TableCell>
-                        </>
-                      )}
-                      <TableCell>
-                        <Badge variant={
-                          item.status === 'Overdue' ? 'destructive' : 
-                          item.status === 'Due Soon' ? 'default' : 
-                          'secondary'
-                        }>
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant={item.status === 'Overdue' ? 'default' : 'outline'}
-                          onClick={() => completeMaintenanceTask(item.id)}
-                        >
-                          Complete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {filteredSchedules.map(schedule => (
+                  <TableRow key={schedule.id}>
+                    <TableCell className="font-medium">{schedule.trainSet}</TableCell>
+                    <TableCell>{schedule.type}</TableCell>
+                    <TableCell>{format(new Date(schedule.dueDate), 'dd MMM yyyy')}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(schedule.status)}>
+                        {schedule.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{schedule.assignedTeam}</TableCell>
+                    <TableCell>{schedule.estimatedDuration}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm">
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
                 
-                {filteredSchedule.length === 0 && (
+                {filteredSchedules.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={isMobile ? 5 : 7} className="text-center py-8">
-                      No maintenance tasks found for the selected criteria
+                    <TableCell colSpan={7} className="text-center py-8">
+                      No maintenance activities scheduled for the selected criteria
                     </TableCell>
                   </TableRow>
                 )}
@@ -324,12 +382,7 @@ export const MaintenanceSchedule: React.FC = () => {
           </div>
           
           <div className="mt-4 text-sm text-muted-foreground">
-            <p>Note: All maintenance records are backed up to Google Cloud monthly. To set up Google Cloud backup, the following information is required:</p>
-            <ul className="list-disc pl-6 mt-2">
-              <li>Google Cloud Storage bucket name</li>
-              <li>Service account credentials (JSON key file)</li>
-              <li>Backup frequency settings</li>
-            </ul>
+            <p>Note: Maintenance schedules are subject to change based on operational requirements. All maintenance activities are logged and backed up automatically.</p>
           </div>
         </CardContent>
       </Card>

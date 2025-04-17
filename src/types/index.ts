@@ -1,4 +1,6 @@
+
 export enum UserRole {
+  ADMIN = 'ADMIN',
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
   TECHNICIAN = 'TECHNICIAN'
@@ -10,34 +12,22 @@ export interface User {
   email: string;
   role: UserRole;
   department?: string;
-  avatar?: string;
-  phone?: string;
-  address?: string;
-  joiningDate?: string;
-  skills?: string[];
-  education?: string;
-  emergencyContact?: string;
-  badgeNo?: string;
-  aadharNo?: string;
-  vehicleNo?: string;
+  photoUrl?: string;
 }
 
-export interface Train {
+export interface Task {
   id: string;
-  name: string;
-  status: 'active' | 'maintenance' | 'out_of_service';
-  lastMaintenance: string; // ISO date string
-  nextMaintenance: string; // ISO date string
-  totalKilometers: number;
-  cars: Car[];
-}
-
-export interface Car {
-  id: string;
-  position: number; // Position in the train (1-8)
-  status: 'operational' | 'maintenance' | 'faulty';
-  lastInspection: string; // ISO date string
-  issues?: Issue[];
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'pending' | 'in_progress' | 'completed';
+  assignedTo?: string; // User ID
+  assignedBy: string; // User ID
+  createdAt: string;
+  dueDate: string;
+  completedAt?: string;
+  category: string;
+  workDetails?: string;
 }
 
 export interface Issue {
@@ -46,32 +36,16 @@ export interface Issue {
   description: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   status: 'open' | 'in_progress' | 'resolved';
-  reportedAt: string; // ISO date string
+  reportedAt: string;
+  reportedBy: string; // User ID
   assignedTo?: string; // User ID
-  assignedBy?: string; // User ID who assigned this issue
-  resolvedAt?: string; // ISO date string
-  trainId?: string; // Train ID
-  carId?: string; // Car ID
-  workDetails?: string; // Details of work performed by employees
-  lastUpdated?: string; // Last update timestamp
-  workCategory?: string; // Category of work
-}
-
-export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in_progress' | 'completed' | 'delayed';
-  assignedTo: string; // User ID
-  assignedBy: string; // User ID
-  createdAt: string; // ISO date string
-  dueDate: string; // ISO date string
-  completedAt?: string; // ISO date string
-  trainId?: string; // Train ID if applicable
-  carId?: string; // Car ID if applicable
-  category: 'maintenance' | 'inspection' | 'repair' | 'cleaning' | 'administrative' | 'other';
-  workDetails?: string; // Details of work progress, updates, etc.
+  assignedBy?: string; // User ID
+  resolvedAt?: string;
+  trainId?: string;
+  carId?: string;
+  lastUpdated?: string;
+  workCategory?: string;
+  workDetails?: string;
 }
 
 export interface ActivityLog {
@@ -79,99 +53,45 @@ export interface ActivityLog {
   userId: string;
   action: string;
   details: string;
-  timestamp: string; // ISO date string
+  timestamp: string;
   taskId?: string;
   trainId?: string;
   carId?: string;
 }
 
-export interface MaintenanceSchedule {
-  id: string;
-  trainId: string;
-  type: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual';
-  description: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
-  status: 'scheduled' | 'in_progress' | 'completed' | 'delayed';
-  assignedTo: string[]; // User IDs
-}
-
-export interface DashboardStats {
-  totalTasks: number;
-  completedTasks: number;
-  pendingTasks: number;
-  delayedTasks: number;
-  activeTrains: number;
-  trainsInMaintenance: number;
-  issuesByPriority: {
-    low: number;
-    medium: number;
-    high: number;
-    critical: number;
-  };
-  upcomingMaintenance: MaintenanceSchedule[];
-  recentActivities: ActivityLog[];
-}
-
-export interface WorkCategory {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-export interface DailyWorkLog {
-  id: string;
-  userId: string;
-  issueId: string;
-  date: string; // ISO date string
-  workDescription: string;
-  hoursSpent: number;
-  status: 'completed' | 'in_progress' | 'pending';
-}
-
-export interface AttendanceRecord {
-  id: string;
-  userId: string;
-  date: string; // ISO date string
-  loginTime: string; // ISO date string
-  logoutTime?: string; // ISO date string
-  status: 'present' | 'absent' | 'late' | 'half-day';
-  workHours?: number;
-  notes?: string;
-}
-
-export interface GoogleSheetsConfig {
-  sheetId: string;
-  tabName: string;
-  credentialsPath?: string;
-}
-
 export interface Project {
   id: string;
   name: string;
-  location: string;
   description: string;
-  status?: 'Operational' | 'Under Construction' | 'Planned' | 'Approved';
-  implementingAgency: string;
+  status: 'Under Construction' | 'Operational' | 'Planned';
+  location: string;
+  networkLength: number;
+  stations?: number;
   startDate: string;
   completionDate?: string;
-  cost: number;
-  networkLength: number;
-  keyFeatures?: string[];
-  website?: string;
-  stations?: number;
-  dailyRidership?: string;
-  lines?: number;
-  trainSets?: number;
   completionPercentage?: number;
-  trackType?: string;
+  budget?: number;
+  teams?: string[];
 }
 
-export interface ProjectUpdate {
+export interface Train {
   id: string;
-  projectId: string;
-  title: string;
-  date: string;
-  content: string;
-  source?: string;
+  name: string;
+  status: 'active' | 'maintenance' | 'inactive';
+  lastMaintenance: string;
+  nextMaintenance: string;
+  totalTrips: number;
+  totalDistance: number;
+  cars: number;
+  manufacturer: string;
+  commissionedDate: string;
+}
+
+export interface TrainCar {
+  id: string;
+  trainId: string;
+  carNumber: string;
+  status: 'operational' | 'needs_maintenance' | 'under_maintenance';
+  lastInspection: string;
+  nextInspection: string;
 }
