@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Calendar } from 'lucide-react';
+import { Search, Calendar, MoreHorizontal, X, FileType } from 'lucide-react';
 import { format } from 'date-fns';
 import { ActivityLog, UserRole, ExportFormat } from '@/types';
 import { activityLogs, users } from '@/lib/mockData';
@@ -25,7 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { DotsHorizontalIcon, FileType, X } from 'lucide-react';
 import { handleExport } from '@/utils/exportUtils';
 
 const Activities = () => {
@@ -141,7 +141,7 @@ const Activities = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="p-2">
-                        <DotsHorizontalIcon className="h-4 w-4" />
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]">
@@ -175,7 +175,7 @@ const Activities = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="p-2">
-                            <DotsHorizontalIcon className="h-4 w-4" />
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
