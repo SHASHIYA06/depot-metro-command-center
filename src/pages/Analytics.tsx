@@ -131,8 +131,8 @@ const Analytics = () => {
         const hours = getUserWorkingHours(u.id);
         return {
           name: u.name,
-          hours: hours.totalHours,
-          average: hours.averageDaily
+          hours: hours,
+          average: hours // Use the hours value directly
         };
       })
       .sort((a, b) => b.hours - a.hours); // Sort by most hours
@@ -173,7 +173,7 @@ const Analytics = () => {
     assigned: getIssuesByAssignee(user.id).length,
     completed: getIssuesByAssignee(user.id).filter(i => i.status === 'resolved').length,
     inProgress: getIssuesByAssignee(user.id).filter(i => i.status === 'in_progress').length,
-    efficiency: efficiencyData.find(d => d.id === user.id)?.efficiency || 0
+    efficiency: efficiencyData.find(d => d.name === user.name)?.efficiency || 0
   } : null;
 
   return (

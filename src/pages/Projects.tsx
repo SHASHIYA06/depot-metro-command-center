@@ -20,7 +20,7 @@ const Projects = () => {
 
   const { data: projectUpdates, isLoading: updatesLoading } = useQuery({
     queryKey: ['projectUpdates', selectedProject?.id],
-    queryFn: () => getProjectUpdates(selectedProject?.id),
+    queryFn: () => selectedProject?.id ? getProjectUpdates(selectedProject.id) : [],
     enabled: !!selectedProject,
   });
 
