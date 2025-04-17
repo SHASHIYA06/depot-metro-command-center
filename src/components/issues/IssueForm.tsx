@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -85,7 +86,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
       carId: values.carId,
       workCategory: values.workCategory,
       workDetails: values.workDetails,
-      resolvedAt: values.resolved ? new Date().toISOString() : undefined,
+      resolvedAt: values.status === 'resolved' ? new Date().toISOString() : undefined,
       reportedBy: user?.id || '',
     };
 

@@ -159,3 +159,18 @@ export interface ProjectUpdate {
   content: string;
   source: string;
 }
+
+export interface MaintenanceSchedule {
+  id: string;
+  trainId: string;
+  scheduledDate: string;
+  completedDate?: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'delayed';
+  type: 'routine' | 'preventive' | 'corrective';
+  assignedTo?: string;
+  description: string;
+  notes?: string;
+}
+
+// Define export format type to prevent call errors
+export type ExportFormat = 'excel' | 'pdf';
