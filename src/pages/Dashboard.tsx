@@ -8,6 +8,7 @@ import { TrainStatusCard } from '@/components/dashboard/TrainStatusCard';
 import { TaskList } from '@/components/dashboard/TaskList';
 import { PriorityChart } from '@/components/dashboard/PriorityChart';
 import { Dashboard3DChart } from '@/components/dashboard/Dashboard3DChart';
+import { MetroNewsWidget } from '@/components/dashboard/MetroNewsWidget';
 import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -20,6 +21,7 @@ import {
   getIssuesBySeverity,
   getProjects
 } from '@/lib/mockData';
+import { fetchMetroNews } from '@/lib/metroNewsService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserRole, Task, Project } from '@/types';
@@ -34,6 +36,12 @@ const Dashboard = () => {
   const { data: projects } = useQuery({
     queryKey: ['projects'],
     queryFn: getProjects,
+  });
+  
+  // Get metro news data
+  const { data: metroNews, isLoading: newsLoading } = useQuery({
+    queryKey: ['metroNews'],
+    queryFn: fetchMetroNews,
   });
   
   // Filter tasks based on user role
@@ -191,6 +199,11 @@ const Dashboard = () => {
         <>
           {/* 3D Chart */}
           <Dashboard3DChart />
+          
+          {/* Metro News Widget - NEW SECTION */}
+          {metroNews && metroNews.length > 0 && (
+            <MetroNewsWidget news={metroNews} isLoading={newsLoading} />
+          )}
           
           {/* Charts Row */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, Train } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LoginFormData {
   email: string;
@@ -16,6 +17,7 @@ interface LoginFormData {
 
 const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -28,12 +30,14 @@ const Login = () => {
 
   const handleSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
+    setLoginError(null);
     
     try {
       await login(data.email, data.password);
       navigate('/');
     } catch (error) {
       console.log('Login error:', error);
+      setLoginError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -60,6 +64,12 @@ const Login = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
               <CardContent className="space-y-4">
+                {loginError && (
+                  <Alert variant="destructive" className="my-2">
+                    <AlertDescription className="text-sm">{loginError}</AlertDescription>
+                  </Alert>
+                )}
+                
                 <FormField
                   control={form.control}
                   name="email"

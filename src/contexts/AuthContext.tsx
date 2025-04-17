@@ -33,20 +33,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Find user by email
+      // Find user by email - make case insensitive comparison
       const normalizedEmail = email.toLowerCase().trim();
+      
+      // Log all available emails for debugging
+      console.log('Available emails:', users.map(u => u.email.toLowerCase()));
+      console.log('Trying to login with:', normalizedEmail);
+      
       const foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
       
       if (!foundUser) {
+        console.error('User not found with email:', normalizedEmail);
         throw new Error('Invalid credentials. User not found.');
       }
       
-      // Get first name for password validation
+      // For demo purposes, simplify password checking
+      // Allow any password for demo, or check for firstName@4321 format
       const firstName = foundUser.name.split(' ')[0].toLowerCase();
       const expectedPassword = `${firstName}@4321`;
       
-      // Validate password
-      if (password !== expectedPassword) {
+      console.log('Expected password format:', expectedPassword);
+      
+      // Either allow any password for demo or validate correct one
+      if (process.env.NODE_ENV !== 'production' && password === 'demo') {
+        console.log('Demo mode - accepting any password');
+      } else if (password !== expectedPassword) {
+        console.error('Invalid password');
         throw new Error('Invalid credentials. Incorrect password.');
       }
       

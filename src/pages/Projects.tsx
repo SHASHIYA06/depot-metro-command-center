@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, Building, TrendingUp, CalendarDays, Info, ExternalLink, MapPin } from 'lucide-react';
+import { ChevronRight, Building, TrendingUp, CalendarDays, Info, ExternalLink, MapPin, Newspaper, RefreshCw } from 'lucide-react';
 import { getProjects, getProjectUpdates } from '@/lib/mockData';
+import { fetchMetroNews, matchNewsToProjects, MetroNews } from '@/lib/metroNewsService';
 import { Project } from '@/types';
 
 const Projects = () => {
@@ -20,10 +20,28 @@ const Projects = () => {
 
   const { data: projectUpdates, isLoading: updatesLoading } = useQuery({
     queryKey: ['projectUpdates', selectedProject?.id],
-    // Fix for error TS2554: Call getProjectUpdates with correct arguments
     queryFn: () => selectedProject?.id ? getProjectUpdates() : [],
     enabled: !!selectedProject,
   });
+
+  const { data: metroNews, isLoading: newsLoading, refetch: refetchNews } = useQuery({
+    queryKey: ['metroNews'],
+    queryFn: fetchMetroNews,
+  });
+
+  const processedNews = React.useMemo(() => {
+    if (!metroNews || !projects) return [];
+    return matchNewsToProjects(metroNews, projects);
+  }, [metroNews, projects]);
+
+  const projectNews = React.useMemo(() => {
+    if (!processedNews || !selectedProject) return [];
+    return processedNews.filter(news => 
+      news.projectIds?.includes(selectedProject.id) ||
+      news.title.toLowerCase().includes(selectedProject.name.toLowerCase()) ||
+      news.excerpt.toLowerCase().includes(selectedProject.name.toLowerCase())
+    );
+  }, [processedNews, selectedProject]);
 
   useEffect(() => {
     if (projects && projects.length > 0 && !selectedProject) {
@@ -121,6 +139,7 @@ const Projects = () => {
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="updates">Updates</TabsTrigger>
                     <TabsTrigger value="stats">Statistics</TabsTrigger>
+                    <TabsTrigger value="news">Latest News</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="overview" className="space-y-4">
@@ -277,6 +296,85 @@ const Projects = () => {
                           <div className="text-lg font-medium">{selectedProject.trackType || 'N/A'}</div>
                         </CardContent>
                       </Card>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="news" className="space-y-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">Latest Metro News</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => refetchNews()}
+                        disabled={newsLoading}
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${newsLoading ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
+                    </div>
+                    
+                    {newsLoading ? (
+                      <div className="flex justify-center p-12">
+                        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : projectNews.length > 0 ? (
+                      <div className="space-y-4">
+                        {projectNews.map((news) => (
+                          <Card key={news.id} className="overflow-hidden">
+                            <div className="flex flex-col md:flex-row">
+                              {news.imageUrl && (
+                                <div className="md:w-1/3 h-48 md:h-auto">
+                                  <img 
+                                    src={news.imageUrl} 
+                                    alt={news.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className={`${news.imageUrl ? 'md:w-2/3' : 'w-full'} p-4`}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {news.source}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(news.date).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })}
+                                  </span>
+                                </div>
+                                <h4 className="text-lg font-medium mb-2">{news.title}</h4>
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                                  {news.excerpt}
+                                </p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open(news.url, '_blank')}
+                                >
+                                  <Newspaper className="h-4 w-4 mr-2" />
+                                  Read Full Article
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center p-8 border rounded-md bg-muted/20">
+                        <Newspaper className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                        <h4 className="text-lg font-medium mb-1">No News Found</h4>
+                        <p className="text-sm text-muted-foreground">
+                          No recent news articles found for {selectedProject.name}.
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="mt-4 p-4 bg-muted/20 rounded-md">
+                      <p className="text-sm text-muted-foreground">
+                        News data is fetched from <a href="https://themetrorailguy.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">TheMetroRailGuy.com</a> and other metro news sources. Last updated: {new Date().toLocaleString()}
+                      </p>
                     </div>
                   </TabsContent>
                 </Tabs>
