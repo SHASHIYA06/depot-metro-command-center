@@ -45,8 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { email: 'shashi.mishra@metro.com', role: UserRole.DEPOT_INCHARGE, name: 'Shashi Mishra' },
         { email: 'shilpa.sahu@metro.com', role: UserRole.ENGINEER, name: 'Shilpa Sahu' },
         { email: 'sunil.rajan@metro.com', role: UserRole.ENGINEER, name: 'Sunil Rajan' },
-        { email: 'manidip.baisya@metro.com', role: UserRole.EMPLOYEE, name: 'Manidip Baisya' },
-        { email: 'md.aslam@metro.com', role: UserRole.EMPLOYEE, name: 'Md Aslam' },
+        { email: 'manidip.baisya@metro.com', role: UserRole.TECHNICIAN, name: 'Manidip Baisya' },
+        { email: 'md.aslam@metro.com', role: UserRole.TECHNICIAN, name: 'Md Aslam' },
       ];
       
       // Look for user in mock users first, then check login emails
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: loginEmailMatch.email,
             role: loginEmailMatch.role,
             department: loginEmailMatch.role === UserRole.DEPOT_INCHARGE ? 'Operations' : 
-                       loginEmailMatch.role === UserRole.ENGINEER ? 'Engineering' : 'General',
+                       loginEmailMatch.role === UserRole.ENGINEER ? 'Engineering' : 'Technical',
             phone: '+91 9876543200',
             photoUrl: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,
             avatar: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,

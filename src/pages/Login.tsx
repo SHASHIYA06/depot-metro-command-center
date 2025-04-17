@@ -115,8 +115,8 @@ const Login = () => {
                     <p>shashi.mishra@metro.com (Depot Incharge)</p>
                     <p>shilpa.sahu@metro.com (Engineer)</p>
                     <p>sunil.rajan@metro.com (Engineer)</p>
-                    <p>manidip.baisya@metro.com (Employee)</p>
-                    <p>md.aslam@metro.com (Employee)</p>
+                    <p>manidip.baisya@metro.com (Technician)</p>
+                    <p>md.aslam@metro.com (Technician)</p>
                     <p><strong>Password Format:</strong> firstname@4321 (e.g., shashi@4321)</p>
                   </div>
                 </div>
