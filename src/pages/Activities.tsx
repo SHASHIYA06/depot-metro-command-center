@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,8 +65,8 @@ const Activities = () => {
     return userObj ? userObj.name : 'Unknown';
   };
 
-  // Update the handleExport function to use the correct type
-  const handleExport = (format: ExportFormat) => {
+  // Update handleExport usage to use the correct parameters
+  const handleExportActivities = (format: ExportFormat) => {
     const exportData = filteredActivities.map(activity => ({
       id: activity.id,
       user: getUserName(activity.userId),
@@ -79,11 +78,7 @@ const Activities = () => {
       car: activity.carId || 'N/A'
     }));
 
-    if (format === 'excel') {
-      handleExport(format, exportData, 'Activities_Report');
-    } else if (format === 'pdf') {
-      handleExport(format, exportData, 'Activities_Report', 'Activity Logs');
-    }
+    handleExport(format, exportData, 'Activities_Report');
   };
 
   return (
@@ -146,11 +141,11 @@ const Activities = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]">
                       <DropdownMenuLabel>Export</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleExport('excel')}>
+                      <DropdownMenuItem onClick={() => handleExportActivities('excel')}>
                         <FileType className="mr-2 h-4 w-4" />
                         Excel
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                      <DropdownMenuItem onClick={() => handleExportActivities('pdf')}>
                         <FileType className="mr-2 h-4 w-4" />
                         PDF
                       </DropdownMenuItem>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, FileText, User, Calendar, Train, Download } from 'lucide-react';
 import { format } from 'date-fns';
-import { ActivityLog } from '@/types';
+import { ActivityLog, ExportColumnDefinition } from '@/types';
 import { users, trains } from '@/lib/mockData';
 import { exportToExcel, exportToPDF, formatDataForExport } from '@/utils/exportUtils';
 
@@ -39,19 +38,20 @@ export const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     if (format === 'excel') {
       exportToExcel(activityData, `Activity_${activity.id}`);
     } else {
+      const columns: ExportColumnDefinition[] = [
+        { header: 'Property', dataKey: 'property' },
+        { header: 'Value', dataKey: 'value' }
+      ];
+      
       exportToPDF(
         activityData,
         `Activity_${activity.id}`,
         'Activity Details',
-        [
-          { header: 'Property', dataKey: 'property' },
-          { header: 'Value', dataKey: 'value' }
-        ]
+        columns
       );
     }
   };
   
-  // Format activity data for display in a different format than export
   const activityDetailsList = [
     { label: 'Activity Type', value: activity.action },
     { label: 'Details', value: activity.details },

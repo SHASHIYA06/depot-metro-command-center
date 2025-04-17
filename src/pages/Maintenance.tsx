@@ -87,8 +87,10 @@ const Maintenance = () => {
     return train ? train.name : 'Unknown Train';
   };
 
-  const getAssignedStaffNames = (assignedIds: string): string => {
-    return assignedIds.split(',').map(id => {
+  const getAssignedStaffNames = (assignedIds: string | string[]): string => {
+    const idsArray = typeof assignedIds === 'string' ? assignedIds.split(',') : assignedIds;
+    
+    return idsArray.map(id => {
       const staff = users.find(u => u.id === id);
       return staff ? staff.name : 'Unknown';
     }).join(', ');

@@ -1,14 +1,15 @@
+
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { ExportFormat } from '@/types';
+import { ExportFormat, ExportColumnDefinition } from '@/types';
 
 /**
  * Format data for export by handling complex objects and nested properties
  * @param data The data to format
  * @param columns Optional column definitions
  */
-export const formatDataForExport = (data: any[], columns?: string[]): any[] => {
+export const formatDataForExport = (data: any[], columns?: ExportColumnDefinition[]): any[] => {
   return data.map(item => {
     const formattedItem: Record<string, any> = {};
     
@@ -72,7 +73,7 @@ export const exportToPDF = (
   data: any[], 
   filename: string, 
   title: string = 'Report', 
-  columns?: string[]
+  columns?: ExportColumnDefinition[]
 ): void => {
   const doc = new jsPDF();
   
@@ -142,7 +143,7 @@ export const handleExport = (
   data: any[],
   filename: string,
   title?: string,
-  columns?: string[]
+  columns?: ExportColumnDefinition[]
 ): void => {
   if (format === 'excel') {
     exportToExcel(data, filename);

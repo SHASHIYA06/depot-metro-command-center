@@ -1,4 +1,3 @@
-
 export enum UserRole {
   ADMIN = 'ADMIN',
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
@@ -186,3 +185,6 @@ export interface ExportColumn {
   header: string;
   dataKey: string;
 }
+
+// Modify the type definition for columns in export functions to accept both strings and column objects
+export type ExportColumnDefinition = string | ExportColumn;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { MaintenanceSchedule, UserRole } from '@/types';
+import { MaintenanceSchedule, UserRole, ExportFormat } from '@/types';
 import { users, trains, maintenanceSchedules } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -92,7 +91,7 @@ const MaintenanceScheduleComponent = () => {
     setScheduleToDelete(null);
   };
 
-  const handleExportSchedule = (format: 'excel' | 'pdf') => {
+  const handleExportSchedule = (format: ExportFormat) => {
     const exportData = schedules.map(schedule => ({
       id: schedule.id,
       train: getTrainName(schedule.trainId),
@@ -149,7 +148,7 @@ const MaintenanceScheduleComponent = () => {
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
-                className={format(selectedDate || new Date(), 'PPP')}
+                className={selectedDate ? format(selectedDate, 'PPP') : ""}
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 <span>{selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}</span>
@@ -157,8 +156,8 @@ const MaintenanceScheduleComponent = () => {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <DatePicker
-                selected={selectedDate}
-                onSelect={setSelectedDate}
+                date={selectedDate}
+                setDate={setSelectedDate}
               />
             </PopoverContent>
           </Popover>
