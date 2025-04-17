@@ -1,197 +1,209 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Calendar, Download, Filter, PlusCircle, Search, FileText } from 'lucide-react';
-import { DatePicker } from '@/components/ui/date-picker';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Search, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { ActivityLog, UserRole, ExportFormat } from '@/types';
+import { activityLogs, users } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
-import { format, subDays, isWithinInterval } from 'date-fns';
-import { exportData, formatDataForExport, createPdfColumns } from '@/utils/exportUtils';
-import { ExportFormat } from '@/types';
-
-// Mock activity log data
-const mockActivityLog = [
-  {
-    id: '1',
-    userId: '1',
-    action: 'Login',
-    details: 'User logged in successfully',
-    timestamp: new Date(2025, 3, 14, 8, 30, 0).toISOString(),
-    taskId: 'task123',
-  },
-  {
-    id: '2',
-    userId: '2',
-    action: 'Task Assigned',
-    details: 'Task "Inspect Brakes" assigned to user',
-    timestamp: new Date(2025, 3, 14, 9, 15, 0).toISOString(),
-    taskId: 'task124',
-  },
-  {
-    id: '3',
-    userId: '1',
-    action: 'Task Completed',
-    details: 'Task "Inspect Brakes" marked as completed',
-    timestamp: new Date(2025, 3, 14, 14, 45, 0).toISOString(),
-    taskId: 'task124',
-  },
-  {
-    id: '4',
-    userId: '3',
-    action: 'Issue Reported',
-    details: 'New issue reported: "HVAC Failure"',
-    timestamp: new Date(2025, 3, 13, 10, 0, 0).toISOString(),
-  },
-  {
-    id: '5',
-    userId: '2',
-    action: 'Maintenance Scheduled',
-    details: 'Scheduled maintenance for Train Set 15',
-    timestamp: new Date(2025, 3, 13, 16, 20, 0).toISOString(),
-    trainId: 'train15',
-  },
-];
+import { 
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DotsHorizontalIcon, FileType, X } from 'lucide-react';
+import { handleExport } from '@/utils/exportUtils';
 
 const Activities = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [startDate, setStartDate] = useState<Date | undefined>(subDays(new Date(), 7));
-  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState('');
-  const [activityType, setActivityType] = useState('all');
-  const [activityLog, setActivityLog] = useState(mockActivityLog);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
 
-  const filteredActivityLog = activityLog.filter(log => {
-    const logDate = new Date(log.timestamp);
-    const isAfterStart = !startDate || logDate >= startDate;
-    const isBeforeEnd = !endDate || logDate <= endDate;
-    const matchesSearch = searchTerm === '' || log.details.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = activityType === 'all' || log.action === activityType;
-    return isAfterStart && isBeforeEnd && matchesSearch && matchesType;
+  useEffect(() => {
+    // Load activities from mockData
+    setActivities(activityLogs);
+  }, []);
+
+  const filteredActivities = activities.filter(activity => {
+    const matchesSearch =
+      activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.details.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesDate = selectedDate
+      ? format(new Date(activity.timestamp), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+      : true;
+
+    // Filter based on user role
+    if (user?.role === UserRole.TECHNICIAN) {
+      // Technicians can only see activities related to their tasks
+      return matchesSearch && matchesDate && activity.userId === user.id;
+    } else if (user?.role === UserRole.ENGINEER) {
+      // Engineers can see activities they created or assigned
+      return matchesSearch && matchesDate; // Adjust logic as needed
+    }
+
+    return matchesSearch && matchesDate;
   });
 
+  const getUserName = (userId: string): string => {
+    const userObj = users.find(u => u.id === userId);
+    return userObj ? userObj.name : 'Unknown';
+  };
+
+  // Update the handleExport function to use the correct type
   const handleExport = (format: ExportFormat) => {
-    const formattedData = formatDataForExport(filteredActivityLog);
-    const headers = ['User ID', 'Action', 'Details', 'Timestamp', 'Task ID', 'Train ID'];
-    const keys = ['userId', 'action', 'details', 'timestamp', 'taskId', 'trainId'];
-    const pdfColumns = createPdfColumns(headers, keys);
-    
-    exportData(
-      formattedData,
-      format,
-      'Activity_Log',
-      'Metro Depot Activity Log',
-      pdfColumns
-    );
-    
-    toast({
-      title: 'Export Successful',
-      description: `Data has been exported to ${format.toUpperCase()}.`,
-    });
+    const exportData = filteredActivities.map(activity => ({
+      id: activity.id,
+      user: getUserName(activity.userId),
+      action: activity.action,
+      details: activity.details,
+      timestamp: new Date(activity.timestamp).toLocaleString(),
+      task: activity.taskId || 'N/A',
+      train: activity.trainId || 'N/A',
+      car: activity.carId || 'N/A'
+    }));
+
+    if (format === 'excel') {
+      handleExport(format, exportData, 'Activities_Report');
+    } else if (format === 'pdf') {
+      handleExport(format, exportData, 'Activities_Report', 'Activity Logs');
+    }
   };
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Activities</h1>
+          <p className="text-muted-foreground">
+            Track and monitor all activities within the depot
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search activities..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            className="max-w-[150px]"
+            value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
+            onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)}
+          />
+        </div>
+      </div>
+
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div>
-              <CardTitle>Activity Log</CardTitle>
-              <CardDescription>
-                Track and manage user activities and system events
-              </CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
-              <Button variant="outline" onClick={() => handleExport('excel')}>
-                <Download className="mr-2 h-4 w-4" />
-                Export Excel
-              </Button>
-              <Button variant="outline" onClick={() => handleExport('pdf')}>
-                <Download className="mr-2 h-4 w-4" />
-                Export PDF
-              </Button>
-            </div>
-          </div>
+          <CardTitle>Recent Activities</CardTitle>
+          <CardDescription>
+            All activities are listed in the table below.
+          </CardDescription>
         </CardHeader>
-        
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search activities..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={activityType} onValueChange={setActivityType}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Activity Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Activities</SelectItem>
-                  <SelectItem value="Login">Login</SelectItem>
-                  <SelectItem value="Task Assigned">Task Assigned</SelectItem>
-                  <SelectItem value="Task Completed">Task Completed</SelectItem>
-                  <SelectItem value="Issue Reported">Issue Reported</SelectItem>
-                  <SelectItem value="Maintenance Scheduled">Maintenance Scheduled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1 space-y-2">
-              <Label>From Date</Label>
-              <DatePicker date={startDate} setDate={setStartDate} className="w-full" />
-            </div>
-            
-            <div className="flex-1 space-y-2">
-              <Label>To Date</Label>
-              <DatePicker date={endDate} setDate={setEndDate} className="w-full" />
-            </div>
-          </div>
-          
-          <div className="border rounded-md overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User ID</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Details</TableHead>
-                  <TableHead>Timestamp</TableHead>
-                  <TableHead>Task ID</TableHead>
-                  <TableHead>Train ID</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredActivityLog.map(log => (
-                  <TableRow key={log.id}>
-                    <TableCell>{log.userId}</TableCell>
-                    <TableCell>{log.action}</TableCell>
-                    <TableCell>{log.details}</TableCell>
-                    <TableCell>{format(new Date(log.timestamp), 'dd MMM yyyy, HH:mm')}</TableCell>
-                    <TableCell>{log.taskId || '-'}</TableCell>
-                    <TableCell>{log.trainId || '-'}</TableCell>
-                  </TableRow>
-                ))}
-                
-                {filteredActivityLog.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      No activity logs found for the selected criteria
+        <CardContent className="overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Details</TableHead>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>Task</TableHead>
+                <TableHead>Train</TableHead>
+                <TableHead className="text-right">Car</TableHead>
+                <TableHead className="text-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="p-2">
+                        <DotsHorizontalIcon className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px]">
+                      <DropdownMenuLabel>Export</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => handleExport('excel')}>
+                        <FileType className="mr-2 h-4 w-4" />
+                        Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                        <FileType className="mr-2 h-4 w-4" />
+                        PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredActivities.length > 0 ? (
+                filteredActivities.map((activity) => (
+                  <TableRow key={activity.id}>
+                    <TableCell className="font-medium">{activity.id}</TableCell>
+                    <TableCell>{getUserName(activity.userId)}</TableCell>
+                    <TableCell>{activity.action}</TableCell>
+                    <TableCell>{activity.details}</TableCell>
+                    <TableCell>{format(new Date(activity.timestamp), 'MMM dd, yyyy hh:mm a')}</TableCell>
+                    <TableCell>{activity.taskId || 'N/A'}</TableCell>
+                    <TableCell>{activity.trainId || 'N/A'}</TableCell>
+                    <TableCell className="text-right">{activity.carId || 'N/A'}</TableCell>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-2">
+                            <DotsHorizontalIcon className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            <span className="text-red-500">
+                              <X className="mr-2 h-4 w-4" />
+                              Delete
+                            </span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">
+                    No activities found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

@@ -10,7 +10,7 @@ export const users: User[] = [
     department: 'Administration',
     phone: '+91 9876543210',
     photoUrl: '/avatars/admin.jpg',
-    avatar: '/avatars/admin.jpg', // Adding avatar field
+    avatar: '/avatars/admin.jpg',
     joiningDate: '2020-01-15',
   },
   {
@@ -279,7 +279,7 @@ export const trains: Train[] = [
     nextMaintenance: '2025-04-25',
     totalTrips: 12050,
     totalDistance: 45890,
-    totalKilometers: 45890, // Adding totalKilometers
+    totalKilometers: 45890,
     cars: [
       { id: 'c1-t1', position: 1, status: 'operational', lastInspection: '2025-03-25' },
       { id: 'c2-t1', position: 2, status: 'operational', lastInspection: '2025-03-25' },
@@ -297,7 +297,7 @@ export const trains: Train[] = [
     nextMaintenance: '2025-04-15',
     totalTrips: 11870,
     totalDistance: 43560,
-    totalKilometers: 43560, // Adding totalKilometers
+    totalKilometers: 43560,
     cars: [
       { id: 'c1-t2', position: 1, status: 'operational', lastInspection: '2025-03-15' },
       { id: 'c2-t2', position: 2, status: 'under_maintenance', lastInspection: '2025-03-15' },
@@ -315,7 +315,7 @@ export const trains: Train[] = [
     nextMaintenance: '2025-04-20',
     totalTrips: 12310,
     totalDistance: 46780,
-    totalKilometers: 46780, // Adding totalKilometers
+    totalKilometers: 46780,
     cars: [
       { id: 'c1-t3', position: 1, status: 'operational', lastInspection: '2025-03-20' },
       { id: 'c2-t3', position: 2, status: 'operational', lastInspection: '2025-03-20' },
@@ -333,7 +333,7 @@ export const trains: Train[] = [
     nextMaintenance: '2025-04-10',
     totalTrips: 11590,
     totalDistance: 42340,
-    totalKilometers: 42340, // Adding totalKilometers
+    totalKilometers: 42340,
     cars: [
       { id: 'c1-t4', position: 1, status: 'under_maintenance', lastInspection: '2025-03-10' },
       { id: 'c2-t4', position: 2, status: 'under_maintenance', lastInspection: '2025-03-10' },
@@ -354,7 +354,7 @@ export const issues: Issue[] = [
     severity: 'high',
     status: 'open',
     reportedAt: '2025-04-14T08:30:00',
-    reportedBy: '3', // Adding reportedBy field
+    reportedBy: '3',
     assignedTo: '5',
     trainId: 't1',
     carId: 'c2-t1',
@@ -368,7 +368,7 @@ export const issues: Issue[] = [
     severity: 'medium',
     status: 'in_progress',
     reportedAt: '2025-04-13T14:20:00',
-    reportedBy: '4', // Adding reportedBy field
+    reportedBy: '4',
     assignedTo: '6',
     trainId: 't2',
     carId: 'c1-t2',
@@ -383,7 +383,7 @@ export const issues: Issue[] = [
     severity: 'medium',
     status: 'in_progress',
     reportedAt: '2025-04-12T11:45:00',
-    reportedBy: '3', // Adding reportedBy field
+    reportedBy: '3',
     assignedTo: '7',
     trainId: 't3',
     workCategory: 'HVAC Systems',
@@ -397,7 +397,7 @@ export const issues: Issue[] = [
     severity: 'low',
     status: 'open',
     reportedAt: '2025-04-11T09:15:00',
-    reportedBy: '4', // Adding reportedBy field
+    reportedBy: '4',
     trainId: 't1',
     carId: 'c2-t1',
     workCategory: 'Electrical Systems',
@@ -410,7 +410,7 @@ export const issues: Issue[] = [
     severity: 'critical',
     status: 'in_progress',
     reportedAt: '2025-04-10T16:30:00',
-    reportedBy: '5', // Adding reportedBy field
+    reportedBy: '5',
     assignedTo: '5',
     trainId: 't4',
     workCategory: 'Propulsion Systems',
@@ -424,7 +424,7 @@ export const issues: Issue[] = [
     severity: 'low',
     status: 'resolved',
     reportedAt: '2025-04-09T13:20:00',
-    reportedBy: '3', // Adding reportedBy field
+    reportedBy: '3',
     assignedTo: '7',
     resolvedAt: '2025-04-10T15:45:00',
     trainId: 't2',
@@ -751,3 +751,193 @@ export const maintenanceSchedules: MaintenanceSchedule[] = [
     notes: 'Comprehensive safety check of all systems'
   }
 ];
+
+// Dashboard statistics data
+export const dashboardStats = {
+  totalTasks: tasks.length,
+  completedTasks: tasks.filter(t => t.status === 'completed').length,
+  pendingTasks: tasks.filter(t => t.status === 'pending' || t.status === 'in_progress' || t.status === 'delayed').length,
+  activeTrains: trains.filter(t => t.status === 'active').length,
+  issuesByPriority: {
+    low: issues.filter(i => i.severity === 'low').length,
+    medium: issues.filter(i => i.severity === 'medium').length,
+    high: issues.filter(i => i.severity === 'high').length,
+    critical: issues.filter(i => i.severity === 'critical').length,
+  },
+  issuesByStatus: {
+    open: issues.filter(i => i.status === 'open').length,
+    in_progress: issues.filter(i => i.status === 'in_progress').length,
+    resolved: issues.filter(i => i.status === 'resolved').length,
+  }
+};
+
+// Helper functions to get data in different formats
+export const getUserById = (userId: string): User | undefined => {
+  return users.find(user => user.id === userId);
+};
+
+export const getTasksByStatus = (status: Task['status']): Task[] => {
+  return tasks.filter(task => task.status === status);
+};
+
+export const getIssuesByStatus = (status: Issue['status']): Issue[] => {
+  return issues.filter(issue => issue.status === status);
+};
+
+export const getIssuesBySeverity = (severity: Issue['severity']): Issue[] => {
+  return issues.filter(issue => issue.severity === severity);
+};
+
+export const getIssuesByAssignee = (userId: string): Issue[] => {
+  return issues.filter(issue => issue.assignedTo === userId);
+};
+
+export const getIssuesByAssigner = (userId: string): Issue[] => {
+  return issues.filter(issue => issue.assignedBy === userId);
+};
+
+export const getProjects = () => {
+  return projects;
+};
+
+export const getProjectUpdates = () => {
+  return projectUpdates;
+};
+
+// Mock tasks for the tasks page
+export const mockTasks = tasks;
+
+// CRUD functions for tasks
+export const addNewTask = (task: Omit<Task, 'id' | 'createdAt'>): Task => {
+  const newTask: Task = {
+    id: `t${tasks.length + 1}`,
+    createdAt: new Date().toISOString(),
+    ...task,
+  };
+  tasks.push(newTask);
+  return newTask;
+};
+
+export const updateTask = (id: string, updates: Partial<Task>): Task | null => {
+  const index = tasks.findIndex(t => t.id === id);
+  if (index === -1) return null;
+  
+  tasks[index] = { ...tasks[index], ...updates };
+  return tasks[index];
+};
+
+export const deleteTask = (id: string): boolean => {
+  const index = tasks.findIndex(t => t.id === id);
+  if (index === -1) return false;
+  
+  tasks.splice(index, 1);
+  return true;
+};
+
+// CRUD functions for issues
+export const addNewIssue = (issue: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'>): Issue => {
+  const newIssue: Issue = {
+    id: `i${issues.length + 1}`,
+    reportedAt: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    ...issue,
+  };
+  issues.push(newIssue);
+  return newIssue;
+};
+
+export const updateIssue = (id: string, updates: Partial<Issue>): Issue | null => {
+  const index = issues.findIndex(i => i.id === id);
+  if (index === -1) return null;
+  
+  issues[index] = { 
+    ...issues[index], 
+    ...updates, 
+    lastUpdated: new Date().toISOString() 
+  };
+  return issues[index];
+};
+
+export const deleteIssue = (id: string): boolean => {
+  const index = issues.findIndex(i => i.id === id);
+  if (index === -1) return false;
+  
+  issues.splice(index, 1);
+  return true;
+};
+
+// Generate data for TasksChart
+export const generateTasksChartData = () => {
+  const today = new Date();
+  
+  return [
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 12,
+      completed: 8,
+      delayed: 1
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 15,
+      completed: 10,
+      delayed: 2
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 4).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 13,
+      completed: 11,
+      delayed: 0
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 10,
+      completed: 8,
+      delayed: 1
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 14,
+      completed: 9,
+      delayed: 2
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 11,
+      completed: 7,
+      delayed: 0
+    },
+    {
+      date: new Date(today.getFullYear(), today.getMonth(), today.getDate()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      assigned: 9,
+      completed: 5,
+      delayed: 1
+    }
+  ];
+};
+
+// Generate data for efficiency analysis
+export const generateEfficiencyData = () => {
+  return [
+    { name: 'Jan', efficiency: 82 },
+    { name: 'Feb', efficiency: 85 },
+    { name: 'Mar', efficiency: 83 },
+    { name: 'Apr', efficiency: 87 },
+    { name: 'May', efficiency: 89 },
+    { name: 'Jun', efficiency: 86 },
+    { name: 'Jul', efficiency: 90 },
+    { name: 'Aug', efficiency: 92 },
+    { name: 'Sep', efficiency: 88 },
+    { name: 'Oct', efficiency: 91 },
+    { name: 'Nov', efficiency: 86 },
+    { name: 'Dec', efficiency: 84 }
+  ];
+};
+
+// Get user working hours data
+export const getUserWorkingHours = () => {
+  return users.map(user => ({
+    name: user.name,
+    hours: Math.floor(Math.random() * 40) + 30
+  })).slice(0, 6);
+};
