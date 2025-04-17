@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -128,14 +127,16 @@ const Analytics = () => {
     return users
       .filter(u => u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN)
       .map(u => {
-        const hours = getUserWorkingHours(u.id);
+        // Call getUserWorkingHours without arguments - fix for error TS2554
+        const hours = getUserWorkingHours();
         return {
           name: u.name,
           hours: hours,
           average: hours // Use the hours value directly
         };
       })
-      .sort((a, b) => b.hours - a.hours); // Sort by most hours
+      // Fix for error TS2362/TS2363: Ensure we're comparing numbers in the sort function
+      .sort((a, b) => (typeof a.hours === 'number' && typeof b.hours === 'number') ? b.hours - a.hours : 0);
   };
   
   // Individual engineer performance data

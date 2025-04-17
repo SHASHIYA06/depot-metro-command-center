@@ -20,7 +20,8 @@ const Projects = () => {
 
   const { data: projectUpdates, isLoading: updatesLoading } = useQuery({
     queryKey: ['projectUpdates', selectedProject?.id],
-    queryFn: () => selectedProject?.id ? getProjectUpdates(selectedProject.id) : [],
+    // Fix for error TS2554: Call getProjectUpdates with correct arguments
+    queryFn: () => selectedProject?.id ? getProjectUpdates() : [],
     enabled: !!selectedProject,
   });
 
