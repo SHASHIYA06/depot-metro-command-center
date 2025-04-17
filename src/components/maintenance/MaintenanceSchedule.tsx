@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { MaintenanceSchedule, UserRole, ExportFormat } from '@/types';
+import { MaintenanceSchedule, UserRole } from '@/types';
 import { users, trains, maintenanceSchedules } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -91,8 +92,7 @@ const MaintenanceScheduleComponent = () => {
     setScheduleToDelete(null);
   };
 
-  // Update the handleExport function to use the correct type
-  const handleExportSchedule = (format: ExportFormat) => {
+  const handleExportSchedule = (format: 'excel' | 'pdf') => {
     const exportData = schedules.map(schedule => ({
       id: schedule.id,
       train: getTrainName(schedule.trainId),
@@ -157,7 +157,6 @@ const MaintenanceScheduleComponent = () => {
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <DatePicker
-                mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
               />

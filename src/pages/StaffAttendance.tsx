@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { StaffAttendance } from '@/components/staff/StaffAttendance';
+import StaffAttendanceComponent from '@/components/staff/StaffAttendance';
 
 const StaffAttendancePage = () => {
-  return <StaffAttendance />;
+  return <StaffAttendanceComponent />;
 };
 
 export default StaffAttendancePage;

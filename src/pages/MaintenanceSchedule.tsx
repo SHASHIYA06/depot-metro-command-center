@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { MaintenanceSchedule } from '@/components/maintenance/MaintenanceSchedule';
+import MaintenanceScheduleComponent from '@/components/maintenance/MaintenanceSchedule';
 
 const MaintenanceSchedulePage = () => {
-  return <MaintenanceSchedule />;
+  return <MaintenanceScheduleComponent />;
 };
 
 export default MaintenanceSchedulePage;

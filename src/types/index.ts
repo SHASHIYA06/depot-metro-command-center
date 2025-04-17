@@ -180,3 +180,9 @@ export interface MaintenanceSchedule {
 
 // Define export format type to prevent call errors
 export type ExportFormat = 'excel' | 'pdf';
+
+// Define column interface for export functions
+export interface ExportColumn {
+  header: string;
+  dataKey: string;
+}

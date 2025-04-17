@@ -1,8 +1,52 @@
-
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { ExportFormat } from '@/types';
+
+/**
+ * Format data for export by handling complex objects and nested properties
+ * @param data The data to format
+ * @param columns Optional column definitions
+ */
+export const formatDataForExport = (data: any[], columns?: string[]): any[] => {
+  return data.map(item => {
+    const formattedItem: Record<string, any> = {};
+    
+    // If columns are provided, use them to extract data
+    if (columns && columns.length > 0) {
+      columns.forEach(col => {
+        if (typeof col === 'string') {
+          formattedItem[col] = item[col];
+        } else if (typeof col === 'object' && col.dataKey) {
+          // Handle column objects with dataKey
+          formattedItem[col.header || col.dataKey] = item[col.dataKey];
+        }
+      });
+    } else {
+      // Otherwise, use all properties
+      Object.keys(item).forEach(key => {
+        // Handle Date objects
+        if (item[key] instanceof Date) {
+          formattedItem[key] = item[key].toLocaleDateString();
+        } 
+        // Handle arrays by joining them
+        else if (Array.isArray(item[key])) {
+          formattedItem[key] = item[key].join(', ');
+        }
+        // Handle nested objects by using their toString or stringify
+        else if (typeof item[key] === 'object' && item[key] !== null) {
+          formattedItem[key] = JSON.stringify(item[key]);
+        }
+        // Pass through primitive values
+        else {
+          formattedItem[key] = item[key];
+        }
+      });
+    }
+    
+    return formattedItem;
+  });
+};
 
 /**
  * Generic function to export data to Excel
@@ -10,7 +54,8 @@ import { ExportFormat } from '@/types';
  * @param filename The filename to save as
  */
 export const exportToExcel = (data: any[], filename: string): void => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
+  const formattedData = formatDataForExport(data);
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   XLSX.writeFile(workbook, `${filename}.xlsx`);
@@ -40,20 +85,42 @@ export const exportToPDF = (
   // Add date
   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
   
+  // Format data
+  const formattedData = formatDataForExport(data, columns);
+  
   // Create table
   if (columns) {
+    // Handle column objects or strings
+    const columnHeaders = columns.map(col => {
+      if (typeof col === 'string') {
+        return col;
+      } else if (typeof col === 'object' && col.header) {
+        return col.header;
+      }
+      return '';
+    });
+    
+    const columnDataKeys = columns.map(col => {
+      if (typeof col === 'string') {
+        return col;
+      } else if (typeof col === 'object' && col.dataKey) {
+        return col.dataKey;
+      }
+      return '';
+    });
+    
     autoTable(doc, {
-      head: [columns],
-      body: data.map(item => columns.map(col => item[col])),
+      head: [columnHeaders],
+      body: formattedData.map(item => columnDataKeys.map(key => item[key] || '')),
       startY: 40,
     });
   } else {
     // If no columns provided, use Object.keys from first item
-    if (data.length > 0) {
-      const cols = Object.keys(data[0]);
+    if (formattedData.length > 0) {
+      const cols = Object.keys(formattedData[0]);
       autoTable(doc, {
         head: [cols],
-        body: data.map(item => cols.map(col => item[col])),
+        body: formattedData.map(item => cols.map(col => item[col] || '')),
         startY: 40,
       });
     }

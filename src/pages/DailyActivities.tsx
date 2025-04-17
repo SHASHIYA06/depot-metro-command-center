@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { DailyActivities } from '@/components/activities/DailyActivities';
+import DailyActivitiesComponent from '@/components/activities/DailyActivities';
 
 const DailyActivitiesPage = () => {
-  return <DailyActivities />;
+  return <DailyActivitiesComponent />;
 };
 
 export default DailyActivitiesPage;
