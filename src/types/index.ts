@@ -13,21 +13,33 @@ export interface User {
   role: UserRole;
   department?: string;
   photoUrl?: string;
+  avatar?: string; // Add avatar field
+  phone?: string;
+  address?: string;
+  joiningDate?: string;
+  skills?: string[];
+  education?: string;
+  emergencyContact?: string;
+  badgeNo?: string;
+  aadharNo?: string;
+  vehicleNo?: string;
 }
 
 export interface Task {
   id: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high' | 'urgent'; // Add 'urgent'
+  status: 'pending' | 'in_progress' | 'completed' | 'delayed'; // Add 'delayed'
   assignedTo?: string; // User ID
   assignedBy: string; // User ID
   createdAt: string;
   dueDate: string;
   completedAt?: string;
-  category: string;
+  category: 'maintenance' | 'inspection' | 'repair' | 'cleaning' | 'administrative' | 'other';
   workDetails?: string;
+  trainId?: string; // Add train reference
+  carId?: string; // Add car reference
 }
 
 export interface Issue {
@@ -72,19 +84,35 @@ export interface Project {
   completionPercentage?: number;
   budget?: number;
   teams?: string[];
+  implementingAgency?: string;
+  cost?: number;
+  keyFeatures?: string[];
+  website?: string;
+  dailyRidership?: string;
+  lines?: number;
+  trainSets?: number;
+  trackType?: string;
 }
 
 export interface Train {
   id: string;
   name: string;
-  status: 'active' | 'maintenance' | 'inactive';
+  status: 'active' | 'maintenance' | 'inactive' | 'out_of_service'; // Added out_of_service
   lastMaintenance: string;
   nextMaintenance: string;
   totalTrips: number;
   totalDistance: number;
-  cars: number;
+  cars: Car[]; // Changed from number to array of Car
   manufacturer: string;
   commissionedDate: string;
+  totalKilometers?: number;
+}
+
+export interface Car {
+  id: string;
+  position: number;
+  status: string;
+  lastInspection: string;
 }
 
 export interface TrainCar {
@@ -94,4 +122,40 @@ export interface TrainCar {
   status: 'operational' | 'needs_maintenance' | 'under_maintenance';
   lastInspection: string;
   nextInspection: string;
+}
+
+// Additional types needed for mockData
+export interface WorkCategory {
+  id: string;
+  name: string;
+}
+
+export interface DailyWorkLog {
+  id: string;
+  userId: string;
+  issueId?: string;
+  date: string;
+  workDescription: string;
+  hoursSpent: number;
+  status: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  date: string;
+  loginTime: string;
+  logoutTime?: string;
+  status: 'present' | 'absent' | 'late' | 'half-day';
+  workHours: number;
+  notes?: string;
+}
+
+export interface ProjectUpdate {
+  id: string;
+  projectId: string;
+  title: string;
+  date: string;
+  content: string;
+  source: string;
 }

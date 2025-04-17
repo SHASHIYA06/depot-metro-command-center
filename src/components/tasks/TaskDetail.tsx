@@ -116,7 +116,7 @@ export const TaskDetail: React.FC<TaskDetailProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="text-sm font-semibold mb-1">Assigned To</h4>
-              <p className="text-sm">{getAssigneeName(task.assignedTo)}</p>
+              <p className="text-sm">{task.assignedTo ? getAssigneeName(task.assignedTo) : 'Unassigned'}</p>
             </div>
             
             <div>

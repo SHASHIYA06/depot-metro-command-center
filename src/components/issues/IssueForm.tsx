@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,7 +55,6 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
     issue?.trainId
   );
 
-  // Filter users based on roles (engineers and technicians can be assigned tasks)
   const assignableUsers = users.filter(u => 
     u.role === UserRole.ENGINEER || u.role === UserRole.TECHNICIAN
   );
@@ -76,43 +74,30 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof issueSchema>) => {
+  const onSubmit = async (values: z.infer<typeof issueSchema>) => {
+    const formattedData: Omit<Issue, 'id' | 'reportedAt' | 'lastUpdated'> = {
+      title: values.title,
+      description: values.description,
+      severity: values.severity,
+      status: values.status,
+      assignedTo: values.assignedTo,
+      trainId: values.trainId,
+      carId: values.carId,
+      workCategory: values.workCategory,
+      workDetails: values.workDetails,
+      resolvedAt: values.resolved ? new Date().toISOString() : undefined,
+      reportedBy: user?.id || '',
+    };
+
     if (issue) {
-      // Update existing issue
-      const updatedIssue = updateIssue(issue.id, data);
-      if (updatedIssue) {
-        toast({
-          title: "Activity Updated",
-          description: "The work activity has been updated successfully.",
-        });
-      }
+      updateIssue(issue.id, formattedData);
     } else {
-      // Create new issue
-      const newIssueData = {
-        title: data.title,
-        description: data.description,
-        severity: data.severity,
-        status: data.status,
-        assignedTo: data.assignedTo,
-        trainId: data.trainId,
-        carId: data.carId,
-        workCategory: data.workCategory,
-        workDetails: data.workDetails,
-        resolvedAt: data.status === 'resolved' ? new Date().toISOString() : undefined
-      };
-      
-      const newIssue = addNewIssue(newIssueData);
-      
-      toast({
-        title: "Activity Created",
-        description: "The new work activity has been created successfully.",
-      });
+      addNewIssue(formattedData);
     }
-    
+
     onClose(true);
   };
 
-  // Get cars for the selected train
   const getTrainCars = () => {
     if (!selectedTrain) return [];
     const train = trains.find(t => t.id === selectedTrain);
@@ -124,7 +109,7 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
   const handleTrainChange = (trainId: string) => {
     setSelectedTrain(trainId);
     form.setValue('trainId', trainId);
-    form.setValue('carId', ''); // Reset car selection when train changes
+    form.setValue('carId', '');
   };
 
   const canAssignWork = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
@@ -360,7 +345,6 @@ export const IssueForm: React.FC<IssueFormProps> = ({ issue, onClose }) => {
               />
             </div>
             
-            {/* Work details section - visible to employees updating activities */}
             <FormField
               control={form.control}
               name="workDetails"

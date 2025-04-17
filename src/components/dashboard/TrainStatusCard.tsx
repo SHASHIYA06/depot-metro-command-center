@@ -35,6 +35,7 @@ export const TrainStatusCard: React.FC<TrainStatusCardProps> = ({ train }) => {
       case 'maintenance':
         return 'bg-metro-warning/20 text-metro-warning hover:bg-metro-warning/30';
       case 'out_of_service':
+      case 'inactive':
         return 'bg-metro-danger/20 text-metro-danger hover:bg-metro-danger/30';
       default:
         return '';
@@ -48,11 +49,12 @@ export const TrainStatusCard: React.FC<TrainStatusCardProps> = ({ train }) => {
           <CardTitle className="text-lg">{train.name}</CardTitle>
           <Badge className={cn(getStatusColor(train.status))}>
             {train.status === 'active' ? 'Active' : 
-             train.status === 'maintenance' ? 'In Maintenance' : 'Out of Service'}
+             train.status === 'maintenance' ? 'In Maintenance' : 
+             train.status === 'out_of_service' ? 'Out of Service' : 'Inactive'}
           </Badge>
         </div>
         <CardDescription>
-          Total: {train.totalKilometers.toLocaleString()} km
+          Total: {(train.totalKilometers || train.totalDistance).toLocaleString()} km
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

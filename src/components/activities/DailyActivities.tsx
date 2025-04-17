@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { users } from '@/lib/mockData';
 import { UserRole } from '@/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { exportToExcel, exportToPDF, formatDataForExport } from '@/utils/exportUtils';
+import { exportData, ExportFormat, createPdfColumns, formatDataForExport } from '@/utils/exportUtils';
 import { syncDailyActivitiesToSheets, backupToGoogleCloud } from '@/utils/googleSheetsIntegration';
 
 const mockActivities = [
@@ -91,7 +90,7 @@ interface ActivityDetailsProps {
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, open, onOpenChange }) => {
   const staff = users.find(u => u.id === activity.assignedTo);
   
-  const exportRecord = (format: 'excel' | 'pdf') => {
+  const exportRecord = (format: ExportFormat) => {
     const activityData = [{
       Date: format(new Date(activity.date), 'PPP'),
       TrainSet: activity.trainSet,
@@ -102,19 +101,16 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, open, onOpe
       Remarks: activity.remarks || 'N/A'
     }];
     
-    if (format === 'excel') {
-      exportToExcel(activityData, `Activity_${activity.id}`);
-    } else {
-      exportToPDF(
-        activityData,
-        `Activity_${activity.id}`,
-        'Daily Activity Record',
-        [
-          { header: 'Property', dataKey: 'property' },
-          { header: 'Value', dataKey: 'value' }
-        ]
-      );
-    }
+    exportData(
+      activityData, 
+      format, 
+      `Activity_${activity.id}`,
+      'Daily Activity Record',
+      format === 'pdf' ? [
+        { header: 'Property', dataKey: 'property' },
+        { header: 'Value', dataKey: 'value' }
+      ] : undefined
+    );
   };
   
   return (
@@ -266,7 +262,7 @@ export const DailyActivities: React.FC = () => {
     return isAfterStart && isBeforeEnd && matchesStatus && matchesTrain && matchesSearch && isInSelectedMonth;
   });
 
-  const exportActivities = (format: 'excel' | 'pdf') => {
+  const exportActivities = (format: ExportFormat) => {
     // Prepare data for export
     const exportData = filteredActivities.map(record => {
       const staff = users.find(u => u.id === record.assignedTo);
@@ -618,7 +614,6 @@ export const DailyActivities: React.FC = () => {
         </CardContent>
       </Card>
       
-      {/* Activity Details Dialog */}
       {selectedActivity && (
         <ActivityDetails 
           activity={selectedActivity} 

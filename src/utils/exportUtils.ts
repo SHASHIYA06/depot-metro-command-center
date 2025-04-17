@@ -1,3 +1,4 @@
+
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import autoTable from 'jspdf-autotable';
@@ -106,6 +107,31 @@ export const exportToPDF = (
       description: 'Failed to export data to PDF. Please try again.',
       variant: 'destructive',
     });
+  }
+};
+
+// Define exportType type to avoid the "expression is not callable" error
+export type ExportFormat = 'excel' | 'pdf';
+
+/**
+ * Export data in the specified format
+ * @param data Data to export
+ * @param format Export format (excel or pdf)
+ * @param fileName Name of the file
+ * @param title Title for PDF
+ * @param columns Columns for PDF
+ */
+export const exportData = (
+  data: any[],
+  format: ExportFormat,
+  fileName: string = 'export',
+  title: string = 'Exported Data',
+  columns?: { header: string, dataKey: string }[]
+): void => {
+  if (format === 'excel') {
+    exportToExcel(data, fileName);
+  } else if (format === 'pdf') {
+    exportToPDF(data, fileName, title, columns);
   }
 };
 

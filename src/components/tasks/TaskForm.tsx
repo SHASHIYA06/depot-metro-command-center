@@ -26,6 +26,7 @@ import { X } from 'lucide-react';
 import { Task, UserRole } from '@/types';
 import { users, addNewTask, updateTask } from '@/lib/mockData';
 import { useAuth } from '@/contexts/AuthContext';
+import { syncToGoogleSheets } from '@/utils/googleSheetsIntegration';
 
 // Define the form schema with Zod
 const taskSchema = z.object({
@@ -110,41 +111,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
 
     // Sync to Google Sheets (mock implementation)
     console.log('Syncing task to Google Sheets:', formattedData);
-    syncToGoogleSheets(formattedData);
+    await syncToGoogleSheets(formattedData);
 
     // Close the form
     onClose(true);
   };
 
-  // Mock function to sync data to Google Sheets
-  const syncToGoogleSheets = (taskData: any) => {
-    // In a real implementation, this would use a webhook or API call to Google Sheets
-    console.log('Task data would be sent to Google Sheets:', taskData);
-    // This would typically call an API endpoint or use a library like googleapis
-  };
-
-  // Determine if user is updating an assigned task (technician updating work details)
-  const isUpdatingAssignedTask = task && user?.role === UserRole.TECHNICIAN && task.assignedTo === user.id;
-
   return (
-    <Card className="border-primary/20">
-      <CardHeader className="bg-primary/5">
-        <div className="flex justify-between items-center">
-          <CardTitle>
-            {task 
-              ? isUpdatingAssignedTask 
-                ? 'Update Work Progress' 
-                : 'Edit Task' 
-              : 'Create New Task'}
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={() => onClose()}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>{task ? 'Edit Task' : 'Create New Task'}</CardTitle>
+        <Button variant="ghost" size="icon" onClick={() => onClose(false)}>
+          <X className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 pt-4">
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -152,17 +135,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
                 <FormItem>
                   <FormLabel>Task Title</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter task title" 
-                      {...field} 
-                      disabled={isUpdatingAssignedTask} 
-                    />
+                    <Input placeholder="Enter task title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -171,26 +150,123 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Provide detailed instructions for this task" 
-                      className="min-h-32" 
+                      placeholder="Describe the task in detail" 
+                      className="min-h-[100px]" 
                       {...field} 
-                      disabled={isUpdatingAssignedTask} 
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
-            {/* Only show category selection for new tasks or non-technicians */}
-            {(!isUpdatingAssignedTask) && (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="delayed">Delayed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="assignedTo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assign To</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select staff" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {assignableUsers.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name} ({user.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Due Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -209,118 +285,46 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
                   </FormItem>
                 )}
               />
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Only show priority selection for new tasks or non-technicians */}
-              {(!isUpdatingAssignedTask) && (
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select priority level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-              
-              {/* Status can be updated by anyone */}
+
               <FormField
                 control={form.control}
-                name="status"
+                name="trainId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="delayed">Delayed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {/* Only show assignment options for users who can assign tasks */}
-            {(user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER) && !isUpdatingAssignedTask && (
-              <FormField
-                control={form.control}
-                name="assignedTo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assign To</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select staff member" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {assignableUsers.map(staff => (
-                          <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name} ({staff.role === UserRole.ENGINEER ? 'Engineer' : 'Technician'})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            {/* Only show due date for new tasks or non-technicians */}
-            {(!isUpdatingAssignedTask) && (
-              <FormField
-                control={form.control}
-                name="dueDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Due Date</FormLabel>
+                    <FormLabel>Train ID (Optional)</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input placeholder="Enter train ID" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-            
-            {/* Everyone can update work details */}
+
+              <FormField
+                control={form.control}
+                name="carId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Car ID (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter car ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="workDetails"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Work Details/Progress Update</FormLabel>
+                  <FormLabel>Work Details (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Enter details of work performed or progress update" 
-                      className="min-h-28"
+                      placeholder="Enter additional work details or progress notes" 
+                      className="min-h-[80px]" 
                       {...field} 
                     />
                   </FormControl>
@@ -329,17 +333,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
               )}
             />
           </CardContent>
-          
-          <CardFooter className="flex justify-between border-t px-6 py-4">
-            <Button variant="outline" type="button" onClick={() => onClose()}>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => onClose(false)}>
               Cancel
             </Button>
             <Button type="submit">
-              {task 
-                ? isUpdatingAssignedTask 
-                  ? 'Update Progress' 
-                  : 'Update Task' 
-                : 'Create Task'}
+              {task ? 'Update Task' : 'Create Task'}
             </Button>
           </CardFooter>
         </form>
