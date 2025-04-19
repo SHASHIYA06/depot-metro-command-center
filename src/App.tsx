@@ -22,6 +22,7 @@ import Backup from '@/pages/Backup';
 import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import TrainCommissioning from '@/pages/TrainCommissioning';
+import Reports from '@/pages/Reports';
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const AppRoutes = () => {
         <Route path="/projects" element={<Projects />} />
         <Route path="/backup" element={<Backup />} />
         <Route path="/train-commissioning" element={<TrainCommissioning />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
