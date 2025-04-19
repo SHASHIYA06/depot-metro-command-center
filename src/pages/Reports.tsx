@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +36,7 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState('rsoi');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [reportDate, setReportDate] = useState<Date | undefined>(undefined);
 
   // Mock data for RSOI (Return of Stores/Items)
   const rsoiData = [
@@ -334,7 +334,7 @@ const Reports = () => {
                     
                     <div className="space-y-2">
                       <Label>Date</Label>
-                      <DatePicker />
+                      <DatePicker date={reportDate} setDate={setReportDate} />
                     </div>
                   </div>
                   

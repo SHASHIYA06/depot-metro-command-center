@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +19,7 @@ import {
   FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { AttendanceRecord, User as UserType, UserRole, ExportFormat } from '@/types';
 import { users, attendanceRecords } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
@@ -34,14 +34,13 @@ const StaffAttendance = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: undefined,
     to: undefined,
   });
   const [activeTab, setActiveTab] = useState('records');
 
   useEffect(() => {
-    // Load attendance records from mockData
     setAttendance(attendanceRecords);
   }, []);
 
@@ -97,7 +96,6 @@ const StaffAttendance = () => {
     }
   };
 
-  // Calculate statistics for attendance by status
   const calculateStatusStats = () => {
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
@@ -117,9 +115,7 @@ const StaffAttendance = () => {
     ];
   };
 
-  // Calculate attendance stats by department
   const calculateDepartmentStats = () => {
-    // Group users by department
     const departments: Record<string, string[]> = {};
     users.forEach(staffMember => {
       const dept = staffMember.department || 'Other';
@@ -129,7 +125,6 @@ const StaffAttendance = () => {
       departments[dept].push(staffMember.id);
     });
     
-    // Calculate attendance for each department
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
     
@@ -418,12 +413,10 @@ const StaffAttendance = () => {
                         initialFocus
                         mode="range"
                         defaultMonth={dateRange.from}
-                        selected={{
-                          from: dateRange.from,
-                          to: dateRange.to
-                        }}
+                        selected={dateRange}
                         onSelect={setDateRange}
                         numberOfMonths={2}
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
