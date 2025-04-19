@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +26,7 @@ const StaffAttendance = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ const StaffAttendance = () => {
   const filteredAttendance = attendance.filter(record => {
     const matchesSearch = getUserName(record.userId).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = date ? format(date, 'yyyy-MM-dd') === record.date : true;
-    const matchesStatus = selectedStatus ? record.status === selectedStatus : true;
+    const matchesStatus = selectedStatus === 'all' ? true : record.status === selectedStatus;
     
     return matchesSearch && matchesDate && matchesStatus;
   });
@@ -116,7 +117,7 @@ const StaffAttendance = () => {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="present">Present</SelectItem>
               <SelectItem value="absent">Absent</SelectItem>
               <SelectItem value="late">Late</SelectItem>
