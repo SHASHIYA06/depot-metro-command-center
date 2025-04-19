@@ -2,149 +2,142 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Train, AlertCircle } from 'lucide-react';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { Label } from '@/components/ui/label';
+import { Train, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const form = useForm<LoginFormData>({
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  const handleSubmit = async (data: LoginFormData) => {
-    setIsSubmitting(true);
-    setLoginError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
     
     try {
-      await login(data.email, data.password);
-      navigate('/');
-    } catch (error) {
-      console.log('Login error:', error);
-      setLoginError(error instanceof Error ? error.message : 'An unknown error occurred');
+      await login(email, password);
+      navigate('/dashboard');
+      
+      // Track login for attendance
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const timeDecimal = hour + (minute / 60);
+      
+      // Check if login is between 8:50 AM and 9:20 AM (8.83 to 9.33 in decimal)
+      if (timeDecimal >= 8.83 && timeDecimal <= 9.33) {
+        // In a real app, this would be recorded to a database
+        toast({
+          title: 'Attendance Recorded',
+          description: 'You have been marked as PRESENT for today.',
+        });
+      } else {
+        toast({
+          title: 'Login Time Noted',
+          description: `Login time: ${now.toLocaleTimeString()}`,
+        });
+      }
+    } catch (err) {
+      setError('Invalid email or password. Please try again.');
+      toast({
+        title: 'Login Failed',
+        description: 'Invalid email or password. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-metro-primary to-metro-info/80 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center shadow-lg">
-              <Train className="h-10 w-10 text-metro-primary" />
-            </div>
+        <div className="flex justify-center mb-6">
+          <div className="rounded-full bg-primary/10 p-3">
+            <Train className="h-12 w-12 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-white">Metro Depot Command Center</h1>
-          <p className="mt-2 text-white/80">Login to access your metro depot dashboard</p>
         </div>
         
-        <Card className="border-none shadow-xl">
-          <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Enter your credentials to continue</CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Metro Depot Management</CardTitle>
+            <CardDescription className="text-center">
+              Enter your credentials to access the system
+            </CardDescription>
           </CardHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <CardContent className="space-y-4">
-                {loginError && (
-                  <Alert variant="destructive" className="my-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{loginError}</AlertDescription>
-                  </Alert>
-                )}
-                
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="your.email@metrodepot.com" 
-                          type="email"
-                          autoComplete="email"
-                          required
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          autoComplete="current-password"
-                          required
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="text-sm text-muted-foreground">
-                  <p>For demo purposes, you can use any of these emails:</p>
-                  <div className="text-xs mt-1 space-y-1 border rounded-md p-2 bg-slate-50">
-                    <p>shashi.mishra@metro.com (Depot Incharge)</p>
-                    <p>shilpa.sahu@metro.com (Engineer)</p>
-                    <p>sunil.rajan@metro.com (Engineer)</p>
-                    <p>manidip.baisya@metro.com (Technician)</p>
-                    <p>md.aslam@metro.com (Technician)</p>
-                    <p><strong>Password Format:</strong> firstname@4321 (e.g., shashi@4321)</p>
-                  </div>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              {error && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  {error}
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-metro-primary hover:bg-metro-primary/90"
-                  disabled={isSubmitting}
+              )}
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Button type="button" variant="link" className="px-0 text-xs">
+                      Forgot password?
+                    </Button>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    'Login'
-                  )}
+                  {isLoading ? 'Signing in...' : 'Sign in'}
                 </Button>
-              </CardFooter>
+              </div>
             </form>
-          </Form>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-2 border-t pt-4">
+            <p className="text-xs text-muted-foreground text-center px-4">
+              By signing in, you agree to the terms of service and data policy.
+            </p>
+            <p className="text-xs text-muted-foreground text-center">
+              Default password format: firstname@4321
+            </p>
+          </CardFooter>
         </Card>
-      </div>
-      
-      <div className="fixed bottom-4 right-4 text-xs text-white/50 text-right">
-        <p>Depot Incharge: Shashi Shekhar Mishra</p>
-        <p>Email: shashiaaidu@gmail.com</p>
       </div>
     </div>
   );

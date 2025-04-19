@@ -23,6 +23,8 @@ import {
   FileText,
   Activity,
   Download,
+  Tool,
+  MapPin,
   LucideIcon
 } from 'lucide-react';
 
@@ -93,23 +95,58 @@ export const Sidebar: React.FC = () => {
             <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" exact />
             <SidebarLink to="/tasks" icon={ClipboardCheck} label="Tasks" />
             <SidebarLink to="/issues" icon={AlertCircle} label="Issues" />
+
+            {/* Group maintenance items */}
+            <div className="pt-2 pb-1">
+              <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                Maintenance
+              </p>
+            </div>
             <SidebarLink to="/maintenance" icon={Wrench} label="Maintenance" />
             <SidebarLink to="/maintenance-schedule" icon={CalendarDays} label="Maint. Schedule" />
+            <SidebarLink to="/train-maintenance" icon={Wrench} label="Train Maintenance" />
+            <SidebarLink to="/mp-tools" icon={Tool} label="M&P Tools" />
+
+            {/* Group train items */}
+            <div className="pt-2 pb-1">
+              <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                Train Management
+              </p>
+            </div>
+            <SidebarLink to="/train-location" icon={MapPin} label="Train Location" />
+            <SidebarLink to="/train-commissioning" icon={Train} label="Commissioning" />
+
+            {/* Group activities */}
+            <div className="pt-2 pb-1">
+              <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                Activities
+              </p>
+            </div>
             <SidebarLink to="/daily-activities" icon={FileSpreadsheet} label="Daily Activities" />
             <SidebarLink to="/activities" icon={Activity} label="Activity Logs" />
-            <SidebarLink to="/train-commissioning" icon={Train} label="Commissioning" />
             
+            {/* Group staff items */}
             {canAccessStaff && (
               <>
+                <div className="pt-2 pb-1">
+                  <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                    Staff Management
+                  </p>
+                </div>
                 <SidebarLink to="/staff" icon={Users} label="Staff" />
                 <SidebarLink to="/staff-attendance" icon={UserCheck} label="Staff Attendance" />
               </>
             )}
             
+            {/* Group reporting */}
+            <div className="pt-2 pb-1">
+              <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">
+                Reporting
+              </p>
+            </div>
             {canAccessAnalytics && (
               <SidebarLink to="/analytics" icon={BarChart3} label="Analytics" />
             )}
-            
             <SidebarLink to="/projects" icon={FolderKanban} label="Projects" />
             <SidebarLink to="/reports" icon={FileText} label="Reports" />
             <SidebarLink to="/exports" icon={Download} label="Data Exports" />

@@ -23,6 +23,9 @@ import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import TrainCommissioning from '@/pages/TrainCommissioning';
 import Reports from '@/pages/Reports';
+import TrainMaintenanceSchedule from '@/pages/TrainMaintenanceSchedule';
+import MPTools from '@/pages/MPTools';
+import TrainLocation from '@/pages/TrainLocation';
 
 const queryClient = new QueryClient();
 
@@ -68,15 +71,18 @@ const AppRoutes = () => {
         <Route path="/issues" element={<Issues />} />
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/maintenance-schedule" element={<MaintenanceSchedule />} />
+        <Route path="/train-maintenance" element={<TrainMaintenanceSchedule />} />
+        <Route path="/train-location" element={<TrainLocation />} />
         <Route path="/activities" element={<Activities />} />
         <Route path="/daily-activities" element={<DailyActivities />} />
         <Route path="/staff" element={<Staff />} />
         <Route path="/staff-attendance" element={<StaffAttendance />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/projects" element={<Projects />} />
-        <Route path="/backup" element={<Backup />} />
-        <Route path="/train-commissioning" element={<TrainCommissioning />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/backup" element={<Backup />} />
+        <Route path="/mp-tools" element={<MPTools />} />
+        <Route path="/train-commissioning" element={<TrainCommissioning />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
