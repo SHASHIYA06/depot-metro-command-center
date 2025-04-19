@@ -1,3 +1,4 @@
+
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
@@ -91,15 +92,15 @@ const exportToPDF = (data: any[], fileName: string, title?: string, columns?: st
     headStyles: {
       fillColor: [63, 81, 181],
       textColor: 255,
-      fontStyle: 'bold',
+      fontStyle: 'bold'
     },
     alternateRowStyles: {
-      fillColor: [240, 240, 240],
+      fillColor: [240, 240, 240]
     },
     styles: {
       fontSize: 10,
-      cellPadding: 3,
-    },
+      cellPadding: 3
+    }
   });
   
   // Save file
@@ -130,3 +131,4 @@ export const formatDataForExport = (data: any[], transforms?: Record<string, (va
     return formattedItem;
   });
 };
+
