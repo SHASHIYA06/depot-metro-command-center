@@ -77,7 +77,7 @@ const Staff = () => {
       case UserRole.ENGINEER:
         return 'Engineer';
       case UserRole.TECHNICIAN:
-        return 'Employee';
+        return 'Technician';
       default:
         return 'Staff';
     }
@@ -125,7 +125,7 @@ const Staff = () => {
               <label htmlFor="role" className="text-sm font-medium">Role</label>
               <select id="role" className="w-full px-3 py-2 border rounded-md">
                 <option value={UserRole.ENGINEER}>Engineer</option>
-                <option value={UserRole.TECHNICIAN}>Employee</option>
+                <option value={UserRole.TECHNICIAN}>Technician</option>
               </select>
             </div>
             <div className="space-y-2">
@@ -212,7 +212,7 @@ const Staff = () => {
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="engineers">Engineers</TabsTrigger>
-              <TabsTrigger value="technicians">Employees</TabsTrigger>
+              <TabsTrigger value="technicians">Technicians</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
