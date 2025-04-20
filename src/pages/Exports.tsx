@@ -7,11 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, FileSpreadsheet, FilePdf, Download, Calendar, Filter } from 'lucide-react';
+import { Loader2, FileSpreadsheet, Download, Calendar, Filter } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { handleExport } from '@/utils/exportUtils';
-import { trains, tasks, issues, getActivityLogs, getUsers } from '@/lib/mockData';
+import { exportData } from '@/utils/dataExport';
+import { trains, tasks, issues, activityLogs, users } from '@/lib/mockData';
 import { ExportFormat } from '@/types';
 
 const Exports = () => {
@@ -28,9 +28,6 @@ const Exports = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Demo data for export preview
-  const activityLogs = getActivityLogs();
-  const users = getUsers();
-
   const getExportData = (type: string) => {
     switch (type) {
       case 'tasks':
@@ -158,7 +155,7 @@ const Exports = () => {
         const fileName = `metro_depot_${exportType}_${format(new Date(), 'yyyy-MM-dd')}`;
         const title = `Metro Depot ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Report`;
         
-        handleExport(format, data, fileName, title, columns);
+        exportData(data, fileName, format, title, columns);
         
         toast({
           title: "Export Successful",
@@ -246,21 +243,16 @@ const Exports = () => {
                 <div className="space-y-2">
                   <Label htmlFor="date-range">Date Range</Label>
                   <div className="flex items-center space-x-2">
-                    <DatePicker
-                      id="date-range"
-                      selected={dateRange.from}
-                      onSelect={(date) =>
-                        setDateRange(prev => ({ ...prev, from: date }))
-                      }
-                      placeholderText="From date"
+                    <DatePicker 
+                      date={dateRange.from}
+                      setDate={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                      className="flex-1"
                     />
                     <span>to</span>
                     <DatePicker
-                      selected={dateRange.to}
-                      onSelect={(date) =>
-                        setDateRange(prev => ({ ...prev, to: date }))
-                      }
-                      placeholderText="To date"
+                      date={dateRange.to}
+                      setDate={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                      className="flex-1"
                     />
                   </div>
                 </div>
@@ -332,11 +324,7 @@ const Exports = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center p-4 border rounded-lg bg-accent/50">
                     <div className="mr-4">
-                      {format === 'excel' ? (
-                        <FileSpreadsheet className="h-8 w-8 text-green-600" />
-                      ) : (
-                        <FilePdf className="h-8 w-8 text-red-600" />
-                      )}
+                      <FileSpreadsheet className="h-8 w-8 text-green-600" />
                     </div>
                     <div className="flex-grow">
                       <h4 className="font-medium">Tasks & Work Orders</h4>
@@ -351,7 +339,7 @@ const Exports = () => {
                   
                   <div className="flex items-center p-4 border rounded-lg bg-accent/50">
                     <div className="mr-4">
-                      <FilePdf className="h-8 w-8 text-red-600" />
+                      <FileSpreadsheet className="h-8 w-8 text-red-600" />
                     </div>
                     <div className="flex-grow">
                       <h4 className="font-medium">Issues & Reports</h4>
