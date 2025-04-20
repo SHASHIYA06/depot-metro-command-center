@@ -1,13 +1,44 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Train, AlertCircle } from 'lucide-react';
+import { Train, AlertCircle, User, Key, Users, Briefcase, Database, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from '@/components/ui/motion';
+import { UserRole } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
+  role: UserRole;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  isActive: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`cursor-pointer rounded-lg p-4 transition-all ${isActive ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'}`}
+      onClick={onClick}
+    >
+      <div className="flex flex-col items-center text-center space-y-2">
+        <div className={`rounded-full p-3 ${isActive ? 'bg-primary-foreground/20' : 'bg-primary/10'}`}>
+          <Icon className={`h-6 w-6 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+        </div>
+        <h3 className="font-medium">{title}</h3>
+        <p className={`text-xs ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+          {description}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +48,66 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [activeTab, setActiveTab] = useState('login');
+
+  const loginRoles = [
+    {
+      role: UserRole.DEPOT_INCHARGE,
+      icon: Briefcase,
+      title: 'Depot Incharge',
+      description: 'Full access to all systems and administrative controls'
+    },
+    {
+      role: UserRole.ENGINEER,
+      icon: Users,
+      title: 'Engineer',
+      description: 'Access to maintenance planning and technical operations'
+    },
+    {
+      role: UserRole.TECHNICIAN,
+      icon: User,
+      title: 'Employee',
+      description: 'View assigned tasks and report work progress'
+    },
+    {
+      role: UserRole.STORE_PERSON,
+      icon: Database,
+      title: 'Store Person',
+      description: 'Manage inventory, materials and equipment'
+    },
+    {
+      role: UserRole.DATA_ENTRY_OPERATOR,
+      icon: FileSpreadsheet,
+      title: 'Data Entry',
+      description: 'Enter and update data, generate reports'
+    }
+  ];
+
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    
+    // Set default email based on role
+    switch (role) {
+      case UserRole.DEPOT_INCHARGE:
+        setEmail('shashi.mishra@metro.com');
+        break;
+      case UserRole.ENGINEER:
+        setEmail('shilpa.sahu@metro.com');
+        break;
+      case UserRole.TECHNICIAN:
+        setEmail('manidip.baisya@metro.com');
+        break;
+      case UserRole.STORE_PERSON:
+        setEmail('debtanu.banerjee@metro.com');
+        break;
+      case UserRole.DATA_ENTRY_OPERATOR:
+        setEmail('koushik.kundu@metro.com');
+        break;
+      default:
+        setEmail('');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,80 +155,188 @@ const Login = () => {
     }
   };
 
+  // 3D train animation effect
+  const [trainPosition, setTrainPosition] = useState({ x: 0, y: 0, rotate: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      setTrainPosition({ x, y, rotate: x * 0.5 });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="rounded-full bg-primary/10 p-3">
-            <Train className="h-12 w-12 text-primary" />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4 overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-2/3 right-1/4 w-40 h-40 bg-green-500/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="relative w-full max-w-4xl z-10">
+        <div className="absolute top-[-100px] left-1/2 transform -translate-x-1/2">
+          <motion.div
+            animate={{
+              x: trainPosition.x,
+              y: trainPosition.y,
+              rotateZ: trainPosition.rotate,
+            }}
+            transition={{ type: 'spring', stiffness: 150, damping: 15 }}
+            className="relative"
+          >
+            <div className="rounded-full bg-primary/10 p-5">
+              <Train className="h-20 w-20 text-primary" />
+            </div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-40 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent rounded"></div>
+          </motion.div>
         </div>
         
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Metro Depot Management</CardTitle>
-            <CardDescription className="text-center">
-              Enter your credentials to access the system
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              {error && (
-                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  {error}
+        <div className="mt-24 flex flex-col items-center">
+          <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">Metro Depot Management</h1>
+          <p className="text-center text-gray-600 mb-8">Advanced railway maintenance and operations system</p>
+          
+          <Card className="w-full max-w-xl shadow-lg border-0 shadow-primary/10">
+            <CardHeader>
+              <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid grid-cols-2 mb-4">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="about">System Info</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="login">
+                  <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
+                  <CardDescription className="text-center">
+                    Login to access your dashboard and tools
+                  </CardDescription>
+                </TabsContent>
+                
+                <TabsContent value="about">
+                  <CardTitle className="text-2xl font-bold text-center">System Information</CardTitle>
+                  <CardDescription className="text-center">
+                    Metro Depot Management System v2.0
+                  </CardDescription>
+                </TabsContent>
+              </Tabs>
+            </CardHeader>
+            
+            <CardContent>
+              {activeTab === 'login' ? (
+                <>
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-3">Select your role:</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {loginRoles.map((roleInfo) => (
+                        <LoginRoleCard
+                          key={roleInfo.role}
+                          role={roleInfo.role}
+                          icon={roleInfo.icon}
+                          title={roleInfo.title}
+                          description={roleInfo.description}
+                          isActive={selectedRole === roleInfo.role}
+                          onClick={() => handleRoleSelect(roleInfo.role)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                      <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        {error}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={isLoading}
+                        className="bg-background"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password" className="flex items-center">
+                          <Key className="h-4 w-4 mr-2" />
+                          Password
+                        </Label>
+                        <Button type="button" variant="link" className="px-0 text-xs">
+                          Forgot password?
+                        </Button>
+                      </div>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="bg-background"
+                      />
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading || !selectedRole}
+                    >
+                      {isLoading ? 'Signing in...' : 'Sign in'}
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <div className="space-y-4 py-2">
+                  <p className="text-sm">The Metro Depot Management System provides comprehensive tools for maintenance, operations, and administration of metro rail facilities.</p>
+                  
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Key Features:</h4>
+                    <ul className="text-sm list-disc list-inside space-y-1">
+                      <li>Maintenance planning and scheduling</li>
+                      <li>Task assignment and tracking</li>
+                      <li>Issue management and resolution</li>
+                      <li>Inventory and store management</li>
+                      <li>Staff management and attendance</li>
+                      <li>Analytics and reporting</li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setActiveTab('login')}
+                  >
+                    Return to Login
+                  </Button>
                 </div>
               )}
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Button type="button" variant="link" className="px-0 text-xs">
-                      Forgot password?
-                    </Button>
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2 border-t pt-4">
-            <p className="text-xs text-muted-foreground text-center px-4">
-              By signing in, you agree to the terms of service and data policy.
-            </p>
-            <p className="text-xs text-muted-foreground text-center">
-              Default password format: firstname@4321
-            </p>
-          </CardFooter>
-        </Card>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-2 border-t pt-4">
+              <p className="text-xs text-muted-foreground text-center px-4">
+                By signing in, you agree to the terms of service and data policy.
+              </p>
+              {activeTab === 'login' && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Default password format: firstname@4321
+                </p>
+              )}
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/types';
-import { users } from '@/lib/mockData';
+import { staffUsers } from '@/lib/mockDataStaff';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -37,49 +37,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedEmail = email.toLowerCase().trim();
       
       // Log all available emails for debugging
-      console.log('Available emails:', users.map(u => u.email.toLowerCase()));
+      console.log('Available emails:', staffUsers.map(u => u.email.toLowerCase()));
       console.log('Trying to login with:', normalizedEmail);
       
-      // Add support for the emails mentioned in the Login component
-      const loginEmails = [
-        { email: 'shashi.mishra@metro.com', role: UserRole.DEPOT_INCHARGE, name: 'Shashi Mishra' },
-        { email: 'shilpa.sahu@metro.com', role: UserRole.ENGINEER, name: 'Shilpa Sahu' },
-        { email: 'sunil.rajan@metro.com', role: UserRole.ENGINEER, name: 'Sunil Rajan' },
-        { email: 'manidip.baisya@metro.com', role: UserRole.TECHNICIAN, name: 'Manidip Baisya' },
-        { email: 'md.aslam@metro.com', role: UserRole.TECHNICIAN, name: 'Md Aslam' },
-      ];
-      
-      // Look for user in mock users first, then check login emails
-      let foundUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
-      
-      // If not found in regular users, check in special login emails
-      if (!foundUser) {
-        const loginEmailMatch = loginEmails.find(u => u.email.toLowerCase() === normalizedEmail);
-        
-        if (loginEmailMatch) {
-          // Create a temporary user from the login email data
-          foundUser = {
-            id: `temp-${Date.now()}`,
-            name: loginEmailMatch.name,
-            email: loginEmailMatch.email,
-            role: loginEmailMatch.role,
-            department: loginEmailMatch.role === UserRole.DEPOT_INCHARGE ? 'Operations' : 
-                       loginEmailMatch.role === UserRole.ENGINEER ? 'Engineering' : 'Technical',
-            phone: '+91 9876543200',
-            photoUrl: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,
-            avatar: `/avatars/${loginEmailMatch.role.toLowerCase()}.jpg`,
-            joiningDate: '2022-01-01',
-          };
-        }
-      }
+      // Look for user in staff users
+      let foundUser = staffUsers.find(u => u.email.toLowerCase() === normalizedEmail);
       
       if (!foundUser) {
         console.error('User not found with email:', normalizedEmail);
         throw new Error('Invalid credentials. User not found.');
       }
       
-      // For demo purposes, simplify password checking
-      // Allow any password for demo, or check for firstName@4321 format
+      // Calculate expected password based on first name
       const firstName = foundUser.name.split(' ')[0].toLowerCase();
       const expectedPassword = `${firstName}@4321`;
       
