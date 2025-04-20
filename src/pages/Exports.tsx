@@ -155,6 +155,7 @@ const Exports = () => {
         const fileName = `metro_depot_${exportType}_${format(new Date(), 'yyyy-MM-dd')}`;
         const title = `Metro Depot ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Report`;
         
+        // Fix: proper use of exportData with the format parameter
         exportData(data, fileName, format, title, columns);
         
         toast({

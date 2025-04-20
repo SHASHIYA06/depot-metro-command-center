@@ -42,7 +42,6 @@ const MaintenanceScheduleComponent = () => {
   const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load maintenance schedules from mockData
     setSchedules(maintenanceSchedules);
   }, []);
 
@@ -71,11 +70,9 @@ const MaintenanceScheduleComponent = () => {
 
   const confirmDeleteSchedule = () => {
     if (scheduleToDelete) {
-      // Delete schedule from mock data
       const updatedSchedules = schedules.filter(schedule => schedule.id !== scheduleToDelete);
       setSchedules(updatedSchedules);
       
-      // Show success toast
       toast({
         title: 'Schedule Deleted',
         description: 'The maintenance schedule has been deleted.',

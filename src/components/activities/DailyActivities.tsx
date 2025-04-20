@@ -19,12 +19,10 @@ const DailyActivities = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
-    // Load activities from mockData
     setActivities(activityLogs);
   }, []);
 
   useEffect(() => {
-    // Apply search and sorting to activities
     let results = activityLogs.filter(activity => {
       const matchesSearch =
         activity.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,7 +30,6 @@ const DailyActivities = () => {
       return matchesSearch;
     });
 
-    // Sort activities by timestamp
     results = results.sort((a, b) => {
       const dateA = new Date(a.timestamp).getTime();
       const dateB = new Date(b.timestamp).getTime();
@@ -51,7 +48,6 @@ const DailyActivities = () => {
     setSortOrder(order);
   };
 
-  // Update the handleExport function to use the correct type
   const handleExport = (format: ExportFormat) => {
     const exportData = activities.map(activity => ({
       id: activity.id,
