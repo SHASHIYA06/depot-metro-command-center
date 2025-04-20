@@ -89,7 +89,7 @@ const mockPendingMaterials = [
 const PendingMaterials = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   
   // Filter materials based on search, tab and priority
   const filteredMaterials = mockPendingMaterials.filter(material => {
@@ -105,7 +105,7 @@ const PendingMaterials = () => {
       (activeTab === 'received' && material.status === 'received');
     
     const matchesPriority = 
-      !priorityFilter || material.priority === priorityFilter;
+      priorityFilter === 'all' || material.priority === priorityFilter;
     
     return matchesSearch && matchesTab && matchesPriority;
   });
@@ -184,7 +184,7 @@ const PendingMaterials = () => {
                         <SelectValue placeholder="All Priorities" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Priorities</SelectItem>
+                        <SelectItem value="all">All Priorities</SelectItem>
                         <SelectItem value="urgent">Urgent</SelectItem>
                         <SelectItem value="high">High</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
