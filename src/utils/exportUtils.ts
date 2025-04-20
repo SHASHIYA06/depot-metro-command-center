@@ -31,7 +31,23 @@ export const exportToPDF = (
   title?: string,
   columns?: string[]
 ): void => {
-  exportData(data, filename, 'pdf', title, columns);
+  // Ensure columns is always a string array
+  let columnStrings: string[] = [];
+  
+  if (columns) {
+    // Handle if columns is already a string array
+    if (typeof columns[0] === 'string') {
+      columnStrings = columns as string[];
+    } 
+    // Handle if columns is an array of ExportColumnDefinition
+    else if (columns[0] && 'header' in columns[0]) {
+      columnStrings = (columns as ExportColumnDefinition[]).map(col => 
+        typeof col === 'string' ? col : col.header || col.dataKey
+      );
+    }
+  }
+  
+  exportData(data, filename, 'pdf', title, columnStrings);
 };
 
 // Format and transform data function

@@ -4,12 +4,13 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { ExportFormat } from '@/types';
 
 // Generic export function that handles both Excel and PDF
 export const exportData = (
   data: any[],
   fileName: string,
-  fileType: 'excel' | 'pdf',
+  fileType: ExportFormat,
   title?: string,
   columns?: string[]
 ) => {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,6 @@ const Exports = () => {
   const [format, setFormat] = useState<ExportFormat>('excel');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Demo data for export preview
   const getExportData = (type: string) => {
     switch (type) {
       case 'tasks':
@@ -169,7 +167,6 @@ const Exports = () => {
         const fileName = `metro_depot_${exportType}_${format(new Date(), 'yyyy-MM-dd')}`;
         const title = `Metro Depot ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Report`;
         
-        // Use exportData with the correct format parameter
         exportData(data, fileName, format, title, columns);
         
         toast({
