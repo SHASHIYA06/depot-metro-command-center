@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,12 +61,12 @@ const DailyActivities = () => {
       car: activity.carId || 'N/A'
     }));
 
-    const columns = ['id', 'user', 'action', 'details', 'timestamp', 'task', 'train', 'car'];
+    const columnNames = ['id', 'user', 'action', 'details', 'timestamp', 'task', 'train', 'car'];
     
     if (format === 'excel') {
       exportToExcel(exportData, 'Activities_Report');
     } else if (format === 'pdf') {
-      exportToPDF(exportData, 'Activities_Report', 'Activity Logs', columns);
+      exportToPDF(exportData, 'Activities_Report', 'Activity Logs', columnNames);
     }
   };
 

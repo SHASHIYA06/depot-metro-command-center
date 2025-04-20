@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,10 +104,12 @@ const MaintenanceScheduleComponent = () => {
       notes: schedule.notes || '-'
     }));
 
+    const columns = ['id', 'train', 'type', 'description', 'startDate', 'endDate', 'status', 'assignedTo', 'notes'];
+
     if (format === 'excel') {
       exportToExcel(exportData, 'Maintenance_Schedule');
     } else if (format === 'pdf') {
-      exportToPDF(exportData, 'Maintenance_Schedule', 'Maintenance Schedule Report');
+      exportToPDF(exportData, 'Maintenance_Schedule', 'Maintenance Schedule Report', columns);
     }
   };
 

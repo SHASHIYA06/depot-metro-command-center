@@ -11,7 +11,7 @@ export const handleExport = (
   data: any[],
   filename: string,
   title?: string,
-  columns?: ExportColumnDefinition[]
+  columns?: string[]
 ): void => {
   exportData(data, filename, format, title, columns);
 };
@@ -29,7 +29,7 @@ export const exportToPDF = (
   data: any[],
   filename: string,
   title?: string,
-  columns?: ExportColumnDefinition[]
+  columns?: string[]
 ): void => {
   exportData(data, filename, 'pdf', title, columns);
 };

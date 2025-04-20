@@ -80,18 +80,43 @@ const Exports = () => {
     switch (type) {
       case 'tasks':
         return [
+          'id', 'title', 'description', 'priority', 'status', 'assignedToName', 
+          'assignedByName', 'createdAt', 'dueDate', 'trainName', 'carId', 'category'
+        ];
+      case 'issues':
+        return [
+          'id', 'title', 'description', 'severity', 'status', 'reportedByName',
+          'assignedToName', 'reportedAt', 'trainName'
+        ];
+      case 'trains':
+        return [
+          'id', 'name', 'status', 'lastMaintenance', 'nextMaintenance', 
+          'totalTrips', 'numCars', 'manufacturer', 'commissionedDate', 'totalKilometers'
+        ];
+      case 'activities':
+        return [
+          'id', 'userName', 'action', 'details', 'timestamp', 'trainName'
+        ];
+      case 'staff':
+        return [
+          'id', 'name', 'badgeNo', 'roleName', 'department', 'email',
+          'phone', 'aadharNo', 'vehicleNo', 'joiningDate'
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const getColumnHeaders = (type: string) => {
+    switch (type) {
+      case 'tasks':
+        return [
           { header: 'Task ID', dataKey: 'id' },
           { header: 'Title', dataKey: 'title' },
           { header: 'Description', dataKey: 'description' },
           { header: 'Priority', dataKey: 'priority' },
           { header: 'Status', dataKey: 'status' },
           { header: 'Assigned To', dataKey: 'assignedToName' },
-          { header: 'Assigned By', dataKey: 'assignedByName' },
-          { header: 'Created', dataKey: 'createdAt' },
-          { header: 'Due Date', dataKey: 'dueDate' },
-          { header: 'Train', dataKey: 'trainName' },
-          { header: 'Car', dataKey: 'carId' },
-          { header: 'Category', dataKey: 'category' },
         ];
       case 'issues':
         return [
@@ -101,9 +126,6 @@ const Exports = () => {
           { header: 'Severity', dataKey: 'severity' },
           { header: 'Status', dataKey: 'status' },
           { header: 'Reported By', dataKey: 'reportedByName' },
-          { header: 'Assigned To', dataKey: 'assignedToName' },
-          { header: 'Reported', dataKey: 'reportedAt' },
-          { header: 'Train', dataKey: 'trainName' },
         ];
       case 'trains':
         return [
@@ -113,10 +135,6 @@ const Exports = () => {
           { header: 'Last Maintenance', dataKey: 'lastMaintenance' },
           { header: 'Next Maintenance', dataKey: 'nextMaintenance' },
           { header: 'Total Trips', dataKey: 'totalTrips' },
-          { header: 'Cars', dataKey: 'numCars' },
-          { header: 'Manufacturer', dataKey: 'manufacturer' },
-          { header: 'Commissioned', dataKey: 'commissionedDate' },
-          { header: 'Total KM', dataKey: 'totalKilometers' },
         ];
       case 'activities':
         return [
@@ -135,10 +153,6 @@ const Exports = () => {
           { header: 'Role', dataKey: 'roleName' },
           { header: 'Department', dataKey: 'department' },
           { header: 'Email', dataKey: 'email' },
-          { header: 'Phone', dataKey: 'phone' },
-          { header: 'Aadhar No', dataKey: 'aadharNo' },
-          { header: 'Vehicle No', dataKey: 'vehicleNo' },
-          { header: 'Joining Date', dataKey: 'joiningDate' },
         ];
       default:
         return [];
@@ -155,7 +169,7 @@ const Exports = () => {
         const fileName = `metro_depot_${exportType}_${format(new Date(), 'yyyy-MM-dd')}`;
         const title = `Metro Depot ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Report`;
         
-        // Fix: proper use of exportData with the format parameter
+        // Use exportData with the correct format parameter
         exportData(data, fileName, format, title, columns);
         
         toast({
@@ -287,7 +301,7 @@ const Exports = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      {getExportColumns(exportType).slice(0, 6).map((column, i) => (
+                      {getColumnHeaders(exportType).map((column, i) => (
                         <TableHead key={i}>{column.header}</TableHead>
                       ))}
                     </TableRow>
@@ -295,7 +309,7 @@ const Exports = () => {
                   <TableBody>
                     {getExportData(exportType).slice(0, 5).map((item, i) => (
                       <TableRow key={i}>
-                        {getExportColumns(exportType).slice(0, 6).map((column, j) => (
+                        {getColumnHeaders(exportType).map((column, j) => (
                           <TableCell key={j}>
                             {typeof item[column.dataKey] === 'object' 
                               ? JSON.stringify(item[column.dataKey])
