@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ import {
   Download,
   Hammer,
   MapPin,
+  Package,
   LucideIcon
 } from 'lucide-react';
 
@@ -103,6 +105,7 @@ export const Sidebar: React.FC = () => {
             <SidebarLink to="/maintenance-schedule" icon={CalendarDays} label="Maint. Schedule" />
             <SidebarLink to="/train-maintenance" icon={Wrench} label="Train Maintenance" />
             <SidebarLink to="/mp-tools" icon={Hammer} label="M&P Tools" />
+            <SidebarLink to="/pending-materials" icon={Package} label="Pending Materials" />
 
             <div className="pt-2 pb-1">
               <p className="px-2 text-xs uppercase text-muted-foreground font-semibold tracking-wider">

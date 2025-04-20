@@ -26,6 +26,8 @@ import Reports from '@/pages/Reports';
 import TrainMaintenanceSchedule from '@/pages/TrainMaintenanceSchedule';
 import MPTools from '@/pages/MPTools';
 import TrainLocation from '@/pages/TrainLocation';
+import Exports from '@/pages/Exports';
+import PendingMaterials from '@/pages/PendingMaterials';
 
 const queryClient = new QueryClient();
 
@@ -80,6 +82,8 @@ const AppRoutes = () => {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/exports" element={<Exports />} />
+        <Route path="/pending-materials" element={<PendingMaterials />} />
         <Route path="/backup" element={<Backup />} />
         <Route path="/mp-tools" element={<MPTools />} />
         <Route path="/train-commissioning" element={<TrainCommissioning />} />
