@@ -7,7 +7,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, FileSpreadsheet, Download, Calendar, Filter } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { format as formatDate, subDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { exportData } from '@/utils/dataExport';
 import { trains, tasks, issues, activityLogs, users } from '@/lib/mockData';
@@ -23,7 +23,7 @@ const Exports = () => {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
-  const [format, setFormat] = useState<ExportFormat>('excel');
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('excel');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const getExportData = (type: string) => {
@@ -164,14 +164,14 @@ const Exports = () => {
       try {
         const data = getExportData(exportType);
         const columns = getExportColumns(exportType);
-        const fileName = `metro_depot_${exportType}_${format(new Date(), 'yyyy-MM-dd')}`;
+        const fileName = `metro_depot_${exportType}_${formatDate(new Date(), 'yyyy-MM-dd')}`;
         const title = `Metro Depot ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Report`;
         
-        exportData(data, fileName, format, title, columns);
+        exportData(data, fileName, exportFormat, title, columns);
         
         toast({
           title: "Export Successful",
-          description: `Your ${exportType} data has been exported as a ${format.toUpperCase()} file.`,
+          description: `Your ${exportType} data has been exported as a ${exportFormat.toUpperCase()} file.`,
         });
       } catch (error) {
         console.error("Export error:", error);
@@ -241,7 +241,7 @@ const Exports = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="export-format">Export Format</Label>
-                  <Select value={format} onValueChange={(value) => setFormat(value as ExportFormat)}>
+                  <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as ExportFormat)}>
                     <SelectTrigger id="export-format">
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
@@ -280,7 +280,7 @@ const Exports = () => {
                   ) : (
                     <>
                       <Download className="mr-2 h-4 w-4" />
-                      Export {format === 'excel' ? 'Excel' : 'PDF'}
+                      Export {exportFormat === 'excel' ? 'Excel' : 'PDF'}
                     </>
                   )}
                 </Button>
@@ -341,7 +341,7 @@ const Exports = () => {
                     <div className="flex-grow">
                       <h4 className="font-medium">Tasks & Work Orders</h4>
                       <p className="text-sm text-muted-foreground">
-                        Exported on {format(new Date(), 'PPP')} - Excel Format
+                        Exported on {formatDate(new Date(), 'PPP')} - Excel Format
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
@@ -356,7 +356,7 @@ const Exports = () => {
                     <div className="flex-grow">
                       <h4 className="font-medium">Issues & Reports</h4>
                       <p className="text-sm text-muted-foreground">
-                        Exported on {format(subDays(new Date(), 2), 'PPP')} - PDF Format
+                        Exported on {formatDate(subDays(new Date(), 2), 'PPP')} - PDF Format
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
