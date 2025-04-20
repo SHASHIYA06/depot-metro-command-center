@@ -37,7 +37,11 @@ export interface Task {
   createdAt: string;
   dueDate: string;
   completedAt?: string;
-  category: 'maintenance' | 'inspection' | 'repair' | 'cleaning' | 'administrative' | 'other';
+  category: 'maintenance' | 'inspection' | 'repair' | 'cleaning' | 'administrative' | 'other' | 
+            'corrective_maintenance' | 'preventive_maintenance' | 'other_preventive_maintenance' | 
+            'breakdown_maintenance' | 'condition_based_maintenance' | 'scheduled_overhaul' |
+            'emergency_repair' | 'system_upgrade' | 'testing' | 'software_update' | 
+            'hardware_replacement' | 'lubrication' | 'calibration';
   workDetails?: string;
   trainId?: string; // Add train reference
   carId?: string; // Add car reference
