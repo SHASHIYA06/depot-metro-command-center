@@ -9,6 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, Download, Truck, Wrench, X, ShoppingCart, Package, CheckCircle2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUsersByRole } from '@/lib/mockData';
+import { UserRole } from '@/types';
 
 // Mock data for pending materials
 const mockPendingMaterials = [
@@ -86,10 +91,27 @@ const mockPendingMaterials = [
   },
 ];
 
+// Train sets and car IDs 
+const trainSets = Array.from({ length: 25 }, (_, i) => `TS${String(i + 1).padStart(2, '0')}`);
+const carIds = ['DMC1', 'TC1', 'MC1', 'MC2', 'TC2', 'DMC2'];
+
 const PendingMaterials = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+  const [assignedEngineer, setAssignedEngineer] = useState<string>('');
+  const [assignedEmployee, setAssignedEmployee] = useState<string>('');
+  
+  const { toast } = useToast();
+  const { user } = useAuth();
+  
+  // Get engineers and employees
+  const engineers = getUsersByRole(UserRole.ENGINEER);
+  const employees = getUsersByRole(UserRole.TECHNICIAN);
+  
+  const canAssign = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
   
   // Filter materials based on search, tab and priority
   const filteredMaterials = mockPendingMaterials.filter(material => {
@@ -136,6 +158,23 @@ const PendingMaterials = () => {
       default:
         return <Badge>{priority}</Badge>;
     }
+  };
+
+  const handleAssignClick = (material) => {
+    setSelectedMaterial(material);
+    setShowAssignDialog(true);
+  };
+
+  const handleAssignSubmit = () => {
+    // In a real app, you would update the material with assignment info
+    toast({
+      title: "Work Assigned",
+      description: `Task assigned to ${assignedEngineer || 'N/A'} and ${assignedEmployee || 'N/A'}`,
+    });
+    
+    setShowAssignDialog(false);
+    setAssignedEngineer('');
+    setAssignedEmployee('');
   };
 
   return (
@@ -233,9 +272,12 @@ const PendingMaterials = () => {
                           <TableCell>{getStatusBadge(material.status)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="icon">
-                                <Wrench className="h-4 w-4" />
-                              </Button>
+                              {canAssign && (
+                                <Button variant="outline" size="sm" onClick={() => handleAssignClick(material)}>
+                                  <Wrench className="h-4 w-4 mr-1" />
+                                  Assign
+                                </Button>
+                              )}
                               <Button variant="ghost" size="icon">
                                 <CheckCircle2 className="h-4 w-4" />
                               </Button>
@@ -341,6 +383,102 @@ const PendingMaterials = () => {
           </Card>
         </div>
       </div>
+
+      {/* Assignment Dialog */}
+      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Assign Work</DialogTitle>
+            <DialogDescription>
+              Assign this material request to engineer and employee for completion.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedMaterial && (
+            <div className="py-2">
+              <h3 className="font-medium">{selectedMaterial.materialName}</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                For: {selectedMaterial.requestedFor} • Priority: {selectedMaterial.priority}
+              </p>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="engineer">Assign Engineer</Label>
+                  <Select value={assignedEngineer} onValueChange={setAssignedEngineer}>
+                    <SelectTrigger id="engineer">
+                      <SelectValue placeholder="Select Engineer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {engineers.map(engineer => (
+                        <SelectItem key={engineer.id} value={engineer.id}>
+                          {engineer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="employee">Assign Employee</Label>
+                  <Select value={assignedEmployee} onValueChange={setAssignedEmployee}>
+                    <SelectTrigger id="employee">
+                      <SelectValue placeholder="Select Employee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employees.map(employee => (
+                        <SelectItem key={employee.id} value={employee.id}>
+                          {employee.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="train-set">Train Set</Label>
+                  <Select defaultValue={selectedMaterial.requestedFor.split(' ')[1]}>
+                    <SelectTrigger id="train-set">
+                      <SelectValue placeholder="Select Train Set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {trainSets.map(train => (
+                        <SelectItem key={train} value={train}>
+                          {train}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="car-id">Car ID</Label>
+                  <Select defaultValue={selectedMaterial.requestedFor.split(' ')[2] || ''}>
+                    <SelectTrigger id="car-id">
+                      <SelectValue placeholder="Select Car ID" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {carIds.map(car => (
+                        <SelectItem key={car} value={car}>
+                          {car}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssignSubmit} type="submit">
+              Assign Work
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
