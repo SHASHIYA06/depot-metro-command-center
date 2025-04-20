@@ -37,22 +37,31 @@ export const motion = {
     
     if (animate && isHovered && whileHover) {
       const { x = 0, y = 0, rotateZ = 0 } = animate;
-      transform = `transform: translate(${x}px, ${y}px) rotateZ(${rotateZ}deg);`;
+      transform = `translate(${x}px, ${y}px) rotateZ(${rotateZ}deg)`;
     }
     
     if (isHovered && whileHover) {
       const { scale = 1 } = whileHover;
-      transform = `transform: scale(${scale});`;
+      transform = `scale(${scale})`;
     }
     
     if (isTapped && whileTap) {
       const { scale = 1 } = whileTap;
-      transform = `transform: scale(${scale});`;
+      transform = `scale(${scale})`;
     }
     
-    const style = {
-      ...(transform || transitionStyle ? { style: `${transform} ${transitionStyle}` } : {})
-    };
+    // Create a proper React style object instead of a string
+    const styleObject: React.CSSProperties = {};
+    
+    if (transform) {
+      styleObject.transform = transform;
+    }
+    
+    if (transitionStyle) {
+      // Parse the transition string to proper React style
+      // "transition: all 0.3s ease-out;" -> { transition: "all 0.3s ease-out" }
+      styleObject.transition = transitionStyle.replace('transition: ', '').replace(';', '');
+    }
     
     return (
       <div
@@ -62,7 +71,7 @@ export const motion = {
         onMouseDown={() => setIsTapped(true)}
         onMouseUp={() => setIsTapped(false)}
         onClick={onClick}
-        {...style}
+        style={styleObject}
       >
         {children}
       </div>
