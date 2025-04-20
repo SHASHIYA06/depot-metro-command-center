@@ -23,7 +23,6 @@ import { Task, UserRole } from '@/types';
 import { users, addNewTask, updateTask, deleteTask, mockTasks } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 
-// Import TaskForm component
 import { TaskForm } from '@/components/tasks/TaskForm';
 import { TaskDetail } from '@/components/tasks/TaskDetail';
 
@@ -40,7 +39,6 @@ const Tasks = () => {
   const canCreateTasks = user?.role === UserRole.DEPOT_INCHARGE || user?.role === UserRole.ENGINEER;
 
   useEffect(() => {
-    // Load tasks from mockData
     setTasks(mockTasks);
   }, []);
 
@@ -48,15 +46,11 @@ const Tasks = () => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // For each role, show appropriate tasks
     if (user?.role === UserRole.TECHNICIAN) {
-      // Technicians can only see their assigned tasks
       if (task.assignedTo !== user.id) {
         return false;
       }
     } else if (user?.role === UserRole.ENGINEER) {
-      // Engineers can see tasks they created, tasks assigned to them,
-      // and tasks assigned to technicians under them
       const isCreator = task.assignedBy === user.id;
       const isAssignee = task.assignedTo === user.id;
       const assignedToTechnician = task.assignedTo && users.find(u => 
@@ -67,7 +61,6 @@ const Tasks = () => {
         return false;
       }
     }
-    // Depot Incharge can see all tasks
     
     if (activeTab === 'pending') {
       return matchesSearch && (task.status === 'pending');
@@ -140,7 +133,6 @@ const Tasks = () => {
   };
 
   const handleEditTask = (task: Task) => {
-    // Check if user has permission to edit this task
     if (canEditTask(task)) {
       setEditingTask(task);
       setShowForm(true);
@@ -162,13 +154,11 @@ const Tasks = () => {
     setEditingTask(null);
     
     if (refreshData) {
-      // Show success toast
       toast({
         title: "Success",
         description: editingTask ? "Task updated successfully" : "Task created successfully",
       });
       
-      // Refresh tasks directly from mockTasks
       setTasks([...mockTasks]);
     }
   };
@@ -178,44 +168,35 @@ const Tasks = () => {
   };
 
   const markTaskComplete = (taskId: string) => {
-    // Update task status in mock data
     const updatedTask = updateTask(taskId, { status: 'completed', completedAt: new Date().toISOString() });
     
     if (updatedTask) {
-      // Show success toast
       toast({
         title: 'Task Completed',
         description: 'The task has been marked as completed.',
       });
       
-      // Refresh tasks directly from mockTasks
       setTasks([...mockTasks]);
     }
   };
 
   const handleDeleteTask = (taskId: string) => {
-    // Delete task from mock data
     const success = deleteTask(taskId);
     
     if (success) {
-      // Show success toast
       toast({
         title: 'Task Deleted',
         description: 'The task has been deleted.',
       });
       
-      // Refresh tasks directly from mockTasks
       setTasks([...mockTasks]);
     }
   };
 
-  // Function to determine if user can edit a task
   const canEditTask = (task: Task): boolean => {
     if (user?.role === UserRole.DEPOT_INCHARGE) {
-      // Depot Incharge can edit all tasks
       return true;
     } else if (user?.role === UserRole.ENGINEER) {
-      // Engineers can edit tasks they created and tasks assigned to technicians
       const isCreator = task.assignedBy === user.id;
       const assignedToTechnician = task.assignedTo && users.find(u => 
         u.id === task.assignedTo && u.role === UserRole.TECHNICIAN
@@ -223,16 +204,13 @@ const Tasks = () => {
       
       return isCreator || !!assignedToTechnician;
     } else if (user?.role === UserRole.TECHNICIAN) {
-      // Technicians can only update tasks assigned to them (but not edit all details)
       return task.assignedTo === user.id;
     }
     
     return false;
   };
 
-  // Function to determine if user can delete a task
   const canDeleteTask = (task: Task): boolean => {
-    // Only Depot Incharge can delete tasks
     return user?.role === UserRole.DEPOT_INCHARGE;
   };
 

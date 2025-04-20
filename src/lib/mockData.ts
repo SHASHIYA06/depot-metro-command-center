@@ -6,7 +6,7 @@ export const users: User[] = [
     id: '1',
     name: 'Rajesh Kumar',
     email: 'rajesh.kumar@metrodepot.com',
-    role: UserRole.ADMIN,
+    role: UserRole.DEPOT_INCHARGE, // Changed from ADMIN to DEPOT_INCHARGE
     department: 'Administration',
     phone: '+91 9876543210',
     photoUrl: '/avatars/admin.jpg',

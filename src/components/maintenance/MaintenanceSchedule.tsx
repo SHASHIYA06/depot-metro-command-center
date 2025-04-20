@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -195,7 +194,7 @@ const MaintenanceScheduleComponent = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Assigned To</TableHead>
                 <TableHead>Notes</TableHead>
-                {user?.role === UserRole.ADMIN && (
+                {user?.role === UserRole.DEPOT_INCHARGE && (
                   <TableHead className="text-right">Actions</TableHead>
                 )}
               </TableRow>
@@ -216,7 +215,7 @@ const MaintenanceScheduleComponent = () => {
                       : schedule.assignedTo.map(id => getUserName(id)).join(', ')}
                   </TableCell>
                   <TableCell>{schedule.notes || '-'}</TableCell>
-                  {user?.role === UserRole.ADMIN && (
+                  {user?.role === UserRole.DEPOT_INCHARGE && (
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>

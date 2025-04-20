@@ -21,11 +21,11 @@ import { Task } from '@/types';
 import { addNewTask, updateTask } from '@/lib/mockData';
 
 interface TaskFormProps {
-  issue?: Task | null;
+  task?: Task | null;
   onClose: (refreshData: boolean) => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
+const TaskForm: React.FC<TaskFormProps> = ({ task, onClose }) => {
   const [open, setOpen] = React.useState(true);
   const [formData, setFormData] = useState<Partial<Task>>({
     title: '',
@@ -38,21 +38,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (issue) {
+    if (task) {
       setFormData({
-        id: issue.id,
-        title: issue.title,
-        description: issue.description,
-        priority: issue.priority,
-        status: issue.status,
-        dueDate: issue.dueDate,
-        category: issue.category,
-        assignedTo: issue.assignedTo,
-        trainId: issue.trainId,
-        carId: issue.carId,
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate,
+        category: task.category,
+        assignedTo: task.assignedTo,
+        trainId: task.trainId,
+        carId: task.carId,
       });
     } else {
-      // Reset form for new task
       setFormData({
         title: '',
         description: '',
@@ -62,7 +61,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
         category: 'maintenance',
       });
     }
-  }, [issue]);
+  }, [task]);
 
   const handleFormChange = (key: string, value: any) => {
     setFormData(prevData => ({
@@ -81,22 +80,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
       return;
     }
 
-    if (issue) {
-      // Update existing task
-      updateTask(issue.id, formData as Task);
+    if (task) {
+      updateTask(task.id, formData as Task);
       toast({
         title: 'Success',
         description: 'Task updated successfully.',
       });
     } else {
-      // Create new task
       const newTask = {
         id: `task-${Date.now()}`,
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
         status: formData.status,
-        assignedBy: 'user-depot-incharge', // Replace with actual user ID
+        assignedBy: 'user-depot-incharge',
         createdAt: new Date().toISOString(),
         dueDate: formData.dueDate,
         category: formData.category,
@@ -111,11 +108,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
     onClose(true);
   };
 
-  // Add the train sets and car IDs to the task form
   const trainSets = Array.from({ length: 25 }, (_, i) => `TS${String(i + 1).padStart(2, '0')}`);
   const carIds = ['DMC1', 'TC1', 'MC1', 'MC2', 'TC2', 'DMC2'];
 
-  // Add more task categories
   const taskCategories = [
     'Corrective Maintenance',
     'Preventive Maintenance',
@@ -138,13 +133,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{issue ? "Edit Task" : "Create New Task"}</DialogTitle>
+          <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
           <DialogDescription>
-            {issue ? "Edit task details" : "Create a new task for depot staff"}
+            {task ? "Edit task details" : "Create a new task for depot staff"}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {/* Task Title */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
               Title
@@ -158,7 +152,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             />
           </div>
 
-          {/* Task Description */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">
               Description
@@ -172,7 +165,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             />
           </div>
 
-          {/* Task Priority */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="priority" className="text-right">
               Priority
@@ -190,7 +182,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             </Select>
           </div>
 
-          {/* Task Status */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
               Status
@@ -208,7 +199,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             </Select>
           </div>
 
-          {/* Task Category */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="category" className="text-right">
               Category
@@ -230,7 +220,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             </Select>
           </div>
 
-          {/* Task Due Date */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="due-date" className="text-right">
               Due Date
@@ -263,7 +252,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             </Popover>
           </div>
 
-          {/* Train ID selection */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="trainId" className="text-right">
               Train ID
@@ -285,7 +273,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             </Select>
           </div>
 
-          {/* Car ID selection */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="carId" className="text-right">
               Car ID
@@ -312,7 +299,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ issue, onClose }) => {
             Cancel
           </Button>
           <Button type="submit" onClick={handleSubmit}>
-            {issue ? "Update Task" : "Create Task"}
+            {task ? "Update Task" : "Create Task"}
           </Button>
         </DialogFooter>
       </DialogContent>
