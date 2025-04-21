@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/types';
 import { staffUsers } from '@/lib/mockDataStaff';
@@ -30,7 +31,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Get users by role function - ensure it always returns an array
   const getUsersByRole = (role: UserRole): User[] => {
+    // Log the role and filtered users for debugging
+    console.log('Getting users for role:', role);
     const filteredUsers = staffUsers.filter(u => u.role === role);
+    console.log('Filtered users:', filteredUsers);
     return filteredUsers || [];
   };
 
