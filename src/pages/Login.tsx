@@ -54,14 +54,30 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
-  // Get users with safeguard
+  // Get users with safeguard - ensure role is valid
   const users = role ? getUsersByRole(role) : [];
   
-  // Make sure users is always an array
+  // Make sure users is always a valid array
   const safeUsers = Array.isArray(users) ? users : [];
   
   // Find selected user details with safeguard
   const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
+  
+  // Only show the Command component if there are users
+  if (safeUsers.length === 0) {
+    return (
+      <div className="mt-2">
+        <Button
+          variant="outline"
+          className="w-full justify-between cursor-not-allowed opacity-70"
+          disabled
+        >
+          No users available for this role
+          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </div>
+    );
+  }
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -77,36 +93,30 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        {safeUsers.length > 0 ? (
-          <Command>
-            <CommandInput placeholder="Search users..." />
-            <CommandEmpty>No user found.</CommandEmpty>
-            <CommandGroup>
-              {safeUsers.map((user) => (
-                <CommandItem
-                  key={user.id}
-                  value={user.name}
-                  onSelect={() => {
-                    onSelect(user.email);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedUser === user.email ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {user.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        ) : (
-          <div className="py-6 px-4 text-center text-sm">
-            No users found for this role.
-          </div>
-        )}
+        <Command>
+          <CommandInput placeholder="Search users..." />
+          <CommandEmpty>No user found.</CommandEmpty>
+          <CommandGroup>
+            {safeUsers.map((user) => (
+              <CommandItem
+                key={user.id}
+                value={user.name}
+                onSelect={() => {
+                  onSelect(user.email);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedUser === user.email ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {user.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
       </PopoverContent>
     </Popover>
   );
@@ -260,12 +270,24 @@ const Login = () => {
             <User className="h-4 w-4 mr-2" />
             User
           </Label>
-          {selectedRole && (
+          {/* Only show UserSelector if a role is selected */}
+          {selectedRole ? (
             <UserSelector 
               role={selectedRole} 
               selectedUser={email}
               onSelect={handleUserSelect}
             />
+          ) : (
+            <div className="mt-2">
+              <Button
+                variant="outline"
+                className="w-full justify-between cursor-not-allowed opacity-70"
+                disabled
+              >
+                Select a role first
+                <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </div>
           )}
           <Input
             id="email"

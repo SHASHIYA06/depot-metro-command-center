@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Get users by role function - ensure it always returns an array
   const getUsersByRole = (role: UserRole | null): User[] => {
+    // Always return an empty array if no role provided
     if (!role) {
       console.log('No role provided to getUsersByRole, returning empty array');
       return [];
@@ -39,6 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Log the role and filtered users for debugging
       console.log('Getting users for role:', role);
+      
+      // Make sure staffUsers is defined before filtering
+      if (!Array.isArray(staffUsers)) {
+        console.error('staffUsers is not an array:', staffUsers);
+        return [];
+      }
+      
       const filteredUsers = staffUsers.filter(u => u.role === role);
       console.log('Filtered users:', filteredUsers);
       
