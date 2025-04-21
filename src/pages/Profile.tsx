@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import PasswordChange from '@/components/profile/PasswordChange';
+import { Badge } from '@/components/ui/badge';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -221,13 +222,6 @@ const Profile = () => {
                       <p className="text-sm text-muted-foreground mb-1">Joining Date</p>
                       <p className="font-medium">{user.joiningDate ? new Date(user.joiningDate).toLocaleDateString() : 'Not specified'}</p>
                     </div>
-                    
-                    {user.position && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Position</p>
-                        <p className="font-medium">{user.position}</p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -251,7 +245,7 @@ const Profile = () => {
                           <p className="font-medium">Current Session</p>
                           <p className="text-sm text-muted-foreground">Web Browser - {navigator.userAgent.split(' ').slice(-1)}</p>
                         </div>
-                        <Badge className="bg-green-500">Active</Badge>
+                        <Badge variant="secondary" className="bg-green-500">Active</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">
                         {new Date().toLocaleString()}
