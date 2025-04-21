@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +15,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Extracted role card component
 const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
   role: UserRole;
   icon: React.ElementType;
@@ -45,7 +43,6 @@ const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick
   );
 };
 
-// Improved UserSelector component with better error handling
 const UserSelector = ({ role, selectedUser, onSelect }: { 
   role: UserRole | null, 
   selectedUser: string, 
@@ -54,16 +51,12 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
-  // Get users with safeguard - ensure role is valid
   const users = role ? getUsersByRole(role) : [];
   
-  // Make sure users is always a valid array
   const safeUsers = Array.isArray(users) ? users : [];
   
-  // Find selected user details with safeguard
   const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
   
-  // Only show the Command component if there are users
   if (safeUsers.length === 0) {
     return (
       <div className="mt-2">
@@ -122,7 +115,6 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   );
 };
 
-// Main Login component
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -134,7 +126,6 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [activeTab, setActiveTab] = useState('login');
 
-  // Login roles data
   const loginRoles = [
     {
       role: UserRole.DEPOT_INCHARGE,
@@ -170,7 +161,7 @@ const Login = () => {
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    setEmail(''); // Clear email when role changes
+    setEmail('');
   };
   
   const handleUserSelect = (selectedEmail: string) => {
@@ -192,15 +183,12 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
       
-      // Track login for attendance
       const now = new Date();
       const hour = now.getHours();
       const minute = now.getMinutes();
       const timeDecimal = hour + (minute / 60);
       
-      // Check if login is between 8:50 AM and 9:20 AM (8.83 to 9.33 in decimal)
       if (timeDecimal >= 8.83 && timeDecimal <= 9.33) {
-        // In a real app, this would be recorded to a database
         toast({
           title: 'Attendance Recorded',
           description: 'You have been marked as PRESENT for today.',
@@ -223,7 +211,6 @@ const Login = () => {
     }
   };
 
-  // 3D train animation effect
   const [trainPosition, setTrainPosition] = useState({ x: 0, y: 0, rotate: 0 });
   
   useEffect(() => {
@@ -237,7 +224,6 @@ const Login = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Login form content
   const renderLoginForm = () => (
     <>
       <div className="mb-6">
@@ -270,7 +256,6 @@ const Login = () => {
             <User className="h-4 w-4 mr-2" />
             User
           </Label>
-          {/* Only show UserSelector if a role is selected */}
           {selectedRole ? (
             <UserSelector 
               role={selectedRole} 
@@ -332,7 +317,6 @@ const Login = () => {
     </>
   );
 
-  // System info content
   const renderSystemInfo = () => (
     <div className="space-y-4 py-2">
       <p className="text-sm">The Metro Depot Management System provides comprehensive tools for maintenance, operations, and administration of metro rail facilities.</p>
@@ -361,7 +345,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4 overflow-hidden">
-      {/* Background decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
