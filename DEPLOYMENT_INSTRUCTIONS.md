@@ -27,5 +27,5 @@ No specific environment variables are needed for basic deployment.
 ## Important Notes
 
 - The application uses a custom Express server for serving the built files
-- This approach avoids modifying package.json which is a read-only file in this project
+- This server is configured as an ES module, which is compatible with the project's "type": "module" setting
 - For local development, continue using `npm run dev` command
