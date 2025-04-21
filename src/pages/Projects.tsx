@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { projects as mockProjects, projectUpdates } from '@/lib/mockData';
 import { fetchMetroNews, matchNewsToProjects } from '@/lib/metroNewsService';
 import { useQuery } from '@tanstack/react-query';
-// Component imports
 import ProjectCard from '@/components/projects/ProjectCard';
 import ProjectStatsDashboard from '@/components/projects/ProjectStatsDashboard';
 import MetroCityGrid from '@/components/projects/MetroCityGrid';
@@ -19,7 +17,6 @@ import MapView from '@/components/projects/MapView';
 import ProjectsAutoUpdate from '@/components/projects/ProjectsAutoUpdate';
 import MetroCitySidebar from '@/components/projects/MetroCitySidebar';
 
-// Enhanced with additional data like coordinates for map view
 const metroCities = [
   { id: 'delhi', name: 'Delhi Metro', projects: 14, color: '#ef4444', coordinates: [77.2090, 28.6139] },
   { id: 'mumbai', name: 'Mumbai Metro', projects: 8, color: '#3b82f6', coordinates: [72.8777, 19.0760] },
@@ -35,16 +32,12 @@ const metroCities = [
   { id: 'pune', name: 'Pune Metro', projects: 2, color: '#0ea5e9', coordinates: [73.8567, 18.5204] },
 ];
 
-// Fetch metro projects from metrorailguy.com
-// In a real implementation, this would call an API that scrapes the website
 const fetchMetroProjects = async () => {
-  // Check if we have cached data and it's fresh (less than 2 hours old)
   const cachedData = localStorage.getItem('metroProjectsData');
   const lastUpdate = localStorage.getItem('lastMetroProjectsUpdate');
   
   if (cachedData && lastUpdate) {
     const timeSinceUpdate = Date.now() - parseInt(lastUpdate);
-    // If less than 2 hours (7200000 ms), use cached data
     if (timeSinceUpdate < 7200000) {
       console.log('Using cached metro projects data');
       return JSON.parse(cachedData);
@@ -53,17 +46,12 @@ const fetchMetroProjects = async () => {
   
   console.log('Fetching fresh metro projects data');
   
-  // In a real implementation, we would fetch from an API here
-  // For now, we'll use mock data but with enhanced information
   const enhancedProjects = mockProjects.map(project => {
-    // Find matching city to get coordinates
     const cityInfo = metroCities.find(city => 
       city.name.toLowerCase().includes(project.location.toLowerCase()) || 
       project.location.toLowerCase().includes(city.name.toLowerCase().replace(' metro', ''))
     );
     
-    // Add slightly randomized coordinates based on the city coordinates
-    // This spreads out markers for multiple projects in the same city
     const randomOffset = () => (Math.random() - 0.5) * 0.1;
     const coordinates = cityInfo ? 
       [cityInfo.coordinates[0] + randomOffset(), cityInfo.coordinates[1] + randomOffset()] : 
@@ -79,7 +67,6 @@ const fetchMetroProjects = async () => {
     };
   });
   
-  // Update cache
   localStorage.setItem('metroProjectsData', JSON.stringify(enhancedProjects));
   localStorage.setItem('lastMetroProjectsUpdate', Date.now().toString());
   
@@ -97,7 +84,6 @@ const Projects = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Auto refresh project data every 2 hours
   useEffect(() => {
     const refreshProjectData = async () => {
       try {
@@ -110,30 +96,24 @@ const Projects = () => {
       }
     };
     
-    // Initial fetch
     refreshProjectData();
     
-    // Set up auto refresh every 2 hours (7200000 ms)
     const intervalId = setInterval(refreshProjectData, 7200000);
     
-    // Clean up on unmount
     return () => clearInterval(intervalId);
   }, []);
 
-  // Fetch metro news data
   const { data: news } = useQuery({
     queryKey: ['metroNews'],
     queryFn: fetchMetroNews,
-    refetchInterval: 7200000, // Also refetch every 2 hours
+    refetchInterval: 7200000,
   });
 
-  // When a city is selected, show the sidebar with detailed info
   const handleCitySelect = (cityName: string) => {
     setSelectedCity(cityName);
     setShowCitySidebar(true);
   };
 
-  // Function to trigger manual refresh from metrorailguy.com
   const handleRefreshData = async () => {
     setLoading(true);
     toast({
@@ -142,7 +122,6 @@ const Projects = () => {
     });
     
     try {
-      // Clear cache to force a fresh fetch
       localStorage.removeItem('metroProjectsData');
       localStorage.removeItem('lastMetroProjectsUpdate');
       
@@ -168,8 +147,7 @@ const Projects = () => {
     (activeTab === 'all' ||
       (activeTab === 'operational' && project.status === 'Operational') ||
       (activeTab === 'construction' && project.status === 'Under Construction') ||
-      (activeTab === 'upcoming' && project.status === 'Upcoming') ||
-      (activeTab === 'planned' && project.status === 'Planned')
+      (activeTab === 'upcoming' && (project.status === 'Upcoming' || project.status === 'Planned'))
     ) &&
     (searchTerm === '' ||
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -229,7 +207,6 @@ const Projects = () => {
         </div>
       </div>
 
-      {/* Auto-update notification */}
       <ProjectsAutoUpdate />
 
       {viewMode === 'map' ? (
@@ -275,7 +252,6 @@ const Projects = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main content */}
             <div className={`${showCitySidebar ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
@@ -346,7 +322,6 @@ const Projects = () => {
               </Tabs>
             </div>
 
-            {/* Sidebar for selected city */}
             {showCitySidebar && (
               <div className="lg:col-span-1">
                 <MetroCitySidebar 

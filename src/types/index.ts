@@ -1,3 +1,4 @@
+
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -80,7 +81,7 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  status: 'Under Construction' | 'Operational' | 'Planned';
+  status: 'Under Construction' | 'Operational' | 'Planned' | 'Upcoming';
   location: string;
   networkLength: number;
   stations?: number;
