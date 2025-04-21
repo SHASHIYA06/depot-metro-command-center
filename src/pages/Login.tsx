@@ -54,7 +54,8 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   
   if (!role) return null;
   
-  const users = getUsersByRole(role) || []; // Ensure users is always an array
+  // Ensure we always have an array, even if empty
+  const users = role ? getUsersByRole(role) : [];
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,7 +75,7 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
           <CommandInput placeholder="Search users..." />
           <CommandEmpty>No user found.</CommandEmpty>
           <CommandGroup>
-            {users.length > 0 ? (
+            {users && users.length > 0 ? (
               users.map((user) => (
                 <CommandItem
                   key={user.id}

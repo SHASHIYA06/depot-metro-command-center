@@ -31,10 +31,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Get users by role function - ensure it always returns an array
   const getUsersByRole = (role: UserRole): User[] => {
+    if (!role) return [];
+    
     // Log the role and filtered users for debugging
     console.log('Getting users for role:', role);
     const filteredUsers = staffUsers.filter(u => u.role === role);
     console.log('Filtered users:', filteredUsers);
+    
+    // Ensure we always return an array, even if empty
     return filteredUsers || [];
   };
 
