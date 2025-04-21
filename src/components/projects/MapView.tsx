@@ -2,8 +2,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Map as MapIcon, Building, MapPin } from 'lucide-react';
+import { ArrowLeft, Map as MapIcon, Building, MapPin, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getMetroWebsiteByCity } from '@/lib/metroWebsites';
 
 // This would be a temporary component that would be replaced by a real map
 // using services like Mapbox, Google Maps, etc.
@@ -22,6 +23,7 @@ const MapView = ({
     return localStorage.getItem('mapboxApiKey') || '';
   });
   const [showApiKeyInput, setShowApiKeyInput] = useState(!mapApiKey);
+  const [routeMaps, setRouteMaps] = useState<Record<string, string>>({});
 
   const filteredProjects = selectedCity 
     ? projects.filter(p => p.location.toLowerCase().includes(selectedCity.toLowerCase()))
@@ -37,6 +39,22 @@ const MapView = ({
       });
     }
   };
+  
+  useEffect(() => {
+    // For demo purposes, we'll use a predefined set of route maps
+    // In a real implementation, these would be fetched from an API
+    const demoRouteMaps: Record<string, string> = {
+      'Delhi Metro': 'https://www.delhimetrorail.com/static/media/NetworkMap.dbe3d287.pdf',
+      'Mumbai Metro': 'https://www.mumbai-metro.com/wp-content/uploads/2017/11/Route-Map.pdf',
+      'Chennai Metro': 'https://chennaimetrorail.org/wp-content/uploads/2020/09/Route-Map-2020.jpg',
+      'Kolkata Metro': 'https://www.mtp.indianrailways.gov.in/uploads/files/1572939366614-MTRLY.pdf',
+      'Bangalore Metro': 'https://bmrcl.co.in/wp-content/uploads/2023/12/Phase-1-Network-Map.png',
+      'Hyderabad Metro': 'https://www.ltmetro.com/wp-content/uploads/2021/12/Hyderabad-Metro-Map.jpg',
+      'Kochi Metro': 'https://kochimetro.org/wp-content/uploads/2021/07/Route-Map.png',
+    };
+    
+    setRouteMaps(demoRouteMaps);
+  }, []);
   
   useEffect(() => {
     if (!mapContainerRef.current || !mapApiKey || showApiKeyInput) return;
@@ -70,6 +88,10 @@ const MapView = ({
               if (project.status === 'Under Construction') color = '#f59e0b'; // yellow
               if (project.status === 'Upcoming' || project.status === 'Planned') color = '#8b5cf6'; // purple
               
+              // Get route map URL if available
+              const cityName = project.location.split(' ')[0]; // Just the city name
+              const routeMapUrl = routeMaps[project.location] || '';
+              
               // Create a popup
               const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
                 `<div style="padding: 8px;">
@@ -77,6 +99,14 @@ const MapView = ({
                   <p style="font-size: 12px; margin-bottom: 4px;">Status: ${project.status}</p>
                   <p style="font-size: 12px; margin-bottom: 4px;">Length: ${project.networkLength} km</p>
                   ${project.stations ? `<p style="font-size: 12px;">Stations: ${project.stations}</p>` : ''}
+                  ${routeMapUrl ? `<a href="${routeMapUrl}" target="_blank" style="font-size: 12px; color: #2563eb; display: flex; align-items: center; margin-top: 6px;">
+                    <span>View Route Map</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>` : ''}
                 </div>`
               );
               
@@ -115,7 +145,17 @@ const MapView = ({
     };
     
     loadMapbox();
-  }, [mapApiKey, showApiKeyInput, filteredProjects, toast]);
+  }, [mapApiKey, showApiKeyInput, filteredProjects, toast, routeMaps]);
+  
+  const getMetroWebsite = (cityName: string | null) => {
+    if (!cityName) return null;
+    
+    // Extract city ID from the full name (e.g., "Delhi Metro" -> "delhi")
+    const cityId = cityName.split(' ')[0].toLowerCase();
+    return getMetroWebsiteByCity(cityId);
+  };
+  
+  const metroWebsite = getMetroWebsite(selectedCity);
   
   return (
     <Card className="col-span-full">
@@ -124,6 +164,16 @@ const MapView = ({
           <CardTitle className="text-xl">
             {selectedCity ? `${selectedCity} Metro Projects Map` : 'Metro Projects Map View'}
           </CardTitle>
+          {selectedCity && metroWebsite && (
+            <a 
+              href={metroWebsite.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary flex items-center mt-1"
+            >
+              Visit {metroWebsite.name} <ExternalLink className="h-3 w-3 ml-1" />
+            </a>
+          )}
         </div>
         <Button
           variant="outline"
@@ -175,6 +225,35 @@ const MapView = ({
                 </div>
               </div>
             </div>
+            
+            {selectedCity && (
+              <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-md">
+                <h4 className="font-medium text-sm mb-2">Route Maps</h4>
+                <div className="space-y-1">
+                  {filteredProjects.map(project => {
+                    const routeMapUrl = routeMaps[project.location];
+                    if (!routeMapUrl) return null;
+                    
+                    return (
+                      <a 
+                        key={project.id}
+                        href={routeMapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary flex items-center hover:underline"
+                      >
+                        <MapPin className="h-3 w-3 mr-1" /> 
+                        {project.name} Route Map
+                      </a>
+                    );
+                  })}
+                  
+                  {!filteredProjects.some(p => routeMaps[p.location]) && (
+                    <p className="text-xs text-muted-foreground">No route maps available</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

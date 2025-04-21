@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,8 @@ import MetroCityGrid from '@/components/projects/MetroCityGrid';
 import RecentProjectUpdates from '@/components/projects/RecentProjectUpdates';
 import MapView from '@/components/projects/MapView';
 import ProjectsAutoUpdate from '@/components/projects/ProjectsAutoUpdate';
-import MetroCitySidebar from '@/components/projects/MetroCitySidebar';
+import MetroCityDetails from '@/components/projects/MetroCityDetails';
+import { getMetroWebsiteByCity } from '@/lib/metroWebsites';
 
 const metroCities = [
   { id: 'delhi', name: 'Delhi Metro', projects: 14, color: '#ef4444', coordinates: [77.2090, 28.6139] },
@@ -46,6 +48,8 @@ const fetchMetroProjects = async () => {
   
   console.log('Fetching fresh metro projects data');
   
+  // In a real implementation, this would fetch data from The Metro Rail Guy website
+  // For now, we'll enhance our mock data with route maps
   const enhancedProjects = mockProjects.map(project => {
     const cityInfo = metroCities.find(city => 
       city.name.toLowerCase().includes(project.location.toLowerCase()) || 
@@ -57,13 +61,30 @@ const fetchMetroProjects = async () => {
       [cityInfo.coordinates[0] + randomOffset(), cityInfo.coordinates[1] + randomOffset()] : 
       null;
     
+    // Add website and route map information
+    const cityId = cityInfo?.id || '';
+    const metroWebsite = getMetroWebsiteByCity(cityId);
+    
+    // Add route map URLs (In a real implementation, these would be fetched)
+    const routeMapUrls: Record<string, string> = {
+      'Delhi Metro': 'https://www.delhimetrorail.com/static/media/NetworkMap.dbe3d287.pdf',
+      'Mumbai Metro': 'https://www.mumbai-metro.com/wp-content/uploads/2017/11/Route-Map.pdf',
+      'Chennai Metro': 'https://chennaimetrorail.org/wp-content/uploads/2020/09/Route-Map-2020.jpg',
+      'Kolkata Metro': 'https://www.mtp.indianrailways.gov.in/uploads/files/1572939366614-MTRLY.pdf',
+      'Bangalore Metro': 'https://bmrcl.co.in/wp-content/uploads/2023/12/Phase-1-Network-Map.png',
+      'Hyderabad Metro': 'https://www.ltmetro.com/wp-content/uploads/2021/12/Hyderabad-Metro-Map.jpg',
+      'Kochi Metro': 'https://kochimetro.org/wp-content/uploads/2021/07/Route-Map.png',
+    };
+    
     return {
       ...project,
       coordinates,
       completionPercentage: project.completionPercentage || 
         (project.status === 'Operational' ? 100 : 
          project.status === 'Under Construction' ? Math.floor(Math.random() * 80) + 10 : 
-         project.status === 'Upcoming' ? Math.floor(Math.random() * 10) : 0)
+         project.status === 'Upcoming' || project.status === 'Planned' ? Math.floor(Math.random() * 10) : 0),
+      website: metroWebsite?.url || 'https://www.themetrorailguy.com/',
+      routeMap: routeMapUrls[project.location] || ''
     };
   });
   
@@ -98,7 +119,7 @@ const Projects = () => {
     
     refreshProjectData();
     
-    const intervalId = setInterval(refreshProjectData, 7200000);
+    const intervalId = setInterval(refreshProjectData, 7200000); // Auto refresh every 2 hours
     
     return () => clearInterval(intervalId);
   }, []);
@@ -106,7 +127,7 @@ const Projects = () => {
   const { data: news } = useQuery({
     queryKey: ['metroNews'],
     queryFn: fetchMetroNews,
-    refetchInterval: 7200000,
+    refetchInterval: 7200000, // Auto refresh every 2 hours
   });
 
   const handleCitySelect = (cityName: string) => {
@@ -159,8 +180,7 @@ const Projects = () => {
   const statusData = [
     { name: 'Operational', value: metroProjects.filter(p => p.status === 'Operational').length },
     { name: 'Under Construction', value: metroProjects.filter(p => p.status === 'Under Construction').length },
-    { name: 'Upcoming', value: metroProjects.filter(p => p.status === 'Upcoming').length },
-    { name: 'Planned', value: metroProjects.filter(p => p.status === 'Planned').length },
+    { name: 'Upcoming', value: metroProjects.filter(p => p.status === 'Upcoming' || p.status === 'Planned').length },
   ];
 
   const cityData = Array.from(
@@ -169,6 +189,11 @@ const Projects = () => {
     name: city,
     value: metroProjects.filter(p => p.location === city).length
   })).sort((a, b) => b.value - a.value).slice(0, 10);
+
+  const selectedCityId = selectedCity ? 
+    metroCities.find(city => city.name === selectedCity)?.id || 
+    selectedCity.toLowerCase().split(' ')[0] : 
+    null;
 
   return (
     <div className="space-y-6">
@@ -324,8 +349,9 @@ const Projects = () => {
 
             {showCitySidebar && (
               <div className="lg:col-span-1">
-                <MetroCitySidebar 
-                  cityName={selectedCity || ''} 
+                <MetroCityDetails
+                  cityId={selectedCityId || ''}
+                  cityName={selectedCity || ''}
                   projects={filteredProjects}
                   onClose={() => {
                     setShowCitySidebar(false);

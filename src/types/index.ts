@@ -1,4 +1,3 @@
-
 export enum UserRole {
   DEPOT_INCHARGE = 'DEPOT_INCHARGE',
   ENGINEER = 'ENGINEER',
@@ -77,6 +76,13 @@ export interface ActivityLog {
   carId?: string;
 }
 
+export interface MetroWebsite {
+  cityId: string;
+  name: string;
+  url: string;
+  logo?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -98,6 +104,7 @@ export interface Project {
   lines?: number;
   trainSets?: number;
   trackType?: string;
+  routeMap?: string;
 }
 
 export interface Train {
