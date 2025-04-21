@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserRoleSelect } from '@/components/auth/UserRoleSelect';
 
 const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
   role: UserRole;
@@ -256,24 +257,10 @@ const Login = () => {
             <User className="h-4 w-4 mr-2" />
             User
           </Label>
-          {selectedRole ? (
-            <UserSelector 
-              role={selectedRole} 
-              selectedUser={email}
-              onSelect={handleUserSelect}
-            />
-          ) : (
-            <div className="mt-2">
-              <Button
-                variant="outline"
-                className="w-full justify-between cursor-not-allowed opacity-70"
-                disabled
-              >
-                Select a role first
-                <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </div>
-          )}
+          <UserRoleSelect 
+            role={selectedRole} 
+            onSelectUser={handleUserSelect}
+          />
           <Input
             id="email"
             type="email"
