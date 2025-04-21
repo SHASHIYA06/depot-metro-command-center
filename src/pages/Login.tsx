@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,7 +52,10 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
+  // Always ensure we have a valid array of users
   const users = role ? getUsersByRole(role) : [];
+  
+  // Make sure users is always an array (defensive programming)
   const safeUsers = Array.isArray(users) ? users : [];
   
   const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
