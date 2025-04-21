@@ -36,13 +36,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [];
     }
     
-    // Log the role and filtered users for debugging
-    console.log('Getting users for role:', role);
-    const filteredUsers = staffUsers.filter(u => u.role === role);
-    console.log('Filtered users:', filteredUsers);
-    
-    // Always return an array, never undefined or null
-    return filteredUsers;
+    try {
+      // Log the role and filtered users for debugging
+      console.log('Getting users for role:', role);
+      const filteredUsers = staffUsers.filter(u => u.role === role);
+      console.log('Filtered users:', filteredUsers);
+      
+      // Always return an array, never undefined or null
+      return Array.isArray(filteredUsers) ? filteredUsers : [];
+    } catch (error) {
+      console.error('Error in getUsersByRole:', error);
+      return [];
+    }
   };
 
   const login = async (email: string, password: string) => {

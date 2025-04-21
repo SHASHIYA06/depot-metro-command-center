@@ -45,7 +45,7 @@ const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick
   );
 };
 
-// Completely redesigned UserSelector component to fix issues
+// Improved UserSelector component with better error handling
 const UserSelector = ({ role, selectedUser, onSelect }: { 
   role: UserRole | null, 
   selectedUser: string, 
@@ -54,16 +54,14 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
-  // Safely get users by role with defensive coding
+  // Get users with safeguard
   const users = role ? getUsersByRole(role) : [];
   
-  // Ensure we have users before rendering the rest of the component
-  const hasUsers = Array.isArray(users) && users.length > 0;
+  // Make sure users is always an array
+  const safeUsers = Array.isArray(users) ? users : [];
   
-  // Find selected user details
-  const selectedUserDetails = hasUsers 
-    ? users.find(user => user.email === selectedUser) 
-    : undefined;
+  // Find selected user details with safeguard
+  const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -79,12 +77,12 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search users..." />
-          <CommandEmpty>No user found.</CommandEmpty>
-          <CommandGroup>
-            {hasUsers ? (
-              users.map((user) => (
+        {safeUsers.length > 0 ? (
+          <Command>
+            <CommandInput placeholder="Search users..." />
+            <CommandEmpty>No user found.</CommandEmpty>
+            <CommandGroup>
+              {safeUsers.map((user) => (
                 <CommandItem
                   key={user.id}
                   value={user.name}
@@ -101,14 +99,14 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
                   />
                   {user.name}
                 </CommandItem>
-              ))
-            ) : (
-              <div className="py-6 text-center text-sm">
-                No users found for this role.
-              </div>
-            )}
-          </CommandGroup>
-        </Command>
+              ))}
+            </CommandGroup>
+          </Command>
+        ) : (
+          <div className="py-6 px-4 text-center text-sm">
+            No users found for this role.
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -262,11 +260,13 @@ const Login = () => {
             <User className="h-4 w-4 mr-2" />
             User
           </Label>
-          <UserSelector 
-            role={selectedRole} 
-            selectedUser={email}
-            onSelect={handleUserSelect}
-          />
+          {selectedRole && (
+            <UserSelector 
+              role={selectedRole} 
+              selectedUser={email}
+              onSelect={handleUserSelect}
+            />
+          )}
           <Input
             id="email"
             type="email"
