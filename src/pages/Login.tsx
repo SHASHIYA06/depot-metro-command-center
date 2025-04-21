@@ -16,6 +16,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Extracted role card component
 const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
   role: UserRole;
   icon: React.ElementType;
@@ -44,6 +45,7 @@ const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick
   );
 };
 
+// Completely redesigned UserSelector component to fix issues
 const UserSelector = ({ role, selectedUser, onSelect }: { 
   role: UserRole | null, 
   selectedUser: string, 
@@ -52,10 +54,16 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
-  if (!role) return null;
-  
-  // Ensure we always have an array, even if empty
+  // Safely get users by role with defensive coding
   const users = role ? getUsersByRole(role) : [];
+  
+  // Ensure we have users before rendering the rest of the component
+  const hasUsers = Array.isArray(users) && users.length > 0;
+  
+  // Find selected user details
+  const selectedUserDetails = hasUsers 
+    ? users.find(user => user.email === selectedUser) 
+    : undefined;
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,7 +74,7 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
           aria-expanded={open}
           className="w-full justify-between mt-2"
         >
-          {selectedUser ? users.find(user => user.email === selectedUser)?.name || 'Select user' : 'Select user'}
+          {selectedUserDetails?.name || 'Select user'}
           <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -75,7 +83,7 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
           <CommandInput placeholder="Search users..." />
           <CommandEmpty>No user found.</CommandEmpty>
           <CommandGroup>
-            {users && users.length > 0 ? (
+            {hasUsers ? (
               users.map((user) => (
                 <CommandItem
                   key={user.id}
@@ -106,6 +114,7 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   );
 };
 
+// Main Login component
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -117,6 +126,7 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [activeTab, setActiveTab] = useState('login');
 
+  // Login roles data
   const loginRoles = [
     {
       role: UserRole.DEPOT_INCHARGE,
@@ -219,6 +229,114 @@ const Login = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Login form content
+  const renderLoginForm = () => (
+    <>
+      <div className="mb-6">
+        <h3 className="text-sm font-medium mb-3">Select your role:</h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          {loginRoles.map((roleInfo) => (
+            <LoginRoleCard
+              key={roleInfo.role}
+              role={roleInfo.role}
+              icon={roleInfo.icon}
+              title={roleInfo.title}
+              description={roleInfo.description}
+              isActive={selectedRole === roleInfo.role}
+              onClick={() => handleRoleSelect(roleInfo.role)}
+            />
+          ))}
+        </div>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            {error}
+          </div>
+        )}
+        
+        <div className="space-y-2">
+          <Label htmlFor="email" className="flex items-center">
+            <User className="h-4 w-4 mr-2" />
+            User
+          </Label>
+          <UserSelector 
+            role={selectedRole} 
+            selectedUser={email}
+            onSelect={handleUserSelect}
+          />
+          <Input
+            id="email"
+            type="email"
+            placeholder="Or enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+            className="bg-background mt-2"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="flex items-center">
+              <Key className="h-4 w-4 mr-2" />
+              Password
+            </Label>
+            <Button type="button" variant="link" className="px-0 text-xs">
+              Forgot password?
+            </Button>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            className="bg-background"
+          />
+        </div>
+        
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || !selectedRole}
+        >
+          {isLoading ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </form>
+    </>
+  );
+
+  // System info content
+  const renderSystemInfo = () => (
+    <div className="space-y-4 py-2">
+      <p className="text-sm">The Metro Depot Management System provides comprehensive tools for maintenance, operations, and administration of metro rail facilities.</p>
+      
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium">Key Features:</h4>
+        <ul className="text-sm list-disc list-inside space-y-1">
+          <li>Maintenance planning and scheduling</li>
+          <li>Task assignment and tracking</li>
+          <li>Issue management and resolution</li>
+          <li>Inventory and store management</li>
+          <li>Staff management and attendance</li>
+          <li>Analytics and reporting</li>
+        </ul>
+      </div>
+      
+      <Button 
+        variant="outline" 
+        className="w-full"
+        onClick={() => setActiveTab('login')}
+      >
+        Return to Login
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4 overflow-hidden">
       {/* Background decorative elements */}
@@ -275,109 +393,7 @@ const Login = () => {
             </CardHeader>
             
             <CardContent>
-              {activeTab === 'login' ? (
-                <>
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium mb-3">Select your role:</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                      {loginRoles.map((roleInfo) => (
-                        <LoginRoleCard
-                          key={roleInfo.role}
-                          role={roleInfo.role}
-                          icon={roleInfo.icon}
-                          title={roleInfo.title}
-                          description={roleInfo.description}
-                          isActive={selectedRole === roleInfo.role}
-                          onClick={() => handleRoleSelect(roleInfo.role)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    {error && (
-                      <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-2" />
-                        {error}
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center">
-                        <User className="h-4 w-4 mr-2" />
-                        User
-                      </Label>
-                      <UserSelector 
-                        role={selectedRole} 
-                        selectedUser={email}
-                        onSelect={handleUserSelect}
-                      />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Or enter your email address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
-                        className="bg-background mt-2"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password" className="flex items-center">
-                          <Key className="h-4 w-4 mr-2" />
-                          Password
-                        </Label>
-                        <Button type="button" variant="link" className="px-0 text-xs">
-                          Forgot password?
-                        </Button>
-                      </div>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading}
-                        className="bg-background"
-                      />
-                    </div>
-                    
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isLoading || !selectedRole}
-                    >
-                      {isLoading ? 'Signing in...' : 'Sign in'}
-                    </Button>
-                  </form>
-                </>
-              ) : (
-                <div className="space-y-4 py-2">
-                  <p className="text-sm">The Metro Depot Management System provides comprehensive tools for maintenance, operations, and administration of metro rail facilities.</p>
-                  
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Key Features:</h4>
-                    <ul className="text-sm list-disc list-inside space-y-1">
-                      <li>Maintenance planning and scheduling</li>
-                      <li>Task assignment and tracking</li>
-                      <li>Issue management and resolution</li>
-                      <li>Inventory and store management</li>
-                      <li>Staff management and attendance</li>
-                      <li>Analytics and reporting</li>
-                    </ul>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => setActiveTab('login')}
-                  >
-                    Return to Login
-                  </Button>
-                </div>
-              )}
+              {activeTab === 'login' ? renderLoginForm() : renderSystemInfo()}
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-2 border-t pt-4">

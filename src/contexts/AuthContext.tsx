@@ -10,7 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updatePassword: (newPassword: string) => Promise<void>;
-  getUsersByRole: (role: UserRole) => User[];
+  getUsersByRole: (role: UserRole | null) => User[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,16 +30,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
   
   // Get users by role function - ensure it always returns an array
-  const getUsersByRole = (role: UserRole): User[] => {
-    if (!role) return [];
+  const getUsersByRole = (role: UserRole | null): User[] => {
+    if (!role) {
+      console.log('No role provided to getUsersByRole, returning empty array');
+      return [];
+    }
     
     // Log the role and filtered users for debugging
     console.log('Getting users for role:', role);
     const filteredUsers = staffUsers.filter(u => u.role === role);
     console.log('Filtered users:', filteredUsers);
     
-    // Ensure we always return an array, even if empty
-    return filteredUsers || [];
+    // Always return an array, never undefined or null
+    return filteredUsers;
   };
 
   const login = async (email: string, password: string) => {
