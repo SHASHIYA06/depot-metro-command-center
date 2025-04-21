@@ -4,16 +4,22 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building } from 'lucide-react';
+import { Search, Building, MapPin, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { projects, projectUpdates } from '@/lib/mockData';
+import { fetchMetroNews, matchNewsToProjects } from '@/lib/metroNewsService';
+import { useQuery } from '@tanstack/react-query';
 // Component imports
 import ProjectCard from '@/components/projects/ProjectCard';
 import ProjectStatsDashboard from '@/components/projects/ProjectStatsDashboard';
 import MetroCityGrid from '@/components/projects/MetroCityGrid';
 import RecentProjectUpdates from '@/components/projects/RecentProjectUpdates';
 import MapViewPlaceholder from '@/components/projects/MapViewPlaceholder';
+import ProjectsAutoUpdate from '@/components/projects/ProjectsAutoUpdate';
+import MetroCitySidebar from '@/components/projects/MetroCitySidebar';
 
 // This would be fetched from an API that scrapes metrorailguy.com
 const fetchMetroProjects = async () => {
@@ -42,7 +48,14 @@ const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [showCitySidebar, setShowCitySidebar] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { data: news } = useQuery({
+    queryKey: ['metroNews'],
+    queryFn: fetchMetroNews
+  });
 
   useEffect(() => {
     const getProjects = async () => {
@@ -57,6 +70,40 @@ const Projects = () => {
     };
     getProjects();
   }, []);
+
+  // When a city is selected, show the sidebar with detailed info
+  const handleCitySelect = (cityName: string) => {
+    setSelectedCity(cityName);
+    setShowCitySidebar(true);
+  };
+
+  // Function to trigger refresh from metrorailguy.com
+  const handleRefreshData = async () => {
+    setLoading(true);
+    toast({
+      title: "Fetching latest data",
+      description: "Updating metro projects from metrorailguy.com..."
+    });
+    
+    try {
+      // In a real implementation, this would call an API that scrapes metrorailguy.com
+      const data = await fetchMetroProjects();
+      setMetroProjects(data);
+      
+      toast({
+        title: "Data refreshed",
+        description: "Project data has been updated with the latest information."
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "Could not fetch the latest data. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProjects = metroProjects.filter(project =>
     (activeTab === 'all' ||
@@ -96,20 +143,36 @@ const Projects = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            className={`btn ${viewMode === 'grid' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'}`}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefreshData}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Update Data
+          </Button>
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
             onClick={() => setViewMode('grid')}
           >
             Dashboard
-          </button>
-          <button
-            className={`btn ${viewMode === 'map' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'}`}
+          </Button>
+          <Button
+            variant={viewMode === 'map' ? 'default' : 'outline'}
+            size="sm"
             onClick={() => setViewMode('map')}
           >
             Map View
-          </button>
+          </Button>
         </div>
       </div>
+
+      {/* Auto-update notification */}
+      <ProjectsAutoUpdate />
+
       {viewMode === 'map' ? (
         <MapViewPlaceholder onReturn={() => setViewMode('grid')} />
       ) : (
@@ -136,7 +199,10 @@ const Projects = () => {
                   {selectedCity}
                   <button
                     className="ml-1 rounded-full hover:bg-gray-200 p-1"
-                    onClick={() => setSelectedCity(null)}
+                    onClick={() => {
+                      setSelectedCity(null);
+                      setShowCitySidebar(false);
+                    }}
                   >
                     ×
                   </button>
@@ -144,57 +210,94 @@ const Projects = () => {
               )}
             </div>
           </div>
-          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="all">All Projects</TabsTrigger>
-              <TabsTrigger value="operational">Operational</TabsTrigger>
-              <TabsTrigger value="construction">Under Construction</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="space-y-4">
-              <MetroCityGrid
-                metroCities={metroCities}
-                selectedCity={selectedCity}
-                setSelectedCity={setSelectedCity}
-              />
-              <h2 className="text-xl font-semibold">
-                Projects {selectedCity ? `in ${selectedCity}` : ''} ({filteredProjects.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map(project => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main content */}
+            <div className={`${showCitySidebar ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
+              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="all">All Projects</TabsTrigger>
+                  <TabsTrigger value="operational">Operational</TabsTrigger>
+                  <TabsTrigger value="construction">Under Construction</TabsTrigger>
+                  <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                </TabsList>
+                <TabsContent value="all" className="space-y-4">
+                  <MetroCityGrid
+                    metroCities={metroCities}
+                    selectedCity={selectedCity}
+                    setSelectedCity={handleCitySelect}
+                  />
+                  <h2 className="text-xl font-semibold">
+                    Projects {selectedCity ? `in ${selectedCity}` : ''} ({filteredProjects.length})
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProjects.map(project => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        newsItems={news ? matchNewsToProjects([project], news) : []}
+                      />
+                    ))}
+                  </div>
+                  {filteredProjects.length === 0 && (
+                    <div className="text-center py-12">
+                      <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium">No projects found</h3>
+                      <p className="text-muted-foreground mt-1">Try adjusting your search criteria</p>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="operational" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProjects.map(project => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        newsItems={news ? matchNewsToProjects([project], news) : []}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent value="construction" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProjects.map(project => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        newsItems={news ? matchNewsToProjects([project], news) : []}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent value="upcoming" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProjects.map(project => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        newsItems={news ? matchNewsToProjects([project], news) : []}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Sidebar for selected city */}
+            {showCitySidebar && (
+              <div className="lg:col-span-1">
+                <MetroCitySidebar 
+                  cityName={selectedCity || ''} 
+                  projects={filteredProjects}
+                  onClose={() => {
+                    setShowCitySidebar(false);
+                    setSelectedCity(null);
+                  }}
+                />
               </div>
-              {filteredProjects.length === 0 && (
-                <div className="text-center py-12">
-                  <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No projects found</h3>
-                  <p className="text-muted-foreground mt-1">Try adjusting your search criteria</p>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="operational" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map(project => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            </TabsContent>
-            <TabsContent value="construction" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map(project => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            </TabsContent>
-            <TabsContent value="upcoming" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map(project => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
+
           <RecentProjectUpdates projectUpdates={projectUpdates} />
         </>
       )}

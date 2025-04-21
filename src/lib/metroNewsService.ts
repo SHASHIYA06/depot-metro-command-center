@@ -71,32 +71,75 @@ export const fetchMetroNews = async (): Promise<MetroNews[]> => {
       excerpt: 'Bangalore Metro Rail Corporation Limited (BMRCL) will launch a WhatsApp-based e-ticketing service for Namma Metro passengers, allowing them to purchase QR code tickets through the messaging platform.',
       projectIds: ['bangalore-metro'],
       imageUrl: 'https://themetrorailguy.com/wp-content/uploads/2023/03/Bangalore-Metro-E-Ticketing-1200x675.jpg'
+    },
+    {
+      id: 'news-6',
+      title: 'Delhi Metro Phase 4: Tughlakabad–Aerocity corridor gets environment clearance',
+      url: 'https://themetrorailguy.com/delhi-metro-phase-4-tughlakabad-aerocity-environment-clearance/',
+      date: '2023-02-28',
+      source: 'The Metro Rail Guy',
+      excerpt: 'The 23.62-km Tughlakabad–Aerocity corridor of Delhi Metro Phase 4 has received environment clearance from the Ministry of Environment, Forest and Climate Change.',
+      projectIds: ['delhi-metro'],
+      imageUrl: 'https://themetrorailguy.com/wp-content/uploads/2023/02/Delhi-Metro-Phase-4-Tughlakabad-Aerocity-1200x675.jpg'
+    },
+    {
+      id: 'news-7',
+      title: 'Kolkata Metro East-West Corridor: Final section to open by December 2023',
+      url: 'https://themetrorailguy.com/kolkata-metro-east-west-corridor-december-2023/',
+      date: '2023-02-25',
+      source: 'The Metro Rail Guy',
+      excerpt: 'The final section of Kolkata Metro\'s 16.6-km East-West Corridor (Line 2), connecting Sealdah to Howrah Maidan, is expected to be operational by December 2023.',
+      projectIds: ['kolkata-metro'],
+      imageUrl: 'https://themetrorailguy.com/wp-content/uploads/2023/02/Kolkata-Metro-East-West-Corridor-1200x675.jpg'
     }
   ];
 };
 
 // Function to associate news with specific metro projects
-export const matchNewsToProjects = (news: MetroNews[], projects: Project[]): MetroNews[] => {
-  return news.map(newsItem => {
-    if (newsItem.projectIds) return newsItem;
+export const matchNewsToProjects = (projects: Project[], news: MetroNews[]): MetroNews[] => {
+  if (!Array.isArray(news) || !Array.isArray(projects)) {
+    console.error('Invalid input to matchNewsToProjects:', { projects, news });
+    return [];
+  }
+  
+  // Create a set of all project names for faster lookups
+  const projectNames = new Set(projects.map(p => p.name.toLowerCase()));
+  const projectLocations = new Set(projects.map(p => p.location.toLowerCase()));
+  
+  return news.filter(newsItem => {
+    // Check if this news item is already associated with any project
+    if (newsItem.projectIds && newsItem.projectIds.length > 0) {
+      const matchesAnyProject = projects.some(project => 
+        newsItem.projectIds?.includes(project.id)
+      );
+      if (matchesAnyProject) return true;
+    }
     
-    // If no project IDs are assigned, try to match based on project name in title
-    const matchedProjectIds = projects
-      .filter(project => 
-        newsItem.title.toLowerCase().includes(project.name.toLowerCase()) || 
-        newsItem.excerpt.toLowerCase().includes(project.name.toLowerCase())
-      )
-      .map(project => project.id);
-      
-    return {
-      ...newsItem,
-      projectIds: matchedProjectIds.length > 0 ? matchedProjectIds : undefined
-    };
+    // Try to match based on title and excerpt content
+    const titleLower = newsItem.title.toLowerCase();
+    const excerptLower = newsItem.excerpt.toLowerCase();
+    
+    // Check if any project name is mentioned in the title or excerpt
+    const mentionsProject = Array.from(projectNames).some(name => 
+      titleLower.includes(name) || excerptLower.includes(name)
+    );
+    
+    // Check if any project location is mentioned in the title or excerpt
+    const mentionsLocation = Array.from(projectLocations).some(location => 
+      titleLower.includes(location) || excerptLower.includes(location)
+    );
+    
+    return mentionsProject || mentionsLocation;
   });
 };
 
 // Function to get news for a specific project
 export const getNewsForProject = (news: MetroNews[], projectId: string): MetroNews[] => {
+  if (!Array.isArray(news)) {
+    console.error('Invalid news array in getNewsForProject:', news);
+    return [];
+  }
+  
   return news.filter(newsItem => 
     newsItem.projectIds?.includes(projectId) || 
     !newsItem.projectIds // Include news that hasn't been categorized
