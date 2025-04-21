@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole } from '@/types';
 import { staffUsers } from '@/lib/mockDataStaff';
@@ -41,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Log the role and filtered users for debugging
       console.log('Getting users for role:', role);
       
-      // Make sure staffUsers is defined before filtering
+      // Make sure staffUsers is defined and is an array before filtering
       if (!Array.isArray(staffUsers)) {
         console.error('staffUsers is not an array:', staffUsers);
         return [];

@@ -52,7 +52,6 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const [open, setOpen] = useState(false);
   
   const users = role ? getUsersByRole(role) : [];
-  
   const safeUsers = Array.isArray(users) ? users : [];
   
   const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
