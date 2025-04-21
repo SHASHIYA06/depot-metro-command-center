@@ -52,7 +52,7 @@ const UserSelector = ({ role, selectedUser, onSelect }: {
   const { getUsersByRole } = useAuth();
   const [open, setOpen] = useState(false);
   
-  // Always ensure we have a valid array of users
+  // Initialize with an empty array and call getUsersByRole only when role is defined
   const users = role ? getUsersByRole(role) : [];
   
   // Make sure users is always an array (defensive programming)

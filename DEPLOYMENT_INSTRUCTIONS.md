@@ -16,6 +16,13 @@ node server.js
 ### Environment Variables
 No specific environment variables are needed for basic deployment.
 
+## Important Notes
+
+- The application uses Express.js for serving the built files
+- The server is configured as an ES module (using import/export) which matches the project's "type": "module" setting in package.json
+- Make sure your Node.js version is at least 14.0.0 for ES modules support
+- For local development, continue using `npm run dev` command
+
 ## Manual Deployment Steps
 
 1. Clone the repository
@@ -23,9 +30,3 @@ No specific environment variables are needed for basic deployment.
 3. Run `npm run build` to build the application
 4. Run `node server.js` to start the server
 5. Access the application at http://localhost:3000 (or the PORT specified in environment variables)
-
-## Important Notes
-
-- The application uses a custom Express server for serving the built files
-- This server is configured as an ES module, which is compatible with the project's "type": "module" setting
-- For local development, continue using `npm run dev` command
