@@ -1,388 +1,382 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, Building, TrendingUp, CalendarDays, Info, ExternalLink, MapPin, Newspaper, RefreshCw } from 'lucide-react';
-import { getProjects, getProjectUpdates } from '@/lib/mockData';
-import { fetchMetroNews, matchNewsToProjects, MetroNews } from '@/lib/metroNewsService';
-import { Project } from '@/types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Search, Building, MapPin, Calendar, ExternalLink, BarChart as BarChartIcon, Map } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+import { projects, projectUpdates } from '@/lib/mockData';
+
+// Eventually this would be fetched from an API that scrapes metrorailguy.com
+const fetchMetroProjects = async () => {
+  // In a real implementation, this would fetch data from metrorailguy.com via an API
+  return projects;
+};
+
+// Mock categories for demonstration
+const projectCategories = [
+  { id: 'ongoing', name: 'Operational', count: 16, color: '#22c55e' },
+  { id: 'construction', name: 'Under Construction', count: 25, color: '#f59e0b' },
+  { id: 'upcoming', name: 'Upcoming', count: 12, color: '#3b82f6' },
+  { id: 'planned', name: 'Planned', count: 8, color: '#8b5cf6' },
+];
+
+// Cities with metro projects
+const metroCities = [
+  { id: 'delhi', name: 'Delhi Metro', projects: 14, color: '#ef4444' },
+  { id: 'mumbai', name: 'Mumbai Metro', projects: 8, color: '#3b82f6' },
+  { id: 'chennai', name: 'Chennai Metro', projects: 5, color: '#22c55e' },
+  { id: 'kolkata', name: 'Kolkata Metro', projects: 7, color: '#8b5cf6' },
+  { id: 'bangalore', name: 'Bangalore Metro', projects: 6, color: '#f59e0b' },
+  { id: 'hyderabad', name: 'Hyderabad Metro', projects: 4, color: '#06b6d4' },
+  { id: 'kochi', name: 'Kochi Metro', projects: 2, color: '#ec4899' },
+  { id: 'jaipur', name: 'Jaipur Metro', projects: 2, color: '#f43f5e' },
+  { id: 'lucknow', name: 'Lucknow Metro', projects: 2, color: '#14b8a6' },
+  { id: 'ahmedabad', name: 'Ahmedabad Metro', projects: 2, color: '#f97316' },
+  { id: 'nagpur', name: 'Nagpur Metro', projects: 2, color: '#a855f7' },
+  { id: 'pune', name: 'Pune Metro', projects: 2, color: '#0ea5e9' },
+];
+
+const statusColorMap: Record<string, string> = {
+  'Operational': 'bg-green-500',
+  'Under Construction': 'bg-yellow-500',
+  'Upcoming': 'bg-blue-500',
+  'Planned': 'bg-purple-500',
+};
+
+const ProjectCard = ({ project }: { project: any }) => {
+  const statusClass = statusColorMap[project.status] || 'bg-gray-500';
+  
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-xl font-bold">{project.name}</CardTitle>
+          <Badge className={`${statusClass} text-white`}>{project.status}</Badge>
+        </div>
+        <CardDescription className="flex items-center mt-1">
+          <MapPin className="h-4 w-4 mr-1 inline" /> 
+          {project.location}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-gray-600">{project.description}</p>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">Length</p>
+            <p className="font-medium">{project.networkLength} km</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Stations</p>
+            <p className="font-medium">{project.stations}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Start Date</p>
+            <p className="font-medium">{new Date(project.startDate).toLocaleDateString()}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Completion</p>
+            <p className="font-medium">{new Date(project.completionDate).toLocaleDateString()}</p>
+          </div>
+        </div>
+        
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-sm text-muted-foreground">Progress</span>
+            <span className="text-sm font-medium">{project.completionPercentage}%</span>
+          </div>
+          <Progress value={project.completionPercentage} className="h-2" />
+        </div>
+        
+        <div className="pt-2">
+          <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+            <ExternalLink className="h-4 w-4" />
+            View Details
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Projects = () => {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-  const { data: projects, isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: getProjects,
-  });
-
-  const { data: projectUpdates, isLoading: updatesLoading } = useQuery({
-    queryKey: ['projectUpdates', selectedProject?.id],
-    queryFn: () => selectedProject?.id ? getProjectUpdates() : [],
-    enabled: !!selectedProject,
-  });
-
-  const { data: metroNews, isLoading: newsLoading, refetch: refetchNews } = useQuery({
-    queryKey: ['metroNews'],
-    queryFn: fetchMetroNews,
-  });
-
-  const processedNews = React.useMemo(() => {
-    if (!metroNews || !projects) return [];
-    return matchNewsToProjects(metroNews, projects);
-  }, [metroNews, projects]);
-
-  const projectNews = React.useMemo(() => {
-    if (!processedNews || !selectedProject) return [];
-    return processedNews.filter(news => 
-      news.projectIds?.includes(selectedProject.id) ||
-      news.title.toLowerCase().includes(selectedProject.name.toLowerCase()) ||
-      news.excerpt.toLowerCase().includes(selectedProject.name.toLowerCase())
-    );
-  }, [processedNews, selectedProject]);
-
+  const [metroProjects, setMetroProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const navigate = useNavigate();
+  
   useEffect(() => {
-    if (projects && projects.length > 0 && !selectedProject) {
-      setSelectedProject(projects[0]);
-    }
-  }, [projects, selectedProject]);
-
+    const getProjects = async () => {
+      try {
+        const data = await fetchMetroProjects();
+        setMetroProjects(data);
+      } catch (error) {
+        console.error('Failed to fetch metro projects:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    getProjects();
+  }, []);
+  
+  const filteredProjects = metroProjects.filter(project => 
+    (activeTab === 'all' || 
+     (activeTab === 'operational' && project.status === 'Operational') ||
+     (activeTab === 'construction' && project.status === 'Under Construction') ||
+     (activeTab === 'upcoming' && project.status === 'Upcoming') ||
+     (activeTab === 'planned' && project.status === 'Planned')
+    ) &&
+    (searchTerm === '' || 
+     project.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     project.location.toLowerCase().includes(searchTerm.toLowerCase())
+    ) &&
+    (selectedCity === null || project.location.toLowerCase().includes(selectedCity.toLowerCase()))
+  );
+  
+  // Generate data for the dashboard charts
+  const statusData = [
+    { name: 'Operational', value: metroProjects.filter(p => p.status === 'Operational').length },
+    { name: 'Under Construction', value: metroProjects.filter(p => p.status === 'Under Construction').length },
+    { name: 'Upcoming', value: metroProjects.filter(p => p.status === 'Upcoming').length },
+    { name: 'Planned', value: metroProjects.filter(p => p.status === 'Planned').length },
+  ];
+  
+  const cityData = Array.from(
+    new Set(metroProjects.map(p => p.location))
+  ).map(city => ({
+    name: city,
+    value: metroProjects.filter(p => p.location === city).length
+  })).sort((a, b) => b.value - a.value).slice(0, 10);
+  
+  // Render map view placeholder
+  const renderMapView = () => (
+    <div className="border rounded-lg p-4 h-96 flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Map className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium">Map View Coming Soon</h3>
+        <p className="text-muted-foreground mt-1">
+          Interactive map of metro projects will be available soon.
+        </p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => setViewMode('grid')}
+        >
+          Return to Grid View
+        </Button>
+      </div>
+    </div>
+  );
+  
   return (
     <div className="space-y-6">
-      <div className="flex flex-col">
-        <h1 className="text-3xl font-bold tracking-tight">Metro Project Review</h1>
-        <p className="text-muted-foreground">
-          Review ongoing and completed metro projects across India
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Projects Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor metro rail projects across India
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant={viewMode === 'grid' ? 'default' : 'outline'} 
+            onClick={() => setViewMode('grid')}
+          >
+            <BarChartIcon className="h-4 w-4 mr-2" />
+            Dashboard
+          </Button>
+          <Button 
+            variant={viewMode === 'map' ? 'default' : 'outline'} 
+            onClick={() => setViewMode('map')}
+          >
+            <Map className="h-4 w-4 mr-2" />
+            Map View
+          </Button>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1 overflow-auto max-h-[calc(100vh-200px)]">
-          <CardHeader>
-            <CardTitle className="text-xl">Projects</CardTitle>
-            <CardDescription>Metro projects across India</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="space-y-1">
-              {projectsLoading ? (
-                <div className="p-4">Loading projects...</div>
-              ) : (
-                projects?.map((project) => (
-                  <Button
-                    key={project.id}
-                    variant="ghost"
-                    className={`w-full justify-start rounded-none p-3 text-left ${
-                      selectedProject?.id === project.id ? 'bg-accent' : ''
-                    }`}
-                    onClick={() => setSelectedProject(project)}
+      
+      {viewMode === 'map' ? (
+        renderMapView()
+      ) : (
+        <>
+          {/* Dashboard overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-xl">Projects by Status</CardTitle>
+                <CardDescription>Overview of metro projects across different stages</CardDescription>
+              </CardHeader>
+              <CardContent className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={statusData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="#3b82f6" name="Number of Projects" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Projects by City</CardTitle>
+                <CardDescription>Distribution across major cities</CardDescription>
+              </CardHeader>
+              <CardContent className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={cityData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {cityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={metroCities[index % metroCities.length].color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="relative w-full sm:w-96">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search projects by name or city..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-center sm:justify-end">
+              {selectedCity && (
+                <Badge variant="outline" className="rounded-full px-3 py-1 flex items-center gap-1">
+                  <Building className="h-3 w-3" />
+                  {selectedCity}
+                  <button 
+                    className="ml-1 rounded-full hover:bg-gray-200 p-1"
+                    onClick={() => setSelectedCity(null)}
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{project.name}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <MapPin className="mr-1 h-3 w-3" />
-                        <span>{project.location}</span>
-                      </div>
-                    </div>
-                  </Button>
-                ))
+                    ×
+                  </button>
+                </Badge>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          {!selectedProject || projectsLoading ? (
-            <CardContent className="flex h-[500px] items-center justify-center">
-              <p>Select a project to view details</p>
-            </CardContent>
-          ) : (
-            <>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-2xl">{selectedProject.name}</CardTitle>
-                    <CardDescription className="text-sm flex items-center mt-1">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {selectedProject.location}
-                      {selectedProject.status && (
-                        <Badge 
-                          className="ml-2" 
-                          variant={
-                            selectedProject.status === 'Operational' 
-                              ? 'secondary'
-                              : selectedProject.status === 'Under Construction' 
-                                ? 'default' 
-                                : 'outline'
-                          }
-                        >
-                          {selectedProject.status}
-                        </Badge>
-                      )}
-                    </CardDescription>
-                  </div>
-                  {selectedProject.website && (
-                    <Button variant="outline" size="sm" onClick={() => window.open(selectedProject.website, '_blank')}>
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Visit Website
-                    </Button>
-                  )}
+          </div>
+          
+          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="all">All Projects</TabsTrigger>
+              <TabsTrigger value="operational">Operational</TabsTrigger>
+              <TabsTrigger value="construction">Under Construction</TabsTrigger>
+              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all" className="space-y-4">
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Metro Systems by City</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {metroCities.map(city => (
+                    <button
+                      key={city.id}
+                      className={`p-2 rounded-lg text-sm text-center border transition-colors
+                        ${selectedCity === city.name ? 'border-primary bg-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                      onClick={() => setSelectedCity(selectedCity === city.name ? null : city.name)}
+                    >
+                      <span className="text-xs block mb-1 text-muted-foreground">{city.projects} projects</span>
+                      <span className="font-medium">{city.name}</span>
+                    </button>
+                  ))}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="overview">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="updates">Updates</TabsTrigger>
-                    <TabsTrigger value="stats">Statistics</TabsTrigger>
-                    <TabsTrigger value="news">Latest News</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="overview" className="space-y-4">
-                    <div>
-                      <h3 className="font-medium text-lg mb-2">About</h3>
-                      <p className="text-muted-foreground">{selectedProject.description}</p>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <Building className="h-4 w-4 mr-2 text-primary" />
-                          <h4 className="font-medium">Implementing Agency</h4>
-                        </div>
-                        <p className="text-muted-foreground pl-6">{selectedProject.implementingAgency}</p>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <CalendarDays className="h-4 w-4 mr-2 text-primary" />
-                          <h4 className="font-medium">Timeline</h4>
-                        </div>
-                        <div className="text-muted-foreground pl-6">
-                          <div>Started: {selectedProject.startDate}</div>
-                          {selectedProject.completionDate && (
-                            <div>Completed: {selectedProject.completionDate}</div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <TrendingUp className="h-4 w-4 mr-2 text-primary" />
-                          <h4 className="font-medium">Project Cost</h4>
-                        </div>
-                        <p className="text-muted-foreground pl-6">₹{selectedProject.cost} crores</p>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <Info className="h-4 w-4 mr-2 text-primary" />
-                          <h4 className="font-medium">Network Length</h4>
-                        </div>
-                        <p className="text-muted-foreground pl-6">{selectedProject.networkLength} km</p>
-                      </div>
-                    </div>
-                    
-                    {selectedProject.keyFeatures && (
-                      <>
-                        <Separator />
-                        <div>
-                          <h3 className="font-medium text-lg mb-2">Key Features</h3>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {selectedProject.keyFeatures.map((feature, index) => (
-                              <li key={index} className="text-muted-foreground">{feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="updates" className="space-y-4">
-                    {updatesLoading ? (
-                      <div>Loading updates...</div>
-                    ) : projectUpdates && projectUpdates.length > 0 ? (
-                      <div className="space-y-4">
-                        {projectUpdates.map((update) => (
-                          <Card key={update.id}>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">{update.title}</CardTitle>
-                              <CardDescription>
-                                {new Date(update.date).toLocaleDateString('en-US', { 
-                                  year: 'numeric', 
-                                  month: 'long', 
-                                  day: 'numeric' 
-                                })}
-                              </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <p>{update.content}</p>
-                              {update.source && (
-                                <div className="mt-2 text-xs text-muted-foreground">
-                                  Source: {update.source}
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div>No updates available for this project.</div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="stats" className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Stations</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{selectedProject.stations || 'N/A'}</div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Ridership</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">
-                            {selectedProject.dailyRidership ? `${selectedProject.dailyRidership} daily` : 'N/A'}
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Lines</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{selectedProject.lines || 'N/A'}</div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Train Sets</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">{selectedProject.trainSets || 'N/A'}</div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Completion</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-2xl font-bold">
-                            {selectedProject.completionPercentage ? `${selectedProject.completionPercentage}%` : 'N/A'}
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-base">Track Type</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-lg font-medium">{selectedProject.trackType || 'N/A'}</div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="news" className="space-y-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Latest Metro News</h3>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => refetchNews()}
-                        disabled={newsLoading}
-                      >
-                        <RefreshCw className={`h-4 w-4 mr-2 ${newsLoading ? 'animate-spin' : ''}`} />
-                        Refresh
-                      </Button>
-                    </div>
-                    
-                    {newsLoading ? (
-                      <div className="flex justify-center p-12">
-                        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : projectNews.length > 0 ? (
-                      <div className="space-y-4">
-                        {projectNews.map((news) => (
-                          <Card key={news.id} className="overflow-hidden">
-                            <div className="flex flex-col md:flex-row">
-                              {news.imageUrl && (
-                                <div className="md:w-1/3 h-48 md:h-auto">
-                                  <img 
-                                    src={news.imageUrl} 
-                                    alt={news.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              )}
-                              <div className={`${news.imageUrl ? 'md:w-2/3' : 'w-full'} p-4`}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    {news.source}
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    {new Date(news.date).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric'
-                                    })}
-                                  </span>
-                                </div>
-                                <h4 className="text-lg font-medium mb-2">{news.title}</h4>
-                                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                                  {news.excerpt}
-                                </p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => window.open(news.url, '_blank')}
-                                >
-                                  <Newspaper className="h-4 w-4 mr-2" />
-                                  Read Full Article
-                                </Button>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center p-8 border rounded-md bg-muted/20">
-                        <Newspaper className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                        <h4 className="text-lg font-medium mb-1">No News Found</h4>
-                        <p className="text-sm text-muted-foreground">
-                          No recent news articles found for {selectedProject.name}.
-                        </p>
-                      </div>
-                    )}
-                    
-                    <div className="mt-4 p-4 bg-muted/20 rounded-md">
-                      <p className="text-sm text-muted-foreground">
-                        News data is fetched from <a href="https://themetrorailguy.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">TheMetroRailGuy.com</a> and other metro news sources. Last updated: {new Date().toLocaleString()}
-                      </p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </>
-          )}
-        </Card>
-      </div>
+              </div>
+              
+              <h2 className="text-xl font-semibold">
+                Projects {selectedCity ? `in ${selectedCity}` : ''} ({filteredProjects.length})
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+              
+              {filteredProjects.length === 0 && (
+                <div className="text-center py-12">
+                  <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium">No projects found</h3>
+                  <p className="text-muted-foreground mt-1">Try adjusting your search criteria</p>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="operational" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="construction" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="upcoming" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <div className="space-y-4 pt-4">
+            <h2 className="text-xl font-semibold">Recent Project Updates</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {projectUpdates.map(update => (
+                <Card key={update.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">{update.title}</CardTitle>
+                    <CardDescription className="flex items-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {new Date(update.date).toLocaleDateString()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600">{update.content}</p>
+                    <p className="text-xs text-muted-foreground mt-2">Source: {update.source}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

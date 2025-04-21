@@ -11,6 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { motion } from '@/components/ui/motion';
 import { UserRole } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
   role: UserRole;
@@ -37,6 +41,61 @@ const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick
         </p>
       </div>
     </motion.div>
+  );
+};
+
+const UserSelector = ({ role, selectedUser, onSelect }: { 
+  role: UserRole | null, 
+  selectedUser: string, 
+  onSelect: (email: string) => void 
+}) => {
+  const { getUsersByRole } = useAuth();
+  const [open, setOpen] = useState(false);
+  
+  if (!role) return null;
+  
+  const users = getUsersByRole(role);
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between mt-2"
+        >
+          {selectedUser ? users.find(user => user.email === selectedUser)?.name || 'Select user' : 'Select user'}
+          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search users..." />
+          <CommandEmpty>No user found.</CommandEmpty>
+          <CommandGroup>
+            {users.map((user) => (
+              <CommandItem
+                key={user.id}
+                value={user.name}
+                onSelect={() => {
+                  onSelect(user.email);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedUser === user.email ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {user.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -86,27 +145,11 @@ const Login = () => {
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    
-    // Set default email based on role
-    switch (role) {
-      case UserRole.DEPOT_INCHARGE:
-        setEmail('shashi.mishra@metro.com');
-        break;
-      case UserRole.ENGINEER:
-        setEmail('shilpa.sahu@metro.com');
-        break;
-      case UserRole.TECHNICIAN:
-        setEmail('manidip.baisya@metro.com');
-        break;
-      case UserRole.STORE_PERSON:
-        setEmail('debtanu.banerjee@metro.com');
-        break;
-      case UserRole.DATA_ENTRY_OPERATOR:
-        setEmail('koushik.kundu@metro.com');
-        break;
-      default:
-        setEmail('');
-    }
+    setEmail(''); // Clear email when role changes
+  };
+  
+  const handleUserSelect = (selectedEmail: string) => {
+    setEmail(selectedEmail);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -255,16 +298,21 @@ const Login = () => {
                     <div className="space-y-2">
                       <Label htmlFor="email" className="flex items-center">
                         <User className="h-4 w-4 mr-2" />
-                        Email
+                        User
                       </Label>
+                      <UserSelector 
+                        role={selectedRole} 
+                        selectedUser={email}
+                        onSelect={handleUserSelect}
+                      />
                       <Input
                         id="email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder="Or enter your email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading}
-                        className="bg-background"
+                        className="bg-background mt-2"
                       />
                     </div>
                     

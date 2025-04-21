@@ -9,6 +9,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updatePassword: (newPassword: string) => Promise<void>;
+  getUsersByRole: (role: UserRole) => User[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setIsLoading(false);
   }, []);
+  
+  // Get users by role function
+  const getUsersByRole = (role: UserRole): User[] => {
+    return staffUsers.filter(u => u.role === role);
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -48,9 +55,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Invalid credentials. User not found.');
       }
       
-      // Calculate expected password based on first name
+      // Get stored password or use default password format
+      const storedPassword = localStorage.getItem(`password_${foundUser.id}`);
       const firstName = foundUser.name.split(' ')[0].toLowerCase();
-      const expectedPassword = `${firstName}@4321`;
+      const defaultPassword = `${firstName}@4321`;
+      const expectedPassword = storedPassword || defaultPassword;
       
       console.log('Expected password format:', expectedPassword);
       
@@ -84,6 +93,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updatePassword = async (newPassword: string) => {
+    try {
+      if (!user) {
+        throw new Error('No user is logged in');
+      }
+      
+      if (newPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+      
+      // In a real app we would call an API, but here we store in localStorage
+      localStorage.setItem(`password_${user.id}`, newPassword);
+      
+      toast({
+        title: 'Password updated',
+        description: 'Your password has been successfully updated',
+      });
+      
+      return;
+    } catch (error) {
+      toast({
+        title: 'Failed to update password',
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('metroDepotUser');
@@ -94,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, updatePassword, getUsersByRole }}>
       {children}
     </AuthContext.Provider>
   );
