@@ -12,7 +12,13 @@ async function createServer() {
   // Serve static files from the dist directory
   app.use(express.static(join(__dirname, 'dist')));
   
-  // All routes should serve the index.html file (for SPA)
+  // Define specific routes first (if needed)
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+  
+  // All other routes should serve the index.html file (for SPA)
+  // Make sure to use a simple string pattern without regex or parameters
   app.get('*', (req, res) => {
     res.sendFile(join(__dirname, 'dist', 'index.html'));
   });
@@ -25,4 +31,7 @@ async function createServer() {
   });
 }
 
-createServer();
+createServer().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
