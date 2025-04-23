@@ -21,8 +21,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 // Validate connection
 async function validateSupabaseConnection() {
   try {
-    const { error } = await supabase.from('_dummy_query_').select('*').limit(1);
-    if (error && error.message !== 'relation "_dummy_query_" does not exist') {
+    // Using a more TypeScript-friendly approach to validate connection
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
       console.error('Supabase connection issue:', error.message);
     } else {
       console.log('Supabase connection validated successfully');
