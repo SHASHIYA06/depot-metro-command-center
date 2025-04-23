@@ -12,23 +12,37 @@ async function createServer() {
   // Serve static files from the dist directory
   app.use(express.static(join(__dirname, 'dist')));
   
-  // Define specific routes first (if needed)
+  // Define specific API routes first
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
   });
   
-  // All other routes should serve the index.html file (for SPA)
-  // Make sure to use a simple string pattern without regex or parameters
-  app.get('*', (req, res) => {
+  // Error handling middleware
+  app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+    });
+  });
+  
+  // Important: Use a simple string path for the catch-all route
+  // This fixes the path-to-regexp error
+  app.get('/*', (req, res) => {
     res.sendFile(join(__dirname, 'dist', 'index.html'));
   });
   
   // Get port from environment variable or use default 3000
   const PORT = process.env.PORT || 3000;
   
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+  try {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
 createServer().catch(err => {
