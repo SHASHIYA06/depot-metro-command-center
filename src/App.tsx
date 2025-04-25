@@ -47,7 +47,7 @@ const App = () => {
             <Route path="/*" element={<AppRoutes />} />
           </Routes>
           <Toaster />
-        </Auth`Provider>
+        </AuthProvider>
       </Router>
     </QueryClientProvider>
   );
