@@ -1,4 +1,3 @@
-
 import { JobCard } from '@/types/job-card';
 import { v4 as uuidv4 } from 'uuid';
 import { format, addDays, addHours, subDays } from 'date-fns';
