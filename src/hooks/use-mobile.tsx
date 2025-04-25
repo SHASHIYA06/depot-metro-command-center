@@ -27,17 +27,44 @@ type MobileContextType = {
   isMobile: boolean;
   toggleMobileMenu: () => void;
   mobileMenuOpen: boolean;
+  // Add the missing properties
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
 }
 
-// Create a default context with no-op functions
-const defaultMobileMenuContext: MobileContextType = {
+// Create React context
+const MobileMenuContext = React.createContext<MobileContextType>({
   isMobile: false,
   toggleMobileMenu: () => {},
-  mobileMenuOpen: false
-};
+  mobileMenuOpen: false,
+  isMobileMenuOpen: false,
+  setIsMobileMenuOpen: () => {}
+});
+
+// Provider component
+export function MobileMenuProvider({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  
+  const toggleMobileMenu = React.useCallback(() => {
+    setMobileMenuOpen(prev => !prev);
+  }, []);
+
+  const value = React.useMemo(() => ({
+    isMobile,
+    toggleMobileMenu,
+    mobileMenuOpen,
+    isMobileMenuOpen: mobileMenuOpen,
+    setIsMobileMenuOpen: setMobileMenuOpen
+  }), [isMobile, toggleMobileMenu, mobileMenuOpen]);
+
+  return (
+    <MobileMenuContext.Provider value={value}>
+      {children}
+    </MobileMenuContext.Provider>
+  );
+}
 
 export const useMobileMenuContext = () => {
-  // Return the default context - this is a compatibility function
-  // for any code that might be expecting the old context structure
-  return defaultMobileMenuContext;
+  return React.useContext(MobileMenuContext);
 };
