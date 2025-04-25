@@ -9,19 +9,18 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Add better error handling and connection validation
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    storage: localStorage
   }
 });
 
 // Validate connection
 async function validateSupabaseConnection() {
   try {
-    // Using a more TypeScript-friendly approach to validate connection
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {
