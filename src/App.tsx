@@ -28,6 +28,11 @@ import MPTools from '@/pages/MPTools';
 import TrainLocation from '@/pages/TrainLocation';
 import Exports from '@/pages/Exports';
 import PendingMaterials from '@/pages/PendingMaterials';
+import JobCards from '@/pages/JobCards';
+import JobCardCreate from '@/pages/JobCardCreate';
+import JobCardDetail from '@/pages/JobCardDetail';
+import JobCardEdit from '@/pages/JobCardEdit';
+import FracasReport from '@/pages/FracasReport';
 
 const queryClient = new QueryClient();
 
@@ -42,7 +47,7 @@ const App = () => {
             <Route path="/*" element={<AppRoutes />} />
           </Routes>
           <Toaster />
-        </AuthProvider>
+        </Auth`Provider>
       </Router>
     </QueryClientProvider>
   );
@@ -88,6 +93,14 @@ const AppRoutes = () => {
         <Route path="/mp-tools" element={<MPTools />} />
         <Route path="/train-commissioning" element={<TrainCommissioning />} />
         <Route path="/profile" element={<Profile />} />
+        
+        {/* Job Card Routes */}
+        <Route path="/job-cards" element={<JobCards />} />
+        <Route path="/job-cards/new" element={<JobCardCreate />} />
+        <Route path="/job-cards/:id" element={<JobCardDetail />} />
+        <Route path="/job-cards/edit/:id" element={<JobCardEdit />} />
+        <Route path="/fracas-report" element={<FracasReport />} />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
