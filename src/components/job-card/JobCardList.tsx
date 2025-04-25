@@ -26,9 +26,9 @@ export const JobCardList: React.FC<JobCardListProps> = ({
   const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [systemFilter, setSystemFilter] = useState<string>('');
-  const [maintenanceTypeFilter, setMaintenanceTypeFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [systemFilter, setSystemFilter] = useState<string>('all');
+  const [maintenanceTypeFilter, setMaintenanceTypeFilter] = useState<string>('all');
 
   // Create list of unique systems for filter dropdown
   const systems = Array.from(new Set(jobCards.map(jobCard => jobCard.system))).sort();
@@ -42,9 +42,9 @@ export const JobCardList: React.FC<JobCardListProps> = ({
       jobCard.issuedTo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       jobCard.trainNo.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === '' || jobCard.status === statusFilter;
-    const matchesSystem = systemFilter === '' || jobCard.system === systemFilter;
-    const matchesMaintenanceType = maintenanceTypeFilter === '' || jobCard.maintenanceType === maintenanceTypeFilter;
+    const matchesStatus = statusFilter === 'all' || jobCard.status === statusFilter;
+    const matchesSystem = systemFilter === 'all' || jobCard.system === systemFilter;
+    const matchesMaintenanceType = maintenanceTypeFilter === 'all' || jobCard.maintenanceType === maintenanceTypeFilter;
     
     return matchesSearch && matchesStatus && matchesSystem && matchesMaintenanceType;
   });
@@ -121,7 +121,7 @@ export const JobCardList: React.FC<JobCardListProps> = ({
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -136,7 +136,7 @@ export const JobCardList: React.FC<JobCardListProps> = ({
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="CM">CM</SelectItem>
                   <SelectItem value="PM">PM</SelectItem>
                   <SelectItem value="OPM">OPM</SelectItem>
@@ -150,7 +150,7 @@ export const JobCardList: React.FC<JobCardListProps> = ({
                   <SelectValue placeholder="System" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Systems</SelectItem>
+                  <SelectItem value="all">All Systems</SelectItem>
                   {systems.map(system => (
                     <SelectItem key={system} value={system}>{system}</SelectItem>
                   ))}
