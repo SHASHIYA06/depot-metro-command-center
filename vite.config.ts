@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: "0.0.0.0", // Changed from "::" for better compatibility
     port: 8080,
   },
   plugins: [
@@ -23,5 +23,12 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     sourcemap: mode !== "production",
     chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
   },
 }));

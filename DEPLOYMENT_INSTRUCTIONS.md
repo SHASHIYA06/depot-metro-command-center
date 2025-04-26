@@ -26,7 +26,8 @@
 4. **Environment Variables**
    - Set `NODE_ENV` to `production`
    - Set `PORT` to `10000` (Render will automatically assign this port to your app)
-   - Add any other environment variables your app requires
+   - Set `SUPABASE_URL` to your Supabase project URL
+   - Set `SUPABASE_ANON_KEY` to your Supabase anon key
 
 ### Build Command
 ```
@@ -44,8 +45,8 @@ Required environment variables:
 - `PORT`: Automatically set by Render (default to 10000)
 
 Optional environment variables (if used by your application):
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
 ## Important Notes
 
@@ -54,6 +55,7 @@ Optional environment variables (if used by your application):
 - Make sure your Node.js version is at least 18.0.0 for ES modules support
 - For local development, continue using `npm run dev` command
 - The server is set up to handle client-side routing by redirecting all routes to the index.html file
+- The listen address is set to '0.0.0.0' to ensure proper binding in cloud environments
 
 ## Manual Deployment Steps
 
@@ -71,3 +73,11 @@ If you encounter any issues during deployment:
 2. **Verify environment variables** are correctly set
 3. **Ensure Node version compatibility** (Node 18+)
 4. **Check build output** for any compilation errors
+5. **Path-to-regexp errors**: We've addressed these by using simple string paths in Express routes
+6. **Connection issues**: If facing connection problems, check that the server is binding to '0.0.0.0' and not 'localhost'
+7. **Static file serving**: Verify the dist directory is being correctly accessed
+
+## Render.yaml Configuration
+
+A `render.yaml` file is included in the project root that defines the service configuration.
+This allows for Infrastructure as Code deployment if you're using Render's Blueprint feature.

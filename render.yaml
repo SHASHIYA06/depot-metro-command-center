@@ -1,0 +1,16 @@
+
+services:
+  - type: web
+    name: metro-depot-command-center
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        value: https://uowichbghrvtpeptdsda.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvd2ljaGJnaHJ2dHBlcHRkc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzNzk3NjQsImV4cCI6MjA2MDk1NTc2NH0.0lEdCsa_QsPPDaxFeH5POyMSDZCBrJ2sM1j6kxrCWxA
