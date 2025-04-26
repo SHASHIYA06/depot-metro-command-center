@@ -14,7 +14,10 @@ async function createServer() {
   
   // Define specific API routes first
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ 
+      status: 'ok',
+      supabaseUrl: process.env.SUPABASE_URL ? 'configured' : 'missing',
+    });
   });
   
   // Error handling middleware
@@ -31,12 +34,12 @@ async function createServer() {
     res.sendFile(join(__dirname, 'dist', 'index.html'));
   });
   
-  // Get port from environment variable or use default 3000
   const PORT = process.env.PORT || 3000;
   
   try {
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
