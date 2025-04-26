@@ -16,3 +16,13 @@ services:
         value: https://uowichbghrvtpeptdsda.supabase.co
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvd2ljaGJnaHJ2dHBlcHRkc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzNzk3NjQsImV4cCI6MjA2MDk1NTc2NH0.0lEdCsa_QsPPDaxFeH5POyMSDZCBrJ2sM1j6kxrCWxA
+      - key: GOOGLE_SHEET_ID
+        value: "" # Add your Google Sheet ID here for production
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        value: "" # Add your Google Drive Folder ID here for production
+      - key: GOOGLE_API_KEY
+        value: "" # Add your Google API Key here for production
+      - key: JWT_SECRET
+        value: "metro-depot-jwt-secret" # Change this to a secure secret in production
+      - key: CRON_BACKUP_TIME
+        value: "0 0 * * *" # Daily at midnight
