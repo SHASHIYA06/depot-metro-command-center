@@ -13,6 +13,10 @@ interface StatCardProps {
   linkParams?: Record<string, string>;
   onClick?: () => void;
   className?: string;
+  change?: {
+    value: number;
+    type: 'increase' | 'decrease';
+  };
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
