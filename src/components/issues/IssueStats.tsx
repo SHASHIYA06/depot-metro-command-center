@@ -81,25 +81,25 @@ export const IssueStats: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Activities"
-          value={totalIssues}
+          value={totalIssues.toString()}
           icon={<AlertCircle className="h-5 w-5 text-primary" />}
           description={`${completionRate}% completion rate`}
         />
         <StatCard
           title="Open"
-          value={openIssues.length}
+          value={openIssues.length.toString()}
           icon={<AlertCircle className="h-5 w-5 text-metro-warning" />}
           description="Awaiting assignment"
         />
         <StatCard
           title="In Progress"
-          value={inProgressIssues.length}
+          value={inProgressIssues.length.toString()}
           icon={<Clock className="h-5 w-5 text-metro-info" />}
           description="Currently being worked on"
         />
         <StatCard
           title="Resolved"
-          value={resolvedIssues.length}
+          value={resolvedIssues.length.toString()}
           icon={<CheckCircle className="h-5 w-5 text-metro-success" />}
           description="Successfully completed"
         />

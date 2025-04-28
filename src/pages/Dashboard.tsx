@@ -110,7 +110,7 @@ const Dashboard = () => {
         <div onClick={() => handleStatCardClick('total-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Total Tasks"
-            value={dashboardStats.totalTasks}
+            value={dashboardStats.totalTasks.toString()}
             icon={<ClipboardList className="h-5 w-5 text-primary" />}
             description={`${dashboardStats.completedTasks} completed`}
           />
@@ -119,7 +119,7 @@ const Dashboard = () => {
         <div onClick={() => handleStatCardClick('pending-tasks')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Pending Tasks"
-            value={dashboardStats.pendingTasks}
+            value={dashboardStats.pendingTasks.toString()}
             icon={<Clock className="h-5 w-5 text-metro-warning" />}
             change={{ value: 5, type: 'decrease' }}
           />
@@ -136,7 +136,7 @@ const Dashboard = () => {
         <div onClick={() => handleStatCardClick('open-issues')} className={user?.role === UserRole.DEPOT_INCHARGE ? 'cursor-pointer transform hover:scale-105 transition-transform' : ''}>
           <StatCard
             title="Open Issues"
-            value={dashboardStats.issuesByPriority.high + dashboardStats.issuesByPriority.critical}
+            value={(dashboardStats.issuesByPriority.high + dashboardStats.issuesByPriority.critical).toString()}
             icon={<AlertTriangle className="h-5 w-5 text-metro-danger" />}
             description="High + Critical priority"
           />
