@@ -1,60 +1,64 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 interface StatCardProps {
   title: string;
-  value: string | number;
-  icon: React.ReactNode;
+  value: string;
   description?: string;
-  change?: {
-    value: number;
-    type: 'increase' | 'decrease';
-  };
+  icon?: React.ReactNode;
+  trend?: number;
+  link?: string;
+  linkParams?: Record<string, string>;
+  onClick?: () => void;
   className?: string;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
-  icon,
   description,
-  change,
+  icon,
+  trend,
+  link,
+  linkParams,
+  onClick,
   className,
 }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (link) {
+      if (linkParams) {
+        const queryParams = new URLSearchParams(linkParams);
+        navigate(`${link}?${queryParams}`);
+      } else {
+        navigate(link);
+      }
+    }
+  };
+
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <h3 className="text-2xl font-bold mt-2">{value}</h3>
-            
-            {description && (
-              <p className="text-sm text-muted-foreground mt-1">{description}</p>
-            )}
-            
-            {change && (
-              <div className="flex items-center mt-2">
-                <span 
-                  className={cn(
-                    "text-sm font-medium",
-                    change.type === 'increase' ? 'text-metro-success' : 'text-metro-danger'
-                  )}
-                >
-                  {change.type === 'increase' ? '+' : '-'}{Math.abs(change.value)}%
-                </span>
-                <span className="text-xs text-muted-foreground ml-1">vs last week</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="rounded-full p-2 bg-primary/10">
-            {icon}
-          </div>
-        </div>
+    <Card 
+      className={`${className || ''} ${(onClick || link) ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      onClick={(onClick || link) ? handleClick : undefined}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {icon && <div>{icon}</div>}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </CardContent>
+      {trend !== undefined && (
+        <CardFooter className={trend >= 0 ? "text-emerald-500 text-sm" : "text-rose-500 text-sm"}>
+          {trend >= 0 ? `↗ ${trend}%` : `↘ ${Math.abs(trend)}%`} from last month
+        </CardFooter>
+      )}
     </Card>
   );
 };

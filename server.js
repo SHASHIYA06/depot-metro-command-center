@@ -17,6 +17,7 @@ async function createServer() {
     res.json({ 
       status: 'ok',
       supabaseUrl: process.env.SUPABASE_URL ? 'configured' : 'missing',
+      googleApiStatus: process.env.GOOGLE_API_KEY ? 'configured' : 'missing'
     });
   });
   
@@ -40,6 +41,7 @@ async function createServer() {
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV}`);
+      console.log(`Google Sheets integration: ${process.env.GOOGLE_SHEET_ID ? 'configured' : 'not configured'}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

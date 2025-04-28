@@ -33,6 +33,9 @@ import JobCardCreate from '@/pages/JobCardCreate';
 import JobCardDetail from '@/pages/JobCardDetail';
 import JobCardEdit from '@/pages/JobCardEdit';
 import FracasReport from '@/pages/FracasReport';
+import NCRCreate from '@/pages/NCRCreate';
+import VendorCreate from '@/pages/VendorCreate';
+import LetterCreate from '@/pages/LetterCreate';
 
 const queryClient = new QueryClient();
 
@@ -100,6 +103,15 @@ const AppRoutes = () => {
         <Route path="/job-cards/:id" element={<JobCardDetail />} />
         <Route path="/job-cards/edit/:id" element={<JobCardEdit />} />
         <Route path="/fracas-report" element={<FracasReport />} />
+        
+        {/* NCR Routes */}
+        <Route path="/ncr-reports/new" element={<NCRCreate />} />
+        
+        {/* Vendor Routes */}
+        <Route path="/vendors/new" element={<VendorCreate />} />
+        
+        {/* Letter Routes */}
+        <Route path="/letters/new" element={<LetterCreate />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

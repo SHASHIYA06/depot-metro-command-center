@@ -28,6 +28,11 @@
    - Set `PORT` to `10000` (Render will automatically assign this port to your app)
    - Set `SUPABASE_URL` to your Supabase project URL
    - Set `SUPABASE_ANON_KEY` to your Supabase anon key
+   - Set `GOOGLE_SHEET_ID` to your Google Sheet ID for data integration
+   - Set `GOOGLE_DRIVE_FOLDER_ID` to your Google Drive folder ID for backups
+   - Set `GOOGLE_API_KEY` to your Google API key for Sheet and Drive access
+   - Set `JWT_SECRET` to a secure string for JWT token generation
+   - Set `CRON_BACKUP_TIME` to a cron schedule for automatic backups (e.g., "0 0 * * *" for daily midnight)
 
 ### Build Command
 ```
@@ -43,10 +48,15 @@ node server.js
 Required environment variables:
 - `NODE_ENV`: Set to `production`
 - `PORT`: Automatically set by Render (default to 10000)
-
-Optional environment variables (if used by your application):
 - `SUPABASE_URL`: Your Supabase project URL
 - `SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `JWT_SECRET`: Secret for JWT token generation
+
+Optional environment variables (for enhanced functionality):
+- `GOOGLE_SHEET_ID`: ID of your Google Sheet for data synchronization
+- `GOOGLE_DRIVE_FOLDER_ID`: ID of your Google Drive folder for backup storage
+- `GOOGLE_API_KEY`: Your Google API key for accessing Sheets and Drive
+- `CRON_BACKUP_TIME`: Cron expression for scheduling automatic backups
 
 ## Important Notes
 
