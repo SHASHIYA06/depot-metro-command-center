@@ -177,12 +177,14 @@ const Login = () => {
         ))}
       </div>
 
-      <style jsx>{`
+      <style>
+        {`
         @keyframes float {
           0% { transform: translateY(100vh) rotate(0deg); }
           100% { transform: translateY(-100vh) rotate(360deg); }
         }
-      `}</style>
+        `}
+      </style>
 
       <div className="relative w-full max-w-6xl mx-auto p-4 z-10">
         <div className="text-center mb-8">
