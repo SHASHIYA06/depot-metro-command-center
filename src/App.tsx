@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -35,6 +36,7 @@ import FracasReport from '@/pages/FracasReport';
 import NCRCreate from '@/pages/NCRCreate';
 import VendorCreate from '@/pages/VendorCreate';
 import LetterCreate from '@/pages/LetterCreate';
+import Letters from '@/pages/Letters';
 import TCMSDashboardPage from '@/pages/TCMSDashboard';
 
 const queryClient = new QueryClient();
@@ -112,6 +114,7 @@ const AppRoutes = () => {
         <Route path="/vendors/new" element={<VendorCreate />} />
         
         {/* Letter Routes */}
+        <Route path="/letters" element={<Letters />} />
         <Route path="/letters/new" element={<LetterCreate />} />
         
         <Route path="*" element={<NotFound />} />

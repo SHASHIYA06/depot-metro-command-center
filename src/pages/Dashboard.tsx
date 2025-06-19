@@ -10,7 +10,7 @@ import { PriorityChart } from '@/components/dashboard/PriorityChart';
 import { Dashboard3DChart } from '@/components/dashboard/Dashboard3DChart';
 import { MetroNewsWidget } from '@/components/dashboard/MetroNewsWidget';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
-import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building, MapPin, Bell, Calendar, Wrench } from 'lucide-react';
+import { ClipboardList, AlertTriangle, Clock, CheckCircle, Train, Users, Building, MapPin, Bell, Calendar, Wrench, Database, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   dashboardStats, 
@@ -119,6 +119,14 @@ const Dashboard = () => {
 
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
+  };
+
+  const handleViewTCMSClick = () => {
+    navigate('/tcms-dashboard');
+  };
+
+  const handleViewLettersClick = () => {
+    navigate('/letters');
   };
 
   // Get top 3 ongoing metro projects
@@ -235,6 +243,41 @@ const Dashboard = () => {
           link="/issues"
           linkParams={{ filter: 'priority', value: 'high,critical' }}
         />
+      </div>
+
+      {/* TCMS and Letters Quick Access */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleViewTCMSClick}>
+          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">TCMS Dashboard</CardTitle>
+            <Database className="h-4 w-4 ml-auto text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Active</div>
+            <p className="text-xs text-muted-foreground">
+              Train Control & Monitoring System
+            </p>
+            <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto">
+              View TCMS Analysis →
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleViewLettersClick}>
+          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Letters Management</CardTitle>
+            <Mail className="h-4 w-4 ml-auto text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">
+              Recent correspondence
+            </p>
+            <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto">
+              Manage Letters →
+            </Button>
+          </CardContent>
+        </Card>
       </div>
       
       {/* Detail View for Selected Metric (only visible for depot incharge) */}

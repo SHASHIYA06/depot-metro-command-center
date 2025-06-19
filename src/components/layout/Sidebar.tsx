@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -24,6 +23,8 @@ import {
   Archive,
   Clipboard,
   LineChart,
+  Database,
+  Mail,
 } from "lucide-react";
 import { useMobileMenuContext } from "@/hooks/use-mobile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -103,6 +104,12 @@ export function Sidebar({ className }: SidebarProps) {
       ]
     },
     {
+      title: "TCMS Dashboard",
+      href: "/tcms-dashboard",
+      icon: Database,
+      allowedRoles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.DATA_ENTRY_OPERATOR],
+    },
+    {
       title: "Maintenance",
       href: "/maintenance",
       icon: Wrench,
@@ -159,6 +166,24 @@ export function Sidebar({ className }: SidebarProps) {
           title: "Attendance",
           href: "/staff-attendance",
           icon: ClipboardCheck,
+        },
+      ],
+    },
+    {
+      title: "Letters",
+      href: "/letters",
+      icon: Mail,
+      allowedRoles: [UserRole.DEPOT_INCHARGE, UserRole.ENGINEER, UserRole.DATA_ENTRY_OPERATOR],
+      submenu: [
+        {
+          title: "All Letters",
+          href: "/letters",
+          icon: Mail,
+        },
+        {
+          title: "Create Letter",
+          href: "/letters/new",
+          icon: FileText,
         },
       ],
     },
