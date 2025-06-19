@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -36,6 +35,7 @@ import FracasReport from '@/pages/FracasReport';
 import NCRCreate from '@/pages/NCRCreate';
 import VendorCreate from '@/pages/VendorCreate';
 import LetterCreate from '@/pages/LetterCreate';
+import TCMSDashboardPage from '@/pages/TCMSDashboard';
 
 const queryClient = new QueryClient();
 
@@ -95,6 +95,7 @@ const AppRoutes = () => {
         <Route path="/backup" element={<Backup />} />
         <Route path="/mp-tools" element={<MPTools />} />
         <Route path="/train-commissioning" element={<TrainCommissioning />} />
+        <Route path="/tcms-dashboard" element={<TCMSDashboardPage />} />
         <Route path="/profile" element={<Profile />} />
         
         {/* Job Card Routes */}
