@@ -6,18 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Train, AlertCircle, User, Key, Users, Briefcase, Database, FileSpreadsheet } from 'lucide-react';
+import { Train, User, Key, Briefcase, Users, Database, FileSpreadsheet, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from '@/components/ui/motion';
 import { UserRole } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { UserRoleSelect } from '@/components/auth/UserRoleSelect';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
+const RoleCard = ({ role, icon: Icon, title, description, isActive, onClick }: {
   role: UserRole;
   icon: React.ElementType;
   title: string;
@@ -25,108 +20,45 @@ const LoginRoleCard = ({ role, icon: Icon, title, description, isActive, onClick
   isActive: boolean;
   onClick: () => void;
 }) => {
+  const getCardColor = () => {
+    switch (role) {
+      case UserRole.DEPOT_INCHARGE: return isActive ? 'bg-blue-500' : 'bg-blue-400 hover:bg-blue-500';
+      case UserRole.ENGINEER: return isActive ? 'bg-green-500' : 'bg-green-400 hover:bg-green-500';
+      case UserRole.TECHNICIAN: return isActive ? 'bg-yellow-500' : 'bg-yellow-400 hover:bg-yellow-500';
+      case UserRole.STORE_PERSON: return isActive ? 'bg-purple-500' : 'bg-purple-400 hover:bg-purple-500';
+      case UserRole.DATA_ENTRY_OPERATOR: return isActive ? 'bg-red-500' : 'bg-red-400 hover:bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className={`cursor-pointer rounded-lg p-4 transition-all ${isActive ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent'}`}
+      className={`cursor-pointer rounded-lg p-6 text-white transition-all ${getCardColor()}`}
       onClick={onClick}
     >
-      <div className="flex flex-col items-center text-center space-y-2">
-        <div className={`rounded-full p-3 ${isActive ? 'bg-primary-foreground/20' : 'bg-primary/10'}`}>
-          <Icon className={`h-6 w-6 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+      <div className="flex flex-col items-center text-center space-y-3">
+        <div className="rounded-full p-4 bg-white/20">
+          <Icon className="h-8 w-8 text-white" />
         </div>
-        <h3 className="font-medium">{title}</h3>
-        <p className={`text-xs ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-          {description}
-        </p>
+        <h3 className="font-bold text-lg">{title}</h3>
+        <p className="text-sm text-white/90">{description}</p>
       </div>
     </motion.div>
   );
 };
 
-const UserSelector = ({ role, selectedUser, onSelect }: { 
-  role: UserRole | null, 
-  selectedUser: string, 
-  onSelect: (email: string) => void 
-}) => {
-  const { getUsersByRole } = useAuth();
-  const [open, setOpen] = useState(false);
-  
-  const users = role ? getUsersByRole(role) : [];
-  
-  const safeUsers = Array.isArray(users) ? users : [];
-  
-  const selectedUserDetails = safeUsers.find(user => user?.email === selectedUser);
-  
-  if (safeUsers.length === 0) {
-    return (
-      <div className="mt-2">
-        <Button
-          variant="outline"
-          className="w-full justify-between cursor-not-allowed opacity-70"
-          disabled
-        >
-          No users available for this role
-          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </div>
-    );
-  }
-  
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between mt-2"
-        >
-          {selectedUserDetails?.name || 'Select user'}
-          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search users..." />
-          <CommandEmpty>No user found.</CommandEmpty>
-          <CommandGroup>
-            {safeUsers.map((user) => (
-              <CommandItem
-                key={user.id}
-                value={user.name}
-                onSelect={() => {
-                  onSelect(user.email);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedUser === user.email ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {user.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, getUsersByRole } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [activeTab, setActiveTab] = useState('login');
+  const [selectedStaff, setSelectedStaff] = useState('');
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
   const loginRoles = [
     {
@@ -137,7 +69,7 @@ const Login = () => {
     },
     {
       role: UserRole.ENGINEER,
-      icon: Users,
+      icon: Settings,
       title: 'Engineer',
       description: 'Access to maintenance planning and technical operations'
     },
@@ -156,53 +88,46 @@ const Login = () => {
     {
       role: UserRole.DATA_ENTRY_OPERATOR,
       icon: FileSpreadsheet,
-      title: 'Data Entry',
+      title: 'Data Entry Operator',
       description: 'Enter and update data, generate reports'
     }
   ];
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
+    setShowLoginForm(true);
     setEmail('');
+    setSelectedStaff('');
   };
-  
-  const handleUserSelect = (selectedEmail: string) => {
-    setEmail(selectedEmail);
+
+  const handleStaffSelect = (staffEmail: string) => {
+    setSelectedStaff(staffEmail);
+    setEmail(staffEmail);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      toast({
+        title: 'Error',
+        description: 'Please enter both email and password.',
+        variant: 'destructive',
+      });
       return;
     }
     
     setIsLoading(true);
-    setError('');
     
     try {
       await login(email, password);
       navigate('/dashboard');
       
-      const now = new Date();
-      const hour = now.getHours();
-      const minute = now.getMinutes();
-      const timeDecimal = hour + (minute / 60);
-      
-      if (timeDecimal >= 8.83 && timeDecimal <= 9.33) {
-        toast({
-          title: 'Attendance Recorded',
-          description: 'You have been marked as PRESENT for today.',
-        });
-      } else {
-        toast({
-          title: 'Login Time Noted',
-          description: `Login time: ${now.toLocaleTimeString()}`,
-        });
-      }
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome to Metro Depot Management System!',
+      });
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
       toast({
         title: 'Login Failed',
         description: 'Invalid email or password. Please try again.',
@@ -213,194 +138,175 @@ const Login = () => {
     }
   };
 
-  const [trainPosition, setTrainPosition] = useState({ x: 0, y: 0, rotate: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      setTrainPosition({ x, y, rotate: x * 0.5 });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  const handleBack = () => {
+    setShowLoginForm(false);
+    setSelectedRole(null);
+    setEmail('');
+    setPassword('');
+    setSelectedStaff('');
+  };
 
-  const renderLoginForm = () => (
-    <>
-      <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">Select your role:</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {loginRoles.map((roleInfo) => (
-            <LoginRoleCard
-              key={roleInfo.role}
-              role={roleInfo.role}
-              icon={roleInfo.icon}
-              title={roleInfo.title}
-              description={roleInfo.description}
-              isActive={selectedRole === roleInfo.role}
-              onClick={() => handleRoleSelect(roleInfo.role)}
-            />
-          ))}
-        </div>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            {error}
-          </div>
-        )}
-        
-        <div className="space-y-2">
-          <Label htmlFor="email" className="flex items-center">
-            <User className="h-4 w-4 mr-2" />
-            User
-          </Label>
-          <UserRoleSelect 
-            role={selectedRole} 
-            onSelectUser={handleUserSelect}
-          />
-          <Input
-            id="email"
-            type="email"
-            placeholder="Or enter your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading}
-            className="bg-background mt-2"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="flex items-center">
-              <Key className="h-4 w-4 mr-2" />
-              Password
-            </Label>
-            <Button type="button" variant="link" className="px-0 text-xs">
-              Forgot password?
-            </Button>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            className="bg-background"
-          />
-        </div>
-        
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoading || !selectedRole}
-        >
-          {isLoading ? 'Signing in...' : 'Sign in'}
-        </Button>
-      </form>
-    </>
-  );
-
-  const renderSystemInfo = () => (
-    <div className="space-y-4 py-2">
-      <p className="text-sm">The Metro Depot Management System provides comprehensive tools for maintenance, operations, and administration of metro rail facilities.</p>
-      
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium">Key Features:</h4>
-        <ul className="text-sm list-disc list-inside space-y-1">
-          <li>Maintenance planning and scheduling</li>
-          <li>Task assignment and tracking</li>
-          <li>Issue management and resolution</li>
-          <li>Inventory and store management</li>
-          <li>Staff management and attendance</li>
-          <li>Analytics and reporting</li>
-        </ul>
-      </div>
-      
-      <Button 
-        variant="outline" 
-        className="w-full"
-        onClick={() => setActiveTab('login')}
-      >
-        Return to Login
-      </Button>
-    </div>
-  );
+  const getStaffMembers = () => {
+    if (!selectedRole) return [];
+    return getUsersByRole(selectedRole) || [];
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4 overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-2/3 right-1/4 w-40 h-40 bg-green-500/5 rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center" 
+         style={{
+           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+           position: 'relative',
+           overflow: 'hidden'
+         }}>
       
-      <div className="relative w-full max-w-4xl z-10">
-        <div className="absolute top-[-100px] left-1/2 transform -translate-x-1/2">
-          <motion.div
-            animate={{
-              x: trainPosition.x,
-              y: trainPosition.y,
-              rotateZ: trainPosition.rotate,
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white/10"
+            style={{
+              width: Math.random() * 100 + 50,
+              height: Math.random() * 100 + 50,
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`
             }}
-            transition={{ type: 'spring', stiffness: 150, damping: 15 }}
-            className="relative"
-          >
-            <div className="rounded-full bg-primary/10 p-5">
-              <Train className="h-20 w-20 text-primary" />
+          />
+        ))}
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0% { transform: translateY(100vh) rotate(0deg); }
+          100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+      `}</style>
+
+      <div className="relative w-full max-w-6xl mx-auto p-4 z-10">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="rounded-full bg-white/10 p-6">
+              <Train className="h-16 w-16 text-white" />
             </div>
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-40 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent rounded"></div>
-          </motion.div>
+          </div>
+          <h1 className="text-5xl font-bold text-white mb-2">Metro Depot Management</h1>
+          <p className="text-xl text-white/80">Advanced railway maintenance and operations system</p>
         </div>
-        
-        <div className="mt-24 flex flex-col items-center">
-          <h1 className="text-4xl font-bold text-center mb-2 text-gray-800">Metro Depot Management</h1>
-          <p className="text-center text-gray-600 mb-8">Advanced railway maintenance and operations system</p>
-          
-          <Card className="w-full max-w-xl shadow-lg border-0 shadow-primary/10">
-            <CardHeader>
-              <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="about">System Info</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login">
-                  <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
-                  <CardDescription className="text-center">
-                    Login to access your dashboard and tools
-                  </CardDescription>
-                </TabsContent>
-                
-                <TabsContent value="about">
-                  <CardTitle className="text-2xl font-bold text-center">System Information</CardTitle>
-                  <CardDescription className="text-center">
-                    Metro Depot Management System v2.0
-                  </CardDescription>
-                </TabsContent>
-              </Tabs>
+
+        {!showLoginForm ? (
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">Select Your Role</h2>
+            <p className="text-white/80 mb-8">Choose your role to access the appropriate dashboard</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {loginRoles.map((roleInfo) => (
+                <RoleCard
+                  key={roleInfo.role}
+                  role={roleInfo.role}
+                  icon={roleInfo.icon}
+                  title={roleInfo.title}
+                  description={roleInfo.description}
+                  isActive={false}
+                  onClick={() => handleRoleSelect(roleInfo.role)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <Card className="max-w-md mx-auto bg-white/95 backdrop-blur-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">
+                {loginRoles.find(r => r.role === selectedRole)?.title} Login
+              </CardTitle>
+              <CardDescription>Select your staff profile</CardDescription>
             </CardHeader>
             
             <CardContent>
-              {activeTab === 'login' ? renderLoginForm() : renderSystemInfo()}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="staff" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Staff Member
+                  </Label>
+                  <Select value={selectedStaff} onValueChange={handleStaffSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your name" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getStaffMembers().map((staff) => (
+                        <SelectItem key={staff.id} value={staff.email}>
+                          {staff.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    System Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Auto-generated email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={true}
+                    className="bg-gray-100"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center">
+                    <Key className="h-4 w-4 mr-2" />
+                    Password
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Auto-generated password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-background"
+                  />
+                  <div className="text-right">
+                    <Button type="button" variant="link" className="px-0 text-xs">
+                      Forgot password?
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={isLoading || !selectedStaff}
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
             
-            <CardFooter className="flex flex-col space-y-2 border-t pt-4">
-              <p className="text-xs text-muted-foreground text-center px-4">
-                By signing in, you agree to the terms of service and data policy.
+            <CardFooter className="text-center">
+              <p className="text-xs text-muted-foreground">
+                © 2025 BEML Limited. All rights reserved.
               </p>
-              {activeTab === 'login' && (
-                <p className="text-xs text-muted-foreground text-center">
-                  Default password format: firstname@4321
-                </p>
-              )}
             </CardFooter>
           </Card>
-        </div>
+        )}
       </div>
     </div>
   );
